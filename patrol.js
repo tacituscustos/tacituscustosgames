@@ -349,6 +349,9 @@
   document.addEventListener("keydown", (e) => {
     if (!(e.key in ARROWS)) return;
     const t = e.target;
+    /* the arcade holds more than one machine: only steer when focus is loose or
+       inside this one, so arrow keys aimed at another cabinet don't move the pawn */
+    if (t && t !== document.body && !root.contains(t)) return;
     if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
     const cur = state.run, n = state.G.n;
     if (cur.status !== "playing") return;
