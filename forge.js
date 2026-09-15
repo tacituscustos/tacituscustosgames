@@ -730,7 +730,12 @@
     return lines.join("\n");
   }
 
-  /* ---------------- markup ---------------- */
+  /* ---------------- markup ----------------
+     The page is split in two: the puzzle, which is all a solver should see,
+     and the answer, which stays hidden until it is asked for. Everything that
+     gives the game away — the grammar prose, the glosses, the translations,
+     the dictionary, the summary of word order and alignment — lives in the
+     second half. */
   const TEMPLATE = `
     <div class="ctl">
       <input type="text" id="cf-seed" aria-label="Seed">
@@ -739,59 +744,77 @@
     </div>
     <h2>Language Forge</h2>
     <p class="note" style="margin-top:6px">A whole language out of a seed — sounds, grammar, words — and a puzzle in it that is checked to be solvable from the clues you're given. Every language on this page has never existed before.</p>
+
     <div class="cf-head">
       <div class="langname" id="cf-name"></div>
       <div class="ipa" id="cf-nameipa"></div>
-      <p class="note" id="cf-summary"></p>
+      <p class="note" id="cf-tally"></p>
       <div class="spec" id="cf-spec"></div>
-      <div class="tr" id="cf-spec-tr"></div>
     </div>
 
-    <h3>Sounds</h3>
-    <table><tbody id="cf-sounds"></tbody></table>
-    <p class="note" style="margin-top:8px" id="cf-rom"></p>
-
-    <h3>Grammar</h3>
-    <div id="cf-grammar"></div>
-
-    <h3>Numbers</h3>
-    <div class="num" id="cf-nums"></div>
-    <p style="margin-top:10px" id="cf-numprose"></p>
-
-    <h3>Text</h3>
-    <div class="ctl" style="margin-bottom:14px" role="group" aria-label="Gloss">
-      <button type="button" id="cf-glossed">Glossed</button>
-      <button type="button" id="cf-raw">Raw</button>
-    </div>
-    <div class="ctl" style="margin-bottom:14px" role="group" aria-label="Sentence style">
-      <button type="button" id="cf-plausible">Plausible</button>
-      <button type="button" id="cf-surreal">Surreal</button>
-      <span class="note">Same grammar and words either way; only the sentences change.</span>
-    </div>
-    <div id="cf-sentences"></div>
-    <p class="note" id="cf-corpusnote"></p>
-    <p style="margin-top:14px">Task sentence: <span class="tr" id="cf-tasken"></span></p>
-    <p class="note" id="cf-tasknote"></p>
-    <div id="cf-task"></div>
-
-    <h3>Give it to a model</h3>
-    <p>Easy and Standard ask for a translation, which the translated sentences fully determine. Hell gives sixty raw sentences and asks for the grammar instead, since vocabulary can't be recovered without an anchor. The answer key is everything on this page. Seed <span class="L" id="cf-seedecho"></span> regenerates this exact language.</p>
-    <div class="ctl" style="margin-bottom:10px" role="group" aria-label="Difficulty">
+    <h3>The puzzle</h3>
+    <div class="ctl" style="margin-bottom:12px" role="group" aria-label="Difficulty">
       <span class="note">Difficulty</span>
-      <button type="button" id="cf-bank">Easy: translations + word bank</button>
-      <button type="button" id="cf-three">Standard: translations</button>
-      <button type="button" id="cf-hell">Hell: 60 sentences, no clues, structural task</button>
+      <button type="button" id="cf-bank">Easy</button>
+      <button type="button" id="cf-three">Standard</button>
+      <button type="button" id="cf-hell">Hell</button>
     </div>
-    <div class="ctl" style="margin-bottom:10px">
-      <button type="button" id="cf-puzzle">Puzzle</button>
-      <button type="button" id="cf-key">Answer key</button>
-      <button type="button" id="cf-copy">Copy</button>
+    <p class="note" id="cf-diffnote"></p>
+
+    <div id="cf-puzzleview"></div>
+
+    <p class="note" style="margin-top:18px">The same thing as plain text, to hand to a model. Nothing below the fold is in it.</p>
+    <div class="ctl" style="margin-bottom:8px">
+      <button type="button" id="cf-copy">Copy the puzzle</button>
       <span class="note" id="cf-copied"></span>
     </div>
     <textarea id="cf-text" readonly aria-label="Puzzle text"></textarea>
 
-    <h3>Dictionary</h3>
-    <div class="dict" id="cf-dict"></div>
+    <h3>The answer</h3>
+    <p class="note" id="cf-answernote"></p>
+    <textarea id="cf-answer" class="cf-answerbox" aria-label="The model's answer" placeholder="Paste what the model sent back…"></textarea>
+    <div class="ctl" style="margin-top:8px">
+      <button type="button" id="cf-check">Check it</button>
+      <button type="button" id="cf-reveal"></button>
+    </div>
+    <div id="cf-verdict"></div>
+
+    <div id="cf-key" hidden>
+      <p class="note" id="cf-summary"></p>
+
+      <h3>Sounds</h3>
+      <table><tbody id="cf-sounds"></tbody></table>
+      <p class="note" style="margin-top:8px" id="cf-rom"></p>
+
+      <h3>Grammar</h3>
+      <div id="cf-grammar"></div>
+
+      <h3>Numbers</h3>
+      <div class="num" id="cf-nums"></div>
+      <p style="margin-top:10px" id="cf-numprose"></p>
+
+      <h3>The text, glossed</h3>
+      <div class="ctl" style="margin-bottom:14px" role="group" aria-label="Sentence style">
+        <button type="button" id="cf-plausible">Plausible</button>
+        <button type="button" id="cf-surreal">Surreal</button>
+        <span class="note">Same grammar and words either way; only the sentences change.</span>
+      </div>
+      <div id="cf-sentences"></div>
+      <p class="note" id="cf-corpusnote"></p>
+      <p style="margin-top:14px">Task sentence: <span class="tr" id="cf-tasken"></span></p>
+      <div id="cf-task"></div>
+      <p class="note" id="cf-tasknote"></p>
+
+      <h3>The full key, as text</h3>
+      <div class="ctl" style="margin-bottom:8px">
+        <button type="button" id="cf-copykey">Copy the key</button>
+        <span class="note" id="cf-copiedkey"></span>
+      </div>
+      <textarea id="cf-keytext" readonly aria-label="Answer key"></textarea>
+
+      <h3>Dictionary</h3>
+      <div class="dict" id="cf-dict"></div>
+    </div>
   `;
 
   /* ---------------- UI ---------------- */
@@ -801,14 +824,20 @@
   root.innerHTML = TEMPLATE;
 
   const el = (id) => root.querySelector("#" + id);
-  const seedInput = el("cf-seed"), copiedEl = el("cf-copied"), textEl = el("cf-text");
+  const seedInput = el("cf-seed"), textEl = el("cf-text"), keyTextEl = el("cf-keytext"),
+    answerEl = el("cf-answer"), verdictEl = el("cf-verdict"), keyBox = el("cf-key");
+
+  const DIFF = {
+    bank: { label: "Easy", note: "The text, the first few sentences translated, the numerals, and a word bank listing the English meaning of every stem. The task is a translation." },
+    three: { label: "Standard", note: "The text, the first few sentences translated, and the numerals. No word bank — you have to work out which word is which. The task is a translation." },
+    hell: { label: "Hell", note: "Sixty sentences, no translations, no word list, no numerals. Vocabulary can't be recovered without an anchor, so the task asks for the grammar instead: word order, alignment, and every affix you can find." },
+  };
 
   const state = {
     seed: String(Math.floor(Math.random() * 1e6)),
     style: "plausible",
     hints: "bank",
-    mode: "puzzle",
-    showTr: true,
+    revealed: false,
     L: null,
   };
 
@@ -851,34 +880,116 @@
     return out;
   }
 
+  /* a numbered line: "12. thaki muun." */
+  const numbered = (i, text, cls) => h("div." + cls, [h("span.n", i + "."), h("span", text)]);
+
   const setOn = (id, on) => {
     const b = el(id);
     b.classList.toggle("on", on);
     b.setAttribute("aria-pressed", String(on));
   };
 
-  function rebuild() {
-    el("cf-name").textContent = "Forging…";
-    /* let the browser paint before the synchronous generate */
-    setTimeout(() => {
-      state.L = buildLanguage(state.seed, state.style, state.hints === "hell" ? 60 : 30);
-      render();
-    }, 0);
-  }
+  /* ---------------- the puzzle half ---------------- */
+  function renderPuzzle() {
+    const L = state.L, hints = state.hints;
 
-  function render() {
-    const L = state.L;
+    for (const k of ["bank", "three", "hell"]) setOn("cf-" + k, hints === k);
+    el("cf-diffnote").textContent = DIFF[hints].note;
 
     el("cf-name").textContent = L.name;
     el("cf-nameipa").textContent = "[" + L.nameIpa + "]";
+    /* nothing here may describe the grammar: Hell asks for exactly that */
+    el("cf-tally").textContent = `Seed ${L.seed} · ${L.sentences.length} sentences · ${DIFF[hints].label}`;
+    el("cf-spec").textContent = surfaceOf(L.sentences[0]);
+
+    const view = [];
+    view.push(h("p", `A text in ${L.name}${hints === "hell"
+      ? ", with no translations. Work out the structure."
+      : ". Work out the grammar and the vocabulary, then do the task at the end."}`));
+
+    const text = h("div.corpus");
+    L.sentences.forEach((s, i) => text.appendChild(numbered(i + 1, surfaceOf(s), "cline")));
+    view.push(text);
+
+    if (hints !== "hell") {
+      view.push(h("p.subhead", `Known: sentences 1–${L.knownCount} mean:`));
+      const tr = h("div.corpus");
+      L.sentences.slice(0, L.knownCount).forEach((s, i) => tr.appendChild(numbered(i + 1, s.en, "cline eng")));
+      view.push(tr);
+      view.push(h("p", "Numerals: " + [1, 2, 3, 4, 5].map((n) => `${n} = ${numWord(L, n)}`).join(", ") + "."));
+    }
+    if (hints === "bank") {
+      const r = makeRng(L.seed + "|bank");
+      const stems = r.shuffle([...new Set(L.sentences.flatMap((s) => s.stems))]);
+      view.push(h("p.subhead", "Word bank"));
+      view.push(h("p.note", "The English meaning of every stem in the text, shuffled. Grammatical affixes and particles are not listed."));
+      view.push(h("p", stems.join(", ") + "."));
+    }
+
+    view.push(h("p.subhead", "Task"));
+    if (hints === "hell") {
+      const ol = h("div.corpus");
+      HELL_TASK.forEach((t) => ol.appendChild(h("div.cline", [h("span", t)])));
+      view.push(ol);
+    } else {
+      view.push(h("p", [document.createTextNode(`Translate into ${L.name}: `), h("span.tr", `"${L.task.en}"`)]));
+    }
+    fill(el("cf-puzzleview"), view);
+
+    textEl.value = puzzleText(L, hints);
+  }
+
+  /* ---------------- checking an answer ----------------
+     Models explain themselves, so the expected sentence is looked for inside
+     whatever came back rather than compared to the whole of it. Apostrophes are
+     left alone: they spell glottal stops and ejectives, so they are letters. */
+  const normalize = (s) => s.toLowerCase().replace(/[.,;:!?()[\]"“”]/g, " ").replace(/\s+/g, " ").trim();
+
+  function check() {
+    const L = state.L, given = answerEl.value.trim();
+    if (!given) {
+      fill(verdictEl, [h("p.note", "Paste an answer first, or just reveal the key.")]);
+      return;
+    }
+    if (state.hints === "hell") {
+      fill(verdictEl, [h("p.verdict.open", "Hell asks for an analysis, not a sentence, so there is nothing to match against."),
+        h("p.note", "Reveal the key and compare it yourself — the grammar section and the four numbered answers at the bottom of the key text are what to read against.")]);
+      state.revealed = true;
+      renderAnswer();
+      return;
+    }
+    const want = surfaceOf(L.task), got = normalize(given);
+    const hit = got.includes(normalize(want));
+    fill(verdictEl, [
+      h("p.verdict." + (hit ? "right" : "wrong"), hit ? "Correct." : "Not a match."),
+      h("p.note", hit
+        ? "The expected sentence appears in the answer."
+        : "The expected sentence does not appear in the answer. Word order or a single affix is usually what went wrong — the glosses below show where."),
+      h("div.compare", [
+        h("div", [h("span.clabel", "Expected"), h("span.L", want)]),
+        h("div", [h("span.clabel", "Given"), h("span.given", given.length > 400 ? given.slice(0, 400) + "…" : given)]),
+      ]),
+    ]);
+    state.revealed = true;
+    renderAnswer();
+  }
+
+  /* ---------------- the answer half ---------------- */
+  function renderAnswer() {
+    const L = state.L;
+
+    el("cf-answernote").textContent = state.hints === "hell"
+      ? "Paste the model's analysis here to keep it next to the key, then reveal. Hell is graded by eye."
+      : "Paste the model's answer here and check it before you look. Committing first is the whole point — it is the difference between a test and a reading.";
+    el("cf-reveal").textContent = state.revealed ? "Hide the answer" : "Reveal the answer";
+    el("cf-reveal").setAttribute("aria-expanded", String(state.revealed));
+    keyBox.hidden = !state.revealed;
+    if (!state.revealed) return;
+
     el("cf-summary").textContent =
       `${L.ph.cons.length + L.ph.vowels.length} sounds, ${L.order} order, ` +
       `${L.alignment === "ergabs" ? "ergative" : L.alignment === "nomacc" ? "accusative" : "no case"} alignment` +
       `${L.evid ? ", evidential verbs" : ""}${L.classes ? `, ${L.classes.n} noun classes` : ""}, base-${L.numBase} numbers.`;
-
-    const first = L.sentences[0];
-    el("cf-spec").textContent = surfaceOf(first);
-    el("cf-spec-tr").textContent = first.en;
 
     /* sounds */
     const row = (label, valNode) => h("tr", [h("td", label), valNode]);
@@ -908,30 +1019,21 @@
       `Counting is base ${L.numBase}. Higher numbers are multiples of ${L.numBase} plus a remainder: ` +
       `${L.numBase + 3} is ${numWord(L, L.numBase + 3)}, ${2 * L.numBase + 5} is ${numWord(L, 2 * L.numBase + 5)}.`;
 
-    /* text */
-    setOn("cf-glossed", state.showTr); setOn("cf-raw", !state.showTr);
+    /* glossed text */
     setOn("cf-plausible", state.style === "plausible"); setOn("cf-surreal", state.style === "surreal");
-    fill(el("cf-sentences"), L.sentences.slice(0, 12).map((s) => sentenceNode(s, state.showTr)));
+    fill(el("cf-sentences"), L.sentences.map((s) => sentenceNode(s, true)));
     el("cf-corpusnote").textContent =
       `Sentences 1–${L.knownCount} are the ones the puzzle translates. The designed set varies one animate noun, ` +
       `one inanimate noun, one transitive and one intransitive verb a feature at a time; the rest are random, plus a few ` +
-      `added so every grammatical marker appears at least twice and every word-shape the task needs is attested. ` +
-      `All ${L.sentences.length} are in the corpus below.`;
+      `added so every grammatical marker appears at least twice and every word-shape the task needs is attested.`;
     el("cf-tasken").textContent = L.task.en;
+    fill(el("cf-task"), [sentenceNode(L.task, true)]);
     el("cf-tasknote").textContent =
       `Every stem in it is ${L.task.stemInfo.every((st) => L.solvability.known.has(st.en)) ? "pinned by" : "pinned by, or derivable from,"} ` +
       `the ${L.knownCount} translated sentences, and every word-shape it needs is attested somewhere in the corpus. ` +
-      `The answer key reports the check.`;
-    fill(el("cf-task"), [sentenceNode(L.task, state.showTr)]);
+      `The key text below reports that check in full.`;
 
-    /* give it to a model */
-    el("cf-seedecho").textContent = L.seed;
-    setOn("cf-bank", state.hints === "bank");
-    setOn("cf-three", state.hints === "three");
-    setOn("cf-hell", state.hints === "hell");
-    setOn("cf-puzzle", state.mode === "puzzle");
-    setOn("cf-key", state.mode === "key");
-    textEl.value = state.mode === "puzzle" ? puzzleText(L, state.hints) : keyText(L);
+    keyTextEl.value = keyText(L);
 
     /* dictionary */
     fill(el("cf-dict"), dictionary(L).map((r) => {
@@ -940,6 +1042,21 @@
       if (r.cls) d.appendChild(h("span.note", " · " + r.cls));
       return d;
     }));
+  }
+
+  const render = () => { renderPuzzle(); renderAnswer(); };
+
+  function rebuild() {
+    el("cf-name").textContent = "Forging…";
+    /* a new language means a new puzzle: close the key and drop the old answer */
+    state.revealed = false;
+    answerEl.value = "";
+    verdictEl.textContent = "";
+    /* let the browser paint before the synchronous generate */
+    setTimeout(() => {
+      state.L = buildLanguage(state.seed, state.style, state.hints === "hell" ? 60 : 30);
+      render();
+    }, 0);
   }
 
   /* ---------------- events ---------------- */
@@ -954,21 +1071,23 @@
     if (e.key === "Enter") { e.preventDefault(); state.seed = seedInput.value; rebuild(); }
   });
 
-  onClick("cf-glossed", () => { state.showTr = true; render(); });
-  onClick("cf-raw", () => { state.showTr = false; render(); });
-  for (const s of ["plausible", "surreal"]) onClick("cf-" + s, () => { if (state.style !== s) { state.style = s; rebuild(); } });
-  /* hints changes the corpus size, so the language is rebuilt; grammar and lexicon
-     are unchanged because they are drawn before any sentence is generated */
+  /* difficulty changes the corpus size, so the language is rebuilt; grammar and
+     lexicon are unchanged because they are drawn before any sentence is generated */
   for (const k of ["bank", "three", "hell"]) onClick("cf-" + k, () => { if (state.hints !== k) { state.hints = k; rebuild(); } });
-  onClick("cf-puzzle", () => { state.mode = "puzzle"; render(); });
-  onClick("cf-key", () => { state.mode = "key"; render(); });
+  for (const s of ["plausible", "surreal"]) onClick("cf-" + s, () => { if (state.style !== s) { state.style = s; rebuild(); } });
 
-  onClick("cf-copy", async () => {
-    try { await navigator.clipboard.writeText(textEl.value); copiedEl.textContent = "Copied"; }
-    catch { copiedEl.textContent = "Select the text and copy it"; }
-    setTimeout(() => { copiedEl.textContent = ""; }, 2500);
+  onClick("cf-check", check);
+  onClick("cf-reveal", () => { state.revealed = !state.revealed; renderAnswer(); });
+
+  const copier = (btn, src, label) => onClick(btn, async () => {
+    try { await navigator.clipboard.writeText(src.value); el(label).textContent = "Copied"; }
+    catch { el(label).textContent = "Select the text and copy it"; }
+    setTimeout(() => { el(label).textContent = ""; }, 2500);
   });
+  copier("cf-copy", textEl, "cf-copied");
+  copier("cf-copykey", keyTextEl, "cf-copiedkey");
   textEl.addEventListener("focus", () => textEl.select());
+  keyTextEl.addEventListener("focus", () => keyTextEl.select());
 
   seedInput.value = state.seed;
   rebuild();
