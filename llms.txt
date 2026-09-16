@@ -22,16 +22,29 @@ Open and Blind are generated so a careful solver never has to guess. Hell is
 generated so at least one guess is forced. Walking back over ground you have
 already visited is always safe.
 
-Move by activating a grid button — each is labelled `row R column C` — or with
-the arrow keys. There is also a move box: type a string like `NNEE` and it
-tells you how it read it and where that lands before you commit, then applies
-the moves in order, stopping at the first guard, flag or edge. A batch is never
-more dangerous than the same moves made one at a time.
+Cells are named by column letter and row number: columns run A–J from the left
+(A–N on Hell), rows 1–10 from the top. `A1` is the start, `J10` the goal. A name
+cannot be read in the wrong order the way a pair of numbers can.
+
+Move by activating a grid button — each is `aria-label`led with its name, `C5` —
+or with the arrow keys. There is also a move box, which takes either notation:
+
+```
+NNEE           directions
+B2 C2 C3       cell names, each next to the one before
+```
+
+A bare letter is a direction; a letter with a number after it is a cell, which
+matters on Hell where the columns reach N. The box echoes how it read your input
+and where that lands *before* you commit, then applies the moves in order,
+stopping at the first guard, flag or edge — so a batch is never more dangerous
+than the same moves made one at a time, and a mis-typed path is rejected by name
+rather than silently walked.
 
 The board is also rendered as plain text in a box below the grid, if you would
 rather read it that way than read the DOM. Its columns are separated by `|`
 rather than by aligned spacing, so it survives a relay that collapses
-whitespace, and coordinates there are written (row, column).
+whitespace.
 
 https://tacituscustosgames.com/arcade.html?patrol_mode=blind&patrol_seed=77777
 

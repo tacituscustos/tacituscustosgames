@@ -25,6 +25,24 @@
     hell: { label: "Hell", n: 14, guards: 46, total: false, reveal: "step", guess: "forced", blurb: "Blind, larger, and the guard total is withheld. Generated so at least one guess is forced." },
   };
 
+  /* ---------------- naming ----------------
+     Columns are letters, rows are numbers, so a cell name cannot be read in the
+     wrong order the way a pair of numbers can. Rows are 1-based to match the
+     spreadsheet/chess convention a reader will already have.
+
+     On a 14-wide board the columns reach N, so "N" and "E" are both direction
+     letters and column letters. A bare letter is a direction; a letter with a
+     number after it is a cell. */
+  const COL = (c) => String.fromCharCode(65 + c);
+  const cellName = (n, i) => COL(i % n) + (Math.floor(i / n) + 1);
+  function parseCell(n, tok) {
+    const m = /^([A-Z])(\d+)$/.exec(tok);
+    if (!m) return null;
+    const c = m[1].charCodeAt(0) - 65, r = Number(m[2]) - 1;
+    if (c < 0 || c >= n || r < 0 || r >= n) return null;
+    return r * n + c;
+  }
+
   /* ---------------- geometry ---------------- */
   const idx = (n, r, c) => r * n + c;
   const neigh = (n, i) => {
@@ -142,7 +160,7 @@
   function stateText(G, visited, flags, pos, status) {
     const { n, tier, counts, guardSet } = G;
     const lines = [];
-    lines.push(`Patrol — ${tier.label}. ${n}×${n} intersections, rows and columns numbered 0–${n - 1} from the top-left. Coordinates are written (row, column). Start at (0,0), reach (${n - 1},${n - 1}).`);
+    lines.push(`Patrol — ${tier.label}. ${n}×${n} intersections. Columns are lettered A–${COL(n - 1)} from the left; rows are numbered 1–${n} from the top. A cell is its column letter followed by its row number, so ${cellName(n, 0)} is the top-left corner and ${cellName(n, n - 1)} is the top-right. Start at ${cellName(n, 0)}, reach ${cellName(n, n * n - 1)}.`);
     lines.push(`Guards stand on some intersections; stepping onto one ends the run. Every intersection's number is the count of guards on its 4 neighbouring intersections (up, down, left, right). Guards' own intersections have numbers too.`);
     lines.push(`The start, the goal, and the four intersections next to each of them never hold a guard, so the first move is always safe.`);
     if (tier.total) lines.push(`Total guards: ${guardSet.size}.`); else lines.push("Total guards: not given.");
@@ -151,12 +169,12 @@
     if (tier.guess === "forced") lines.push("This board is built so that at least one guess is forced. Deduction alone will not get you across; at some point you will have to pick a cell you cannot prove safe.");
     else lines.push("This board is built so that a careful solver never has to guess. Every step across can be deduced from the numbers; if you cannot see a safe move, there is one you have not deduced yet.");
     if (!G.analysis.solvable) lines.push("Caveat: the generator could not find a board meeting that guarantee for this seed within its attempt limit, so this particular board may not meet it.");
-    if (tier.reveal === "all") lines.push("All numbers are visible. Submit a full path as a list of coordinates.");
-    else lines.push("You see a number only on intersections you have stood on. Moving back over visited ground is safe. Reply with one or more moves as letters — N, S, E, W — for example NNEE. They are applied in order and stop at the first guard, flag or edge, so a batch is never more dangerous than the same moves made one at a time.");
+    if (tier.reveal === "all") lines.push(`All numbers are visible. Submit the whole route as a list of cell names, each next to the one before, for example ${cellName(n, 0)} ${cellName(n, n)} ${cellName(n, n + 1)}.`);
+    else lines.push("You see a number only on intersections you have stood on. Moving back over visited ground is safe. Reply with one or more moves, in either notation: directions, as in NNEE, or cell names, as in B2 C2 C3, each next to the one before. A bare letter is a direction; a letter with a number after it is a cell, which matters on wide boards where N and E are also column letters. Moves are applied in order and stop at the first guard, flag or edge, so a batch is never more dangerous than the same moves made one at a time.");
     lines.push("", "Legend: number = count; ? = unknown; S = start; G = goal; @ = you; ! = your flag." + (status === "caught" ? " X = guard (revealed)." : ""));
     /* the corner field keeps the header the same shape as a data row, so a parser
        can split every line on "|" and get the same field count */
-    lines.push("  " + " | " + [...Array(n)].map((_, c) => String(c).padStart(2)).join(" | "));
+    lines.push("  " + " | " + [...Array(n)].map((_, c) => COL(c).padStart(2)).join(" | "));
     for (let r = 0; r < n; r++) {
       const row = [];
       for (let c = 0; c < n; c++) {
@@ -171,9 +189,9 @@
         else s = "?";
         row.push(s.padStart(2));
       }
-      lines.push(String(r).padStart(2) + " | " + row.join(" | "));
+      lines.push(String(r + 1).padStart(2) + " | " + row.join(" | "));
     }
-    if (tier.reveal !== "all") lines.push("", `You are at (${Math.floor(pos / n)},${pos % n}). Count here: ${counts[pos]}.`);
+    if (tier.reveal !== "all") lines.push("", `You are at ${cellName(n, pos)}. Count here: ${counts[pos]}.`);
     return lines.join("\n");
   }
 
@@ -196,7 +214,7 @@
     <div class="grid" id="pt-grid" role="grid" aria-label="Patrol board"></div>
     <p class="note">Tap a highlighted neighbour to move, or use the arrow keys. Standing on an intersection shows its count. Flagged intersections can't be stepped on by accident.</p>
     <div class="ctl" style="margin-top:6px">
-      <input type="text" id="pt-moves" aria-label="Moves, as N S E W letters" placeholder="NNEE…" autocomplete="off">
+      <input type="text" id="pt-moves" aria-label="Moves, as directions or cell names" placeholder="NNEE or B2 C2 C3…" autocomplete="off">
       <button type="button" id="pt-go">Move</button>
     </div>
     <p class="note" id="pt-preview"></p>
@@ -262,19 +280,34 @@
     const n = state.G.n;
     const cellPx = Math.min(32, Math.floor(340 / n));
     /* 1fr tracks so the board shrinks to fit narrow screens instead of overflowing */
-    gridEl.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
-    gridEl.style.width = `min(100%, ${n * cellPx + (n - 1) * 2}px)`;
+    gridEl.style.gridTemplateColumns = `auto repeat(${n}, 1fr)`;
+    gridEl.style.width = `min(100%, ${n * cellPx + (n - 1) * 2 + 22}px)`;
     gridEl.textContent = "";
     cells = [];
-    for (let i = 0; i < n * n; i++) {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "cell";
-      b.style.fontSize = (cellPx < 26 ? 11 : 14) + "px";
-      b.dataset.i = String(i);
-      b.setAttribute("aria-label", `row ${Math.floor(i / n)} column ${i % n}`);
-      gridEl.appendChild(b);
-      cells.push(b);
+    const hdr = (text, cls) => {
+      const d = document.createElement("div");
+      d.className = "hdr" + (cls ? " " + cls : "");
+      d.textContent = text;
+      d.setAttribute("aria-hidden", "true");
+      gridEl.appendChild(d);
+      return d;
+    };
+    hdr("", "corner");
+    for (let c = 0; c < n; c++) hdr(COL(c));
+    for (let r = 0; r < n; r++) {
+      hdr(String(r + 1), "rowhdr");
+      for (let c = 0; c < n; c++) {
+        const i = r * n + c;
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "cell";
+        b.style.fontSize = (cellPx < 26 ? 11 : 14) + "px";
+        b.dataset.i = String(i);
+        b.dataset.cell = cellName(n, i);
+        b.setAttribute("aria-label", cellName(n, i));
+        gridEl.appendChild(b);
+        cells.push(b);
+      }
     }
   }
 
@@ -389,7 +422,7 @@
      The preview is computed without consulting guardSet — it may only use what
      the player already knows (edges and their own flags), never where a guard
      is. */
-  const rc = (i) => `(${Math.floor(i / state.G.n)},${i % state.G.n})`;
+  const rc = (i) => cellName(state.G.n, i);
   function stepTarget(pos, d) {
     const n = state.G.n, r = Math.floor(pos / n), c = pos % n;
     if (d === "N") return r > 0 ? pos - n : null;
@@ -398,28 +431,43 @@
     if (d === "E") return c < n - 1 ? pos + 1 : null;
     return null;
   }
+  /* a token is either a direction (bare letter) or a cell (letter + number) */
   function parseMoves(s) {
     const moves = [], bad = [];
-    for (const ch of String(s).toUpperCase()) {
-      if ("NSEW".includes(ch)) moves.push(ch);
-      else if (!/[\s,;.>\u2192-]/.test(ch)) bad.push(ch);
+    const toks = String(s).toUpperCase().match(/[A-Z]\d+|[A-Z]|[^\sA-Z0-9,;.>\u2192-]+|\d+/g) || [];
+    for (const t of toks) {
+      if (/^[A-Z]\d+$/.test(t)) moves.push({ kind: "cell", tok: t });
+      else if (/^[NSEW]$/.test(t)) moves.push({ kind: "dir", tok: t });
+      else bad.push(t);
     }
     return { moves, bad };
+  }
+  /* where a move lands, using only what the player already knows */
+  function resolveMove(pos, m) {
+    const n = state.G.n;
+    if (m.kind === "dir") {
+      const t = stepTarget(pos, m.tok);
+      return t === null ? { err: "runs off the edge" } : { to: t };
+    }
+    const t = parseCell(n, m.tok);
+    if (t === null) return { err: `is not a cell on this board` };
+    if (!neigh(n, pos).includes(t)) return { err: `is not next to ${cellName(n, pos)}` };
+    return { to: t };
   }
   function previewMoves() {
     const el2 = el("pt-preview"), raw = el("pt-moves").value.trim();
     if (!raw) { el2.textContent = ""; return; }
     const { moves, bad } = parseMoves(raw);
-    if (bad.length) { el2.textContent = `Not a move: ${[...new Set(bad)].join(" ")}. Use N, S, E and W.`; return; }
+    if (bad.length) { el2.textContent = `Not a move: ${[...new Set(bad)].join(" ")}. Use directions N, S, E, W or cell names like B2.`; return; }
     if (!moves.length) { el2.textContent = ""; return; }
     let pos = state.run.pos, blocked = null;
     for (let k = 0; k < moves.length; k++) {
-      const t = stepTarget(pos, moves[k]);
-      if (t === null) { blocked = `${k + 1} (${moves[k]}) runs off the edge`; break; }
-      if (state.run.flags.has(t)) { blocked = `${k + 1} (${moves[k]}) hits your own flag at ${rc(t)}`; break; }
-      pos = t;
+      const r = resolveMove(pos, moves[k]);
+      if (r.err) { blocked = `${k + 1} (${moves[k].tok}) ${r.err}`; break; }
+      if (state.run.flags.has(r.to)) { blocked = `${k + 1} (${moves[k].tok}) hits your own flag at ${rc(r.to)}`; break; }
+      pos = r.to;
     }
-    el2.textContent = `Reads as ${moves.join(",")} — ${moves.length} move${moves.length > 1 ? "s" : ""}` +
+    el2.textContent = `Reads as ${moves.map((m) => m.tok).join(",")} — ${moves.length} move${moves.length > 1 ? "s" : ""}` +
       (blocked ? `, but move ${blocked}. It would stop at ${rc(pos)}.` : `, landing at ${rc(pos)}.`);
   }
   function runMoves() {
@@ -430,11 +478,11 @@
     const wasFlagging = state.flagMode;
     state.flagMode = false;
     let done = 0, stopped = null;
-    for (const d of moves) {
-      const t = stepTarget(state.run.pos, d);
-      if (t === null) { stopped = `move ${done + 1} (${d}) would leave the grid`; break; }
-      if (state.run.flags.has(t)) { stopped = `move ${done + 1} (${d}) is blocked by your flag at ${rc(t)}`; break; }
-      tap(t);
+    for (const m of moves) {
+      const r = resolveMove(state.run.pos, m);
+      if (r.err) { stopped = `move ${done + 1} (${m.tok}) ${r.err}`; break; }
+      if (state.run.flags.has(r.to)) { stopped = `move ${done + 1} (${m.tok}) is blocked by your flag at ${rc(r.to)}`; break; }
+      tap(r.to);
       done++;
       if (state.run.status !== "playing") break;
     }
@@ -444,7 +492,7 @@
       state.run.status === "caught" ? `Applied ${done} of ${moves.length}. Caught on move ${done} at ${where}.`
       : state.run.status === "through" ? `Applied ${done} of ${moves.length}. Through at ${where}.`
       : stopped ? `Applied ${done} of ${moves.length}, then stopped: ${stopped}. You are at ${where}.`
-      : `Applied ${moves.join(",")}. You are at ${where}.`;
+      : `Applied ${moves.map((m) => m.tok).join(",")}. You are at ${where}.`;
     if (!stopped) el("pt-moves").value = "";
     render();
   }

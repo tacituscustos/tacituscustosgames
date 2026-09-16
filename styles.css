@@ -459,3 +459,15 @@ textarea:focus-visible {
   overflow-x: auto;
   white-space: pre;
 }
+
+/* grid headers: letters across the top, numbers down the side */
+.pt .hdr {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--muted);
+  user-select: none;
+  -webkit-user-select: none;
+}
+.pt .hdr.rowhdr { padding-right: 4px; min-width: 16px; }

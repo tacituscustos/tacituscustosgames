@@ -92,6 +92,13 @@ not a debug feature: playable by hand, legible as text.
 Two properties of Patrol's text came out of playtesting and are easy to undo by
 accident:
 
+- **Cells are named by column letter and row number** (`C5`), rows 1-based, via
+  `cellName()` / `parseCell()`. A pair of numbers can be read in the wrong order
+  and a name cannot, which is why it replaced `(row, column)`. Note the
+  collision it creates: on a 14-wide board the columns reach N, so `N` and `E`
+  are both directions and column letters. The rule is that a bare letter is a
+  direction and a letter with a number is a cell — stated in the protocol text,
+  not just implemented in the parser.
 - **Columns are separated by `|`, not by run-length of spaces**, and the header
   carries a corner field so every line splits into the same number of fields.
   A relay that collapses whitespace — a chat UI, a paste through a
