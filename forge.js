@@ -760,6 +760,12 @@
       <button type="button" id="cf-hell">Hell</button>
     </div>
     <p class="note" id="cf-diffnote"></p>
+    <div class="ctl" style="margin-bottom:12px" role="group" aria-label="Sentence style">
+      <span class="note">Sentences</span>
+      <button type="button" id="cf-plausible">Plausible</button>
+      <button type="button" id="cf-surreal">Surreal</button>
+    </div>
+    <p class="note" id="cf-stylenote"></p>
 
     <div id="cf-puzzleview"></div>
 
@@ -794,11 +800,6 @@
       <p style="margin-top:10px" id="cf-numprose"></p>
 
       <h3>The text, glossed</h3>
-      <div class="ctl" style="margin-bottom:14px" role="group" aria-label="Sentence style">
-        <button type="button" id="cf-plausible">Plausible</button>
-        <button type="button" id="cf-surreal">Surreal</button>
-        <span class="note">Same grammar and words either way; only the sentences change.</span>
-      </div>
       <div id="cf-sentences"></div>
       <p class="note" id="cf-corpusnote"></p>
       <p style="margin-top:14px">Task sentence: <span class="tr" id="cf-tasken"></span></p>
@@ -826,6 +827,15 @@
   const el = (id) => root.querySelector("#" + id);
   const seedInput = el("cf-seed"), textEl = el("cf-text"), keyTextEl = el("cf-keytext"),
     answerEl = el("cf-answer"), verdictEl = el("cf-verdict"), keyBox = el("cf-key");
+
+  /* Which style is in force changes what a solver may assume about the
+     sentences, so it belongs with the puzzle rather than the answer. Concealing
+     it would mislead someone who reasonably expected plausibility, which is
+     unfairness rather than difficulty. */
+  const STYLE = {
+    plausible: { label: "Plausible", note: "The sentences describe things that could happen: people eat bread, wolves hunt birds. You may use that." },
+    surreal: { label: "Surreal", note: "The sentences are grammatical but need not make sense: bread may eat a wolf. You may not lean on plausibility here. Same grammar and same words either way — only the sentences change." },
+  };
 
   const DIFF = {
     bank: { label: "Easy", note: "The text, the first few sentences translated, the numerals, and a word bank listing the English meaning of every stem. The task is a translation." },
@@ -930,7 +940,11 @@
     el("cf-name").textContent = L.name;
     el("cf-nameipa").textContent = "[" + L.nameIpa + "]";
     /* nothing here may describe the grammar: Hell asks for exactly that */
-    el("cf-tally").textContent = `Seed ${L.seed} · ${L.sentences.length} sentences · ${DIFF[hints].label}`;
+    el("cf-tally").textContent =
+      `Seed ${L.seed} · ${L.sentences.length} sentences · ${DIFF[hints].label} · ${STYLE[state.style].label}`;
+    setOn("cf-plausible", state.style === "plausible");
+    setOn("cf-surreal", state.style === "surreal");
+    el("cf-stylenote").textContent = STYLE[state.style].note;
     el("cf-spec").textContent = surfaceOf(L.sentences[0]);
 
     const view = [];
@@ -1051,7 +1065,6 @@
       `${L.numBase + 3} is ${numWord(L, L.numBase + 3)}, ${2 * L.numBase + 5} is ${numWord(L, 2 * L.numBase + 5)}.`;
 
     /* glossed text */
-    setOn("cf-plausible", state.style === "plausible"); setOn("cf-surreal", state.style === "surreal");
     fill(el("cf-sentences"), L.sentences.map((s) => sentenceNode(s, true)));
     el("cf-corpusnote").textContent =
       `Sentences 1–${L.knownCount} are the ones the puzzle translates. The designed set varies one animate noun, ` +

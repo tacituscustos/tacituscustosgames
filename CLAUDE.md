@@ -103,6 +103,12 @@ line ("SVO order, ergative alignment…") lives there because it would otherwise
 give away most of what Hell mode asks for. When adding anything to this machine,
 ask which half it belongs in.
 
+The converse also holds: **anything that changes what a solver may assume belongs
+in the visible half.** The Plausible/Surreal toggle is there for that reason — a
+solver who expects semantic plausibility and is handed a surreal corpus has been
+misled, which is unfairness rather than difficulty. Difficulty comes from
+withholding answers, never from withholding the rules.
+
 Answer checking normalizes punctuation but **leaves apostrophes alone** — they
 romanize glottal stops and ejectives, so they are letters, not punctuation. The
 expected sentence is matched as a substring so a model can show its reasoning
