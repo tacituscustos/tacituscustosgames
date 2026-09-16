@@ -144,7 +144,13 @@
     const lines = [];
     lines.push(`Patrol — ${tier.label}. ${n}×${n} intersections, rows and columns numbered 0–${n - 1} from the top-left. Start at (0,0), reach (${n - 1},${n - 1}).`);
     lines.push(`Guards stand on some intersections; stepping onto one ends the run. Every intersection's number is the count of guards on its 4 neighbouring intersections (up, down, left, right). Guards' own intersections have numbers too.`);
+    lines.push(`The start, the goal, and the four intersections next to each of them never hold a guard, so the first move is always safe.`);
     if (tier.total) lines.push(`Total guards: ${guardSet.size}.`); else lines.push("Total guards: not given.");
+    /* the tier's guarantee decides whether gambling is ever correct play, so a
+       reader who only has the text needs it as much as one looking at the page */
+    if (tier.guess === "forced") lines.push("This board is built so that at least one guess is forced. Deduction alone will not get you across; at some point you will have to pick a cell you cannot prove safe.");
+    else lines.push("This board is built so that a careful solver never has to guess. Every step across can be deduced from the numbers; if you cannot see a safe move, there is one you have not deduced yet.");
+    if (!G.analysis.solvable) lines.push("Caveat: the generator could not find a board meeting that guarantee for this seed within its attempt limit, so this particular board may not meet it.");
     if (tier.reveal === "all") lines.push("All numbers are visible. Submit a full path as a list of coordinates.");
     else lines.push("You see a number only on intersections you have stood on. Moving back over visited ground is safe. Reply with one move: N, S, E or W.");
     lines.push("", "Legend: number = count; ? = unknown; S = start; G = goal; @ = you; ! = your flag." + (status === "caught" ? " X = guard (revealed)." : ""));
