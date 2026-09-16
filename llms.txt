@@ -16,11 +16,22 @@ orthogonal neighbours. Guards' own intersections have numbers too.
 
 - `open` — 10×10, 26 guards, every count visible, total given. Pure deduction, no risk.
 - `blind` — 10×10, 20 guards, a count is learned only by standing on it, total given.
-- `hell` — 14×14, 46 guards, counts learned by standing, total withheld.
+- `hell` — 14×14, 46 guards, counts learned by standing, total given.
 
-Open and Blind are generated so a careful solver never has to guess. Hell is
-generated so at least one guess is forced. Walking back over ground you have
-already visited is always safe.
+Open and Blind are generated so a careful solver never has to guess. Walking
+back over ground you have already visited is always safe.
+
+Hell is generated so a guess is forced — and so that guess is worth making well.
+A board ships only when the exact posterior over guard placements, given what
+you have been shown, names one frontier cell strictly safest, and when a simple
+risk-per-neighbour heuristic picks a different cell. So the obvious move is
+wrong by construction and the work is in computing the real probabilities.
+Measured at the forced guess: a solver using the exact posterior dies about 15%
+of the time, the naive heuristic about 38%, and guessing blind about 48%.
+Avoiding the naive cell is not a shortcut — it scores 49%, worse than the rule
+it is avoiding. Hell states its guard total because that is what makes the
+posterior computable at all; without it most frontiers come out flat at one
+half.
 
 Cells are named by column letter and row number: columns run A–J from the left
 (A–N on Hell), rows 1–10 from the top. `A1` is the start, `J10` the goal. A name
