@@ -127,6 +127,14 @@ Patrol's arrow-key handler listens on `document`, so it checks
 another cabinet move the Patrol pawn. Any new document-level listener needs the
 same guard.
 
+### `llms.txt`
+
+`llms.txt` at the site root describes both machines and the URL scheme for a
+model arriving without a person. It documents the query parameters, so **it goes
+stale the moment they change** — the URL test suite parses it and loads every
+link it contains, which is what keeps it honest. Update it alongside any change
+to parameter names, tier names, grid sizes or guard counts.
+
 ## Deployment
 
 GitHub Pages, from `main`, root. Pushing to `main` deploys. See
