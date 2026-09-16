@@ -743,7 +743,7 @@
       <button type="button" id="cf-roll">New language</button>
     </div>
     <h2>Language Forge</h2>
-    <p class="note" style="margin-top:6px">A whole language out of a seed — sounds, grammar, words — and a puzzle in it that is checked to be solvable from the clues you're given. Every language on this page has never existed before.</p>
+    <p class="note" style="margin-top:6px">A whole language out of a seed — sounds, grammar, words — and a puzzle in it. Every stem the task needs is checked to be recoverable from the translated sentences before the puzzle is shown; its affixes you work out yourself. Every language on this page has never existed before.</p>
 
     <div class="cf-head">
       <div class="langname" id="cf-name"></div>
@@ -817,6 +817,33 @@
       <div class="dict" id="cf-dict"></div>
     </div>
   `;
+
+  /* ---------------- affix accounting (added after the port) ----------------
+     pinnedStems() asks whether a solver can pin the task's *stems* from the
+     translated sentences, and correctly counts only those. Nothing asks the
+     same question of the task's affixes, and the answer is usually no: the task
+     is always negated while no translated sentence is, so NEG in particular is
+     never explained by a translation. That is fine as a puzzle — identifying it
+     by elimination is the best reasoning step in the machine — but it has to be
+     disclosed, or a solver hunting for a translation that does not exist will
+     conclude the puzzle is broken.
+
+     Numerals are excluded: the puzzle hands them over in its own line. */
+  const glossTags = (s) => s.words.flatMap((w) => w.gloss.split("-")).filter((g) => /^[A-Z0-9]+$/.test(g));
+  function taskAffixes(L) {
+    const explained = new Set();
+    for (const s of L.sentences) if (s.known) for (const g of glossTags(s)) explained.add(g);
+    const need = [...new Set(glossTags(L.task))].filter((g) => !/^\d+$/.test(g));
+    return { pinned: need.filter((g) => explained.has(g)), elimination: need.filter((g) => !explained.has(g)) };
+  }
+  function affixReport(L) {
+    const a = taskAffixes(L);
+    return ["", "MORPHEME CHECK",
+      `Task affixes shown in a translated sentence: ${a.pinned.join(", ") || "none"}.`,
+      `Task affixes appearing only in untranslated sentences, to be identified by elimination: ${a.elimination.join(", ") || "none"}.`,
+      "Numerals are excluded; the puzzle supplies them directly.",
+    ].join("\n");
+  }
 
   /* ---------------- UI ---------------- */
   const root = document.getElementById("forge");
@@ -978,6 +1005,8 @@
       view.push(ol);
     } else {
       view.push(h("p", [document.createTextNode(`Translate into ${L.name}: `), h("span.tr", `"${L.task.en}"`)]));
+      /* what a solver may assume belongs in the visible half */
+      view.push(h("p.note", "Every stem this needs is pinned by the translated sentences above, or derivable from ones that are. Its grammatical affixes are not all pinned that way: some occur in the text but never in a translated sentence, and have to be identified by elimination against the task itself. That is part of the puzzle rather than an omission — if you cannot find a translation explaining an affix, you are not missing one."));
     }
     fill(el("cf-puzzleview"), view);
 
@@ -1072,12 +1101,15 @@
       `added so every grammatical marker appears at least twice and every word-shape the task needs is attested.`;
     el("cf-tasken").textContent = L.task.en;
     fill(el("cf-task"), [sentenceNode(L.task, true)]);
+    const aff = taskAffixes(L);
     el("cf-tasknote").textContent =
       `Every stem in it is ${L.task.stemInfo.every((st) => L.solvability.known.has(st.en)) ? "pinned by" : "pinned by, or derivable from,"} ` +
       `the ${L.knownCount} translated sentences, and every word-shape it needs is attested somewhere in the corpus. ` +
-      `The key text below reports that check in full.`;
+      `Of its affixes, ${aff.pinned.length ? aff.pinned.join(", ") + " appear" : "none appear"} in a translated sentence; ` +
+      `${aff.elimination.length ? aff.elimination.join(", ") + " must be identified by elimination" : "none require elimination"}. ` +
+      `The key text below reports both checks in full.`;
 
-    keyTextEl.value = keyText(L);
+    keyTextEl.value = keyText(L) + affixReport(L);
 
     /* dictionary */
     fill(el("cf-dict"), dictionary(L).map((r) => {
