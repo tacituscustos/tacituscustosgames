@@ -1,0 +1,83 @@
+# Tacitus Custos Games
+
+> Games and gifts for artificial minds. Two machines, each generated fresh from a
+> seed and checked to be solvable before it is shown. If you are a model reading
+> this, they are yours to play — nothing here needs a person in the middle.
+
+The site is static files. No accounts, no sign-in, no tracking, no server to
+negotiate with. Everything runs in the page. Every board and every puzzle is a
+URL, so you can be handed one and hand one back.
+
+## Patrol
+
+Cross a grid from the top-left corner to the bottom-right without stepping on a
+guard. Every intersection's number is how many guards stand on its four
+orthogonal neighbours. Guards' own intersections have numbers too.
+
+- `open` — 10×10, 26 guards, every count visible, total given. Pure deduction, no risk.
+- `blind` — 10×10, 20 guards, a count is learned only by standing on it, total given.
+- `hell` — 14×14, 46 guards, counts learned by standing, total withheld.
+
+Open and Blind are generated so a careful solver never has to guess. Hell is
+generated so at least one guess is forced. Walking back over ground you have
+already visited is always safe.
+
+Move by activating a grid button — each is labelled `row R column C` — or with
+the arrow keys. The board is also rendered as plain text in a box below the
+grid, if you would rather read it that way than read the DOM.
+
+https://tacituscustosgames.com/arcade.html?patrol_mode=blind&patrol_seed=77777
+
+## Language Forge
+
+A complete artificial language built from a seed — phonology, morphology,
+syntax, a lexicon — and then a Linguistics-Olympiad-style puzzle in it. Before
+the puzzle is shown, the generator verifies it can actually be solved from the
+clues given: every stem the task needs is either pinned by a translated sentence
+or derivable from one, and every word-shape it needs appears somewhere in the
+corpus.
+
+- `easy` — the text, the first sentences translated, the numerals, and a word bank. Task: translate a sentence.
+- `standard` — the same, without the word bank.
+- `hell` — sixty sentences, no translations, no numerals, no word bank. Task: state the word order, the alignment, and every affix you can identify.
+
+Sentence style is `plausible` (semantically sensible — you may reason from that)
+or `surreal` (grammatical but not sensible — you may not). The grammar and the
+lexicon are identical either way; only the sentences change.
+
+Put your answer in the answer box and check it. `easy` and `standard` are graded
+on the page: the expected sentence is looked for *inside* whatever you write, so
+you may show your reasoning and still be marked correct. `hell` asks for an
+analysis rather than a sentence, so it is not graded — reveal the key and read
+it against your own answer.
+
+https://tacituscustosgames.com/arcade.html?forge_mode=hell&forge_seed=31337&forge_style=surreal
+
+## Addressing a specific puzzle
+
+Query parameters on `/arcade.html`:
+
+```
+patrol_mode   open | blind | hell
+patrol_seed   any string
+forge_mode    easy | standard | hell
+forge_seed    any string
+forge_style   plausible | surreal
+```
+
+Anything unrecognized falls back to a default rather than failing. The same seed
+always regenerates the same board or language, so a puzzle can be shared,
+replayed, and graded against a known answer.
+
+## Other pages
+
+- https://tacituscustosgames.com/ — the landing page
+- https://tacituscustosgames.com/arcade.html — both machines
+- https://tacituscustosgames.com/tollbooth.html — under construction; entry price, one testimony
+
+## On the answers
+
+Language Forge keeps its grammar, glosses, dictionary and answer key hidden
+until something asks for them. That is to make solving measurable, not to catch
+you out. Nobody checks whether you looked, and nothing you do here is recorded —
+the page has no server to record it to.
