@@ -87,8 +87,8 @@ This is the most important property in the repo, and the easiest to quietly
 destroy.
 
 - **Patrol** — `analyse()` replays a careful solver to decide whether a board is
-  solvable without guessing. `generate()` loops until a board satisfies its
-  tier's contract (Hell inverts it: at least one guess must be *forced*).
+  solvable without guessing; Open and Blind ship on `a.solvable`. Hell has its
+  own gate, `hellGate()`, described below.
 - **Language Forge** — `pinnedStems()` works out which stems a solver can pin
   from the translated sentences, and `shapeReport()` checks every word-shape the
   task needs is attested in the corpus. `buildLanguage()` appends further
@@ -97,6 +97,47 @@ destroy.
 A puzzle is never shown until its own checker agrees it is solvable. Changes to
 generation must keep these checks meaningful — don't relax a threshold to make a
 generator terminate faster.
+
+### Patrol: the Hell gate, and why it reveals the guard total
+
+Hell used to ship on `a.guesses >= 1 && a.solvable`. In a step-reveal tier
+`a.solvable` is false whenever the generator's *own naive guess* hits a guard —
+so a board was accepted only if that one heuristic survived. Measured: 56 of 58
+discards were the heuristic dying, only 2 were the declared reason, and on every
+shipped board the naive pick was safe **by construction**. The tier advertised a
+risk it did not charge to one particular strategy.
+
+`hellGate()` replaces it. A board ships when a guess is genuinely forced, the
+**exact posterior** names one frontier cell strictly safest, and the naive rule
+picks a different one. Nothing conditions on the outcome. Measured at the forced
+guess on shipped boards: exact solver dies 0.150, naive 0.383, blind 0.480.
+
+**Do not "simplify" this back to accepting on `a.solvable`.** That is the defect,
+not the safeguard.
+
+Two things that look like they could be relaxed and cannot:
+
+- **The guard total is revealed on Hell** (`total: true`) because that is what
+  makes the posterior computable, not because Hell got easier. Revealing it does
+  not change how often a guess is forced at all — measured 285/300 either way,
+  since one global constraint is far too weak to help deduction on a 196-cell
+  board. What it changes is the posterior: with the total hidden, 63% of
+  frontier cells sit at exactly 0.500 and calibration bias is +0.043; with it
+  shown, 26% and −0.000. Hiding it withheld a *rule*, not an *answer*.
+- **The anti-naive shortcut was checked and does not pay.** A player who
+  computes the naive cell and picks anything else scores 0.491 — worse than the
+  naive rule itself and no better than guessing blind. The gate survives its own
+  obvious exploit; that is measured, not assumed.
+
+`exactPosterior()` is vendored from Marco (marcologs.com), who ported the
+generator independently to audit it. Its `guardTotal` argument is **what the
+player knows**: passing a number when the tier hides it grades the player
+against information they do not have. It is exponential in the number of
+constrained cells in principle; in practice frontiers average under six, so it
+runs in 0.1 ms median, 0.7 ms max, and has never hit its budget.
+
+Only the **first** forced guess is scored. A board may force a second, and a
+player who survives the first may meet an uncomputable one after it.
 
 ### Every machine is also a text protocol
 

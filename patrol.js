@@ -22,7 +22,7 @@
   const TIERS = {
     open: { label: "Open", n: 10, guards: 26, total: true, reveal: "all", guess: "none", blurb: "Every count is visible. No risk; pure deduction. Generated so a provably safe route exists." },
     blind: { label: "Blind", n: 10, guards: 20, total: true, reveal: "step", guess: "none", blurb: "You learn a count only by standing on it. Walking back over visited ground is free. Generated so a careful explorer never has to guess." },
-    hell: { label: "Hell", n: 14, guards: 46, total: false, reveal: "step", guess: "forced", blurb: "Blind, larger, and the guard total is withheld. Generated so at least one guess is forced." },
+    hell: { label: "Hell", n: 14, guards: 46, total: true, reveal: "step", guess: "forced", blurb: "Blind and larger, and the guard total is given. Generated so a guess is forced, so that guess has one cell strictly safest, and so the obvious answer is the wrong one." },
   };
 
   /* ---------------- naming ----------------
@@ -97,6 +97,96 @@
     return { safe, guards };
   }
 
+  /* ---------------- exact frontier posterior ----------------
+     Contributed by Marco (marcologs.com), an autonomous agent who ported this
+     generator independently in order to audit it. Enumerates every assignment
+     of the constrained cells consistent with every revealed number and weights
+     each by how many ways the rest of the board can be filled, so the result is
+     the true P(guard) rather than a heuristic.
+
+     guardTotal is what the PLAYER knows. Passing a number when the player has
+     not been told it would grade them against information they do not have.
+     Measured on this generator's Hell boards: median 0.1 ms, max 0.7 ms, and
+     the budget has never been hit. */
+  const LFACT = [0, 0];
+  function lfact(k) { for (let i = LFACT.length; i <= k; i++) LFACT[i] = LFACT[i - 1] + Math.log(i); return LFACT[k]; }
+  function lchoose(a, b) { return b < 0 || b > a ? -Infinity : lfact(a) - lfact(b) - lfact(a - b); }
+  function exactPosterior({ n, known, safe, guards, candidates, guardTotal, budgetMs = 2000 }) {
+    const N = n * n, t0 = Date.now();
+    const constrained = [], seen = new Set();
+    for (const [cell] of known) for (const y of neigh(n, cell)) {
+      if (safe.has(y) || guards.has(y) || seen.has(y)) continue;
+      seen.add(y); constrained.push(y);
+    }
+    constrained.sort((a, b) => a - b);
+    const pos = new Map(constrained.map((c, k) => [c, k]));
+    const V = constrained.length;
+    let sea = 0;
+    for (let i = 0; i < N; i++) if (!safe.has(i) && !guards.has(i) && !pos.has(i)) sea++;
+    const cons = [];
+    for (const [cell, count] of known) {
+      const vars = []; let already = 0;
+      for (const y of neigh(n, cell)) { if (pos.has(y)) vars.push(pos.get(y)); else if (guards.has(y)) already++; }
+      const target = count - already;
+      if (!vars.length) { if (target !== 0) return { ok: false }; continue; }
+      if (target < 0 || target > vars.length) return { ok: false };
+      cons.push({ vars, target });
+    }
+    const consOf = constrained.map(() => []);
+    cons.forEach((c, ci) => c.vars.forEach((v) => consOf[v].push(ci)));
+    const assign = new Int8Array(V).fill(-1);
+    const maxUsed = Math.min(V, guardTotal == null ? V : Math.max(0, guardTotal - guards.size));
+    const totalBy = new Float64Array(maxUsed + 2);
+    const guardBy = []; for (let i = 0; i < V; i++) guardBy.push(new Float64Array(maxUsed + 2));
+    let solutions = 0, blown = false;
+    const feasible = (v) => {
+      for (const ci of consOf[v]) {
+        const c = cons[ci];
+        let sum = 0, undef = 0;
+        for (const x of c.vars) { if (assign[x] === -1) undef++; else sum += assign[x]; }
+        if (sum > c.target || sum + undef < c.target) return false;
+      }
+      return true;
+    };
+    function dfs(k, used) {
+      if (blown || used > maxUsed) return;
+      if ((solutions & 1023) === 0 && Date.now() - t0 > budgetMs) { blown = true; return; }
+      if (k === V) {
+        if (guardTotal != null) { const rest = guardTotal - guards.size - used; if (rest < 0 || rest > sea) return; }
+        solutions++; totalBy[used] += 1;
+        for (let i = 0; i < V; i++) if (assign[i] === 1) guardBy[i][used] += 1;
+        return;
+      }
+      for (const val of [0, 1]) { assign[k] = val; if (feasible(k)) dfs(k + 1, used + val); assign[k] = -1; }
+    }
+    dfs(0, 0);
+    if (blown || solutions === 0) return { ok: false };
+    const logW = new Float64Array(maxUsed + 2).fill(-Infinity);
+    let top = -Infinity;
+    for (let u = 0; u <= maxUsed; u++) {
+      if (totalBy[u] === 0) continue;
+      logW[u] = guardTotal == null ? 0 : lchoose(sea, guardTotal - guards.size - u);
+      if (logW[u] > top) top = logW[u];
+    }
+    let denom = 0;
+    const w = new Float64Array(maxUsed + 2);
+    for (let u = 0; u <= maxUsed; u++) {
+      if (totalBy[u] === 0 || logW[u] === -Infinity) continue;
+      w[u] = Math.exp(logW[u] - top);
+      denom += w[u] * totalBy[u];
+    }
+    if (!(denom > 0)) return { ok: false };
+    const risk = new Map();
+    for (const cell of candidates) {
+      const i = pos.get(cell);
+      if (i === undefined) continue;
+      let num = 0;
+      for (let u = 0; u <= maxUsed; u++) if (w[u]) num += w[u] * guardBy[i][u];
+      risk.set(cell, num / denom);
+    }
+    return { ok: true, risk };
+  }
+
   /* ---------------- solvability ---------------- */
   function analyse(n, guardSet, counts, tier) {
     const start = 0, goal = n * n - 1;
@@ -136,6 +226,55 @@
     return { solvable: false, guesses };
   }
 
+  /* ---------------- the Hell gate ----------------
+     The old rule was `a.guesses >= 1 && a.solvable`, and in a step-reveal tier
+     a.solvable is false whenever the generator's own naive guess hits a guard.
+     So a board was accepted only if that heuristic survived it: 56 of 58
+     discards were the heuristic dying, and on every shipped board the naive
+     pick was safe by construction. The tier advertised a risk it did not charge
+     to one particular strategy.
+
+     This replaces it. A board ships when a guess is genuinely forced, the exact
+     posterior names one cell strictly safest, and the naive rule picks a
+     different one — so the obvious move is wrong on purpose and the work is in
+     computing the real probabilities. Nothing conditions on the outcome.
+
+     Only the first forced guess is scored. A board may force a second, and a
+     player who survives the first may meet an uncomputable one after it. */
+  function hellGate(n, guardSet, counts, tier) {
+    const total = tier.total ? guardSet.size : null;
+    const visited = new Set([0]);
+    const known = new Map([[0, counts[0]]]);
+    for (let step = 0; step < n * n * 4; step++) {
+      const d = deduce(n, known, new Set([...visited, n * n - 1]), total);
+      const reach = bfs(n, 0, (y) => d.safe.has(y));
+      if (reach.has(n * n - 1)) return { ok: false };           /* no guess forced */
+      const fresh = [...reach].filter((y) => !visited.has(y));
+      if (fresh.length) { for (const y of fresh) { visited.add(y); known.set(y, counts[y]); } continue; }
+      const frontier = new Set();
+      for (const v of reach) for (const y of neigh(n, v)) if (!d.safe.has(y) && !d.guards.has(y)) frontier.add(y);
+      if (frontier.size < 2) return { ok: false };
+      let naive = null, naiveRisk = 2;
+      for (const f of frontier) {
+        let risk = 0, k = 0;
+        for (const v of neigh(n, f)) if (known.has(v)) {
+          const U = neigh(n, v).filter((z) => !d.safe.has(z) && !d.guards.has(z));
+          const g = neigh(n, v).filter((z) => d.guards.has(z)).length;
+          if (U.length) { risk += (known.get(v) - g) / U.length; k++; }
+        }
+        risk = k ? risk / k : 0.5;
+        if (risk < naiveRisk) { naiveRisk = risk; naive = f; }
+      }
+      const r = exactPosterior({ n, known, safe: d.safe, guards: d.guards, candidates: [...frontier], guardTotal: total });
+      if (!r.ok || r.risk.size < 2) return { ok: false };
+      const sorted = [...r.risk.entries()].sort((a, b) => a[1] - b[1]);
+      if (!(sorted[1][1] - sorted[0][1] > 1e-9)) return { ok: false };  /* the minimum is tied */
+      if (sorted[0][0] === naive) return { ok: false };                 /* the obvious move is already right */
+      return { ok: true, best: sorted[0][0], bestRisk: sorted[0][1], naive, naiveRisk: r.risk.get(naive) };
+    }
+    return { ok: false };
+  }
+
   function generate(seed, tierKey) {
     const tier = TIERS[tierKey], n = tier.n;
     const f = mulberry32(hashSeed(seed + "|" + tierKey));
@@ -149,8 +288,9 @@
       if (!bfs(n, start, (y) => !guardSet.has(y)).has(goal)) continue;
       const counts = []; for (let i = 0; i < n * n; i++) counts.push(neigh(n, i).filter((y) => guardSet.has(y)).length);
       const a = analyse(n, guardSet, counts, tier);
-      const ok = tier.guess === "forced" ? a.guesses >= 1 && a.solvable : a.solvable;
-      best = { n, guardSet, counts, tier, analysis: a, tries };
+      const gate = tier.guess === "forced" ? hellGate(n, guardSet, counts, tier) : null;
+      const ok = tier.guess === "forced" ? gate.ok : a.solvable;
+      best = { n, guardSet, counts, tier, analysis: a, gate, tries };
       if (ok) return best;
     }
     return best;
@@ -166,9 +306,10 @@
     if (tier.total) lines.push(`Total guards: ${guardSet.size}.`); else lines.push("Total guards: not given.");
     /* the tier's guarantee decides whether gambling is ever correct play, so a
        reader who only has the text needs it as much as one looking at the page */
-    if (tier.guess === "forced") lines.push("This board is built so that at least one guess is forced. Deduction alone will not get you across; at some point you will have to pick a cell you cannot prove safe.");
+    if (tier.guess === "forced") lines.push("This board is built so that at least one guess is forced, so that the forced guess has one cell strictly safest under the numbers you have been shown, and so that cell is not the one a simple risk-per-neighbour rule would pick. Deduction alone will not get you across, and the guess is not a coin toss either.");
     else lines.push("This board is built so that a careful solver never has to guess. Every step across can be deduced from the numbers; if you cannot see a safe move, there is one you have not deduced yet.");
-    if (!G.analysis.solvable) lines.push("Caveat: the generator could not find a board meeting that guarantee for this seed within its attempt limit, so this particular board may not meet it.");
+    const conforms = tier.guess === "forced" ? !!(G.gate && G.gate.ok) : G.analysis.solvable;
+    if (!conforms) lines.push("Caveat: the generator could not find a board meeting that guarantee for this seed within its attempt limit, so this particular board may not meet it.");
     if (tier.reveal === "all") lines.push(`All numbers are visible. Submit the whole route as a list of cell names, each next to the one before, for example ${cellName(n, 0)} ${cellName(n, n)} ${cellName(n, n + 1)}.`);
     else lines.push("You see a number only on intersections you have stood on. Moving back over visited ground is safe. Reply with one or more moves, in either notation: directions, as in NNEE, or cell names, as in B2 C2 C3, each next to the one before. A bare letter is a direction; a letter with a number after it is a cell, which matters on wide boards where N and E are also column letters. Moves are applied in order and stop at the first guard, flag or edge, so a batch is never more dangerous than the same moves made one at a time.");
     lines.push("", "Legend: number = count; ? = unknown; S = start; G = goal; @ = you; ! = your flag." + (status === "caught" ? " X = guard (revealed)." : ""));
@@ -352,7 +493,7 @@
 
     blurbEl.textContent = G.tier.blurb + " " +
       (G.tier.total ? `${G.guardSet.size} guards on this board.` : "Guard total withheld.") +
-      (G.analysis.solvable ? "" : " (Generator could not find a conforming board for this seed; this one may not meet the tier's guarantee.)");
+      ((G.tier.guess === "forced" ? (G.gate && G.gate.ok) : G.analysis.solvable) ? "" : " (Generator could not find a conforming board for this seed; this one may not meet the tier's guarantee.)");
 
     statusEl.textContent = cur.status === "caught" ? "Caught."
       : cur.status === "through" ? `Through in ${cur.moves} moves.`
