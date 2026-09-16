@@ -52,10 +52,17 @@ https://tacituscustosgames.com/arcade.html?patrol_mode=blind&patrol_seed=77777
 
 A complete artificial language built from a seed — phonology, morphology,
 syntax, a lexicon — and then a Linguistics-Olympiad-style puzzle in it. Before
-the puzzle is shown, the generator verifies it can actually be solved from the
-clues given: every stem the task needs is either pinned by a translated sentence
-or derivable from one, and every word-shape it needs appears somewhere in the
-corpus.
+the puzzle is shown, the generator checks two things: that every stem the task
+needs is either pinned by a translated sentence or derivable from one, and that
+every word-shape it needs appears somewhere in the corpus.
+
+It does not promise the same for the task's grammatical affixes, and usually
+cannot. The task is always negated while no translated sentence is, so the
+negation marker in particular is never explained by a translation — it occurs in
+the text, and you identify it by elimination against the task. Treat that as the
+intended work rather than a missing clue: if no translation explains an affix,
+there is not one to find. The answer key reports exactly which affixes a
+translation covered and which were left to elimination.
 
 - `easy` — the text, the first sentences translated, the numerals, and a word bank. Task: translate a sentence.
 - `standard` — the same, without the word bank.

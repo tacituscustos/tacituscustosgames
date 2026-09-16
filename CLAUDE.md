@@ -136,6 +136,28 @@ romanize glottal stops and ejectives, so they are letters, not punctuation. The
 expected sentence is matched as a substring so a model can show its reasoning
 and still be graded correct.
 
+### Language Forge: stems are pinned, affixes are not
+
+`pinnedStems()` checks the task's **stems** against the translated sentences and
+counts only those (`if (!s.known) continue`). Nothing makes the same promise
+about the task's **affixes**, and usually nothing could: the task is always
+negated while no translated sentence is, so `NEG` is never explained by a
+translation. Measured over 500 languages, every task leaves between one and four
+affixes unexplained — most often three.
+
+**This is deliberate and must not be "fixed" by marking more sentences
+translated.** Identifying an affix by elimination against the task is the best
+reasoning step in the machine; handing it over would replace inference with
+lookup. What was wrong was that nobody said so, and a solver hunting for a
+translation that does not exist may reasonably conclude the puzzle is broken.
+
+So the puzzle half states the rule without naming which affixes — naming them
+*is* the answer — and `taskAffixes()` / `affixReport()` in the UI layer report
+both sets in the key. They live in the UI layer on purpose, so the ported logic
+stays mechanically re-extractable. If you touch the designed sentence set or
+which specs carry `known: true`, re-measure: the claim "some affixes are left to
+elimination" is only honest while it stays true.
+
 ### Styling
 
 Design tokens in `:root` in `styles.css`. Machines get a scope class (`.pt`,
