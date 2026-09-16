@@ -89,6 +89,21 @@ Each renders its state as plain text for handing to a model (`stateText()` in
 Patrol, `puzzleText()` / `keyText()` in Forge). This is a core idea of the site,
 not a debug feature: playable by hand, legible as text.
 
+Two properties of Patrol's text came out of playtesting and are easy to undo by
+accident:
+
+- **Columns are separated by `|`, not by run-length of spaces**, and the header
+  carries a corner field so every line splits into the same number of fields.
+  A relay that collapses whitespace — a chat UI, a paste through a
+  non-monospace field — would silently shift a space-aligned grid. Newlines
+  survive that; column padding does not.
+- **A batch of moves is echoed back before it is committed** (`previewMoves()`),
+  because a courier-mode player compiles the batch by hand and that is where the
+  mistakes happen — miscounted letters, a misjudged landing square. The preview
+  must be computed **without consulting `guardSet`**: it may use only what the
+  player already knows, which is edges and their own flags. A preview that
+  quietly routes around guards would hand over the answer.
+
 ### Language Forge: the puzzle/answer split
 
 `forge.js` is in two halves, and the boundary is a correctness property.
