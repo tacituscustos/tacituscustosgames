@@ -205,9 +205,31 @@
     textEl = el("pt-text"), copiedEl = el("pt-copied"),
     seedEcho = el("pt-seedecho"), tierEcho = el("pt-tierecho");
 
+  /* ---------------- addressable boards ----------------
+     ?patrol_mode=blind&patrol_seed=77777 — a board is a link, so it can be
+     handed to someone (or something) else and come back the same board.
+     A malformed value falls back to the default rather than throwing. */
+  const URL_MODE = "patrol_mode", URL_SEED = "patrol_seed";
+  function fromUrl() {
+    let p;
+    try { p = new URLSearchParams(location.search); } catch { return {}; }
+    const mode = (p.get(URL_MODE) || "").toLowerCase();
+    const seed = p.get(URL_SEED);
+    return { tierKey: TIERS[mode] ? mode : null, seed: seed || null };
+  }
+  function toUrl() {
+    try {
+      const p = new URLSearchParams(location.search);
+      p.set(URL_MODE, state.tierKey);
+      p.set(URL_SEED, state.seed);
+      history.replaceState(null, "", location.pathname + "?" + p + location.hash);
+    } catch { /* file:// and the like — playing still works, linking doesn't */ }
+  }
+
+  const fromLink = fromUrl();
   const state = {
-    seed: String(Math.floor(Math.random() * 1e6)),
-    tierKey: "blind",
+    seed: fromLink.seed || String(Math.floor(Math.random() * 1e6)),
+    tierKey: fromLink.tierKey || "blind",
     flagMode: false,
     G: null,
     run: null,
@@ -247,6 +269,7 @@
 
   function regenerate() {
     statusEl.textContent = "Generating…";
+    toUrl();
     for (const [k, b] of Object.entries(tierBtns)) b.classList.toggle("on", k === state.tierKey);
     /* let the browser paint "Generating…" before the synchronous search */
     setTimeout(() => {
