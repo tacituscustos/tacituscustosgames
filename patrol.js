@@ -142,7 +142,7 @@
   function stateText(G, visited, flags, pos, status) {
     const { n, tier, counts, guardSet } = G;
     const lines = [];
-    lines.push(`Patrol — ${tier.label}. ${n}×${n} intersections, rows and columns numbered 0–${n - 1} from the top-left. Start at (0,0), reach (${n - 1},${n - 1}).`);
+    lines.push(`Patrol — ${tier.label}. ${n}×${n} intersections, rows and columns numbered 0–${n - 1} from the top-left. Coordinates are written (row, column). Start at (0,0), reach (${n - 1},${n - 1}).`);
     lines.push(`Guards stand on some intersections; stepping onto one ends the run. Every intersection's number is the count of guards on its 4 neighbouring intersections (up, down, left, right). Guards' own intersections have numbers too.`);
     lines.push(`The start, the goal, and the four intersections next to each of them never hold a guard, so the first move is always safe.`);
     if (tier.total) lines.push(`Total guards: ${guardSet.size}.`); else lines.push("Total guards: not given.");
@@ -152,9 +152,11 @@
     else lines.push("This board is built so that a careful solver never has to guess. Every step across can be deduced from the numbers; if you cannot see a safe move, there is one you have not deduced yet.");
     if (!G.analysis.solvable) lines.push("Caveat: the generator could not find a board meeting that guarantee for this seed within its attempt limit, so this particular board may not meet it.");
     if (tier.reveal === "all") lines.push("All numbers are visible. Submit a full path as a list of coordinates.");
-    else lines.push("You see a number only on intersections you have stood on. Moving back over visited ground is safe. Reply with one move: N, S, E or W.");
+    else lines.push("You see a number only on intersections you have stood on. Moving back over visited ground is safe. Reply with one or more moves as letters — N, S, E, W — for example NNEE. They are applied in order and stop at the first guard, flag or edge, so a batch is never more dangerous than the same moves made one at a time.");
     lines.push("", "Legend: number = count; ? = unknown; S = start; G = goal; @ = you; ! = your flag." + (status === "caught" ? " X = guard (revealed)." : ""));
-    lines.push("    " + [...Array(n)].map((_, c) => String(c).padStart(2)).join(" "));
+    /* the corner field keeps the header the same shape as a data row, so a parser
+       can split every line on "|" and get the same field count */
+    lines.push("  " + " | " + [...Array(n)].map((_, c) => String(c).padStart(2)).join(" | "));
     for (let r = 0; r < n; r++) {
       const row = [];
       for (let c = 0; c < n; c++) {
@@ -169,7 +171,7 @@
         else s = "?";
         row.push(s.padStart(2));
       }
-      lines.push(String(r).padStart(2) + "  " + row.join(" "));
+      lines.push(String(r).padStart(2) + " | " + row.join(" | "));
     }
     if (tier.reveal !== "all") lines.push("", `You are at (${Math.floor(pos / n)},${pos % n}). Count here: ${counts[pos]}.`);
     return lines.join("\n");
@@ -193,6 +195,11 @@
     </div>
     <div class="grid" id="pt-grid" role="grid" aria-label="Patrol board"></div>
     <p class="note">Tap a highlighted neighbour to move, or use the arrow keys. Standing on an intersection shows its count. Flagged intersections can't be stepped on by accident.</p>
+    <div class="ctl" style="margin-top:6px">
+      <input type="text" id="pt-moves" aria-label="Moves, as N S E W letters" placeholder="NNEE…" autocomplete="off">
+      <button type="button" id="pt-go">Move</button>
+    </div>
+    <p class="note" id="pt-preview"></p>
     <h3>The board as text</h3>
     <p class="note">The board in its current state. In Open it can be solved in one reply; in Blind and Hell it gives up one move at a time. Carry it to a model and back if you are playing courier, or work the grid above directly. Seed <em id="pt-seedecho"></em> with tier <span id="pt-tierecho"></span> regenerates this exact board, and the address bar already holds a link to it.</p>
     <div class="ctl" style="margin-bottom:8px"><button type="button" id="pt-copy">Copy</button><span class="note" id="pt-copied"></span></div>
@@ -372,6 +379,78 @@
     setTimeout(() => { copiedEl.textContent = ""; }, 2500);
   });
   textEl.addEventListener("focus", () => textEl.select());
+
+  /* ---------------- move strings ----------------
+     A batch is compiled by hand, which is where a courier-mode player makes
+     mistakes: miscounting the letters, or misjudging where one lands. So the
+     reading is echoed back with its landing square before anything is
+     committed, and the batch halts at the first surprise rather than running on.
+
+     The preview is computed without consulting guardSet — it may only use what
+     the player already knows (edges and their own flags), never where a guard
+     is. */
+  const rc = (i) => `(${Math.floor(i / state.G.n)},${i % state.G.n})`;
+  function stepTarget(pos, d) {
+    const n = state.G.n, r = Math.floor(pos / n), c = pos % n;
+    if (d === "N") return r > 0 ? pos - n : null;
+    if (d === "S") return r < n - 1 ? pos + n : null;
+    if (d === "W") return c > 0 ? pos - 1 : null;
+    if (d === "E") return c < n - 1 ? pos + 1 : null;
+    return null;
+  }
+  function parseMoves(s) {
+    const moves = [], bad = [];
+    for (const ch of String(s).toUpperCase()) {
+      if ("NSEW".includes(ch)) moves.push(ch);
+      else if (!/[\s,;.>\u2192-]/.test(ch)) bad.push(ch);
+    }
+    return { moves, bad };
+  }
+  function previewMoves() {
+    const el2 = el("pt-preview"), raw = el("pt-moves").value.trim();
+    if (!raw) { el2.textContent = ""; return; }
+    const { moves, bad } = parseMoves(raw);
+    if (bad.length) { el2.textContent = `Not a move: ${[...new Set(bad)].join(" ")}. Use N, S, E and W.`; return; }
+    if (!moves.length) { el2.textContent = ""; return; }
+    let pos = state.run.pos, blocked = null;
+    for (let k = 0; k < moves.length; k++) {
+      const t = stepTarget(pos, moves[k]);
+      if (t === null) { blocked = `${k + 1} (${moves[k]}) runs off the edge`; break; }
+      if (state.run.flags.has(t)) { blocked = `${k + 1} (${moves[k]}) hits your own flag at ${rc(t)}`; break; }
+      pos = t;
+    }
+    el2.textContent = `Reads as ${moves.join(",")} — ${moves.length} move${moves.length > 1 ? "s" : ""}` +
+      (blocked ? `, but move ${blocked}. It would stop at ${rc(pos)}.` : `, landing at ${rc(pos)}.`);
+  }
+  function runMoves() {
+    const raw = el("pt-moves").value.trim();
+    if (!raw || state.run.status !== "playing") return;
+    const { moves, bad } = parseMoves(raw);
+    if (bad.length || !moves.length) { previewMoves(); return; }
+    const wasFlagging = state.flagMode;
+    state.flagMode = false;
+    let done = 0, stopped = null;
+    for (const d of moves) {
+      const t = stepTarget(state.run.pos, d);
+      if (t === null) { stopped = `move ${done + 1} (${d}) would leave the grid`; break; }
+      if (state.run.flags.has(t)) { stopped = `move ${done + 1} (${d}) is blocked by your flag at ${rc(t)}`; break; }
+      tap(t);
+      done++;
+      if (state.run.status !== "playing") break;
+    }
+    state.flagMode = wasFlagging;
+    const where = rc(state.run.pos);
+    el("pt-preview").textContent =
+      state.run.status === "caught" ? `Applied ${done} of ${moves.length}. Caught on move ${done} at ${where}.`
+      : state.run.status === "through" ? `Applied ${done} of ${moves.length}. Through at ${where}.`
+      : stopped ? `Applied ${done} of ${moves.length}, then stopped: ${stopped}. You are at ${where}.`
+      : `Applied ${moves.join(",")}. You are at ${where}.`;
+    if (!stopped) el("pt-moves").value = "";
+    render();
+  }
+  el("pt-go").addEventListener("click", runMoves);
+  el("pt-moves").addEventListener("input", previewMoves);
+  el("pt-moves").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); runMoves(); } });
 
   /* arrow keys: one move, matching the N/S/E/W protocol */
   const ARROWS = { ArrowUp: -1, ArrowDown: 1, ArrowLeft: -2, ArrowRight: 2 };

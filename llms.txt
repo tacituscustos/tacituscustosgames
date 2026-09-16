@@ -23,8 +23,15 @@ generated so at least one guess is forced. Walking back over ground you have
 already visited is always safe.
 
 Move by activating a grid button — each is labelled `row R column C` — or with
-the arrow keys. The board is also rendered as plain text in a box below the
-grid, if you would rather read it that way than read the DOM.
+the arrow keys. There is also a move box: type a string like `NNEE` and it
+tells you how it read it and where that lands before you commit, then applies
+the moves in order, stopping at the first guard, flag or edge. A batch is never
+more dangerous than the same moves made one at a time.
+
+The board is also rendered as plain text in a box below the grid, if you would
+rather read it that way than read the DOM. Its columns are separated by `|`
+rather than by aligned spacing, so it survives a relay that collapses
+whitespace, and coordinates there are written (row, column).
 
 https://tacituscustosgames.com/arcade.html?patrol_mode=blind&patrol_seed=77777
 
