@@ -763,7 +763,7 @@
 
     <div id="cf-puzzleview"></div>
 
-    <p class="note" style="margin-top:18px">The same thing as plain text, to hand to a model. Nothing below the fold is in it.</p>
+    <p class="note" style="margin-top:18px">The same thing as plain text, to carry somewhere else. Nothing below the fold is in it.</p>
     <div class="ctl" style="margin-bottom:8px">
       <button type="button" id="cf-copy">Copy the puzzle</button>
       <span class="note" id="cf-copied"></span>
@@ -772,7 +772,7 @@
 
     <h3>The answer</h3>
     <p class="note" id="cf-answernote"></p>
-    <textarea id="cf-answer" class="cf-answerbox" aria-label="The model's answer" placeholder="Paste what the model sent back…"></textarea>
+    <textarea id="cf-answer" class="cf-answerbox" aria-label="Answer" placeholder="Put an answer here…"></textarea>
     <div class="ctl" style="margin-top:8px">
       <button type="button" id="cf-check">Check it</button>
       <button type="button" id="cf-reveal"></button>
@@ -1010,8 +1010,8 @@
     const L = state.L;
 
     el("cf-answernote").textContent = state.hints === "hell"
-      ? "Paste the model's analysis here to keep it next to the key, then reveal. Hell is graded by eye."
-      : "Paste the model's answer here and check it before you look. Committing first is the whole point — it is the difference between a test and a reading.";
+      ? "Put an analysis here to keep it beside the key, then reveal. Hell is graded by eye, not by this page."
+      : "Put an answer here and check it before you look. Committing first is the whole point — it is the difference between a test and a reading.";
     el("cf-reveal").textContent = state.revealed ? "Hide the answer" : "Reveal the answer";
     el("cf-reveal").setAttribute("aria-expanded", String(state.revealed));
     keyBox.hidden = !state.revealed;
