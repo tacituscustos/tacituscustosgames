@@ -59,6 +59,21 @@ mechanically and left **unchanged**; only the UI was rewritten as DOM
 construction. Keep that seam intact — if an original is ever revised, the logic
 should be re-extractable without hand-merging.
 
+**Divergences from the original**, to re-apply if the logic is ever
+re-extracted. Keep this list current; it is the only record that the port is no
+longer a copy.
+
+- `forge.js`, `s3()` — a consonant plus `o` takes `-es`, so *go* conjugates to
+  *goes* rather than *gos*.
+- `forge.js`, `genSentence()` — `sg3` consults `subj.num > 1` as well as
+  `subj.plural`. A numeral-quantified subject is plural for English agreement
+  whether or not the invented language marks number, which it often does not:
+  otherwise *three wolves sleeps*.
+- `forge.js`, `enNP()` — the noun pluralizes on `num > 1`, not on any `num`.
+
+These are all English-surface fixes. They change the prose a solver reads and
+leave the invented language, the expected answer and every seed untouched.
+
 ### Everything is seeded and reproducible
 
 Both use `mulberry32` + an FNV-1a `hashSeed`. Same seed and same mode always

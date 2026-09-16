@@ -367,12 +367,17 @@
     return out;
   }
   const NUMEN = ["", "one", "two", "three", "four", "five"];
-  const s3 = (v) => (/(s|sh|ch|x|z)$/.test(v) ? v + "es" : /[^aeiou]y$/.test(v) ? v.slice(0, -1) + "ies" : v + "s");
+  /* third person singular: -es after a sibilant and after a consonant + o
+     (go -> goes), -ies after a consonant + y, -s otherwise */
+  const s3 = (v) => (/(s|sh|ch|x|z)$/.test(v) ? v + "es"
+    : /[^aeiou]o$/.test(v) ? v + "es"
+    : /[^aeiou]y$/.test(v) ? v.slice(0, -1) + "ies"
+    : v + "s");
   const article = (w) => (/^[aeiou]/.test(w) ? "an " : "a ");
   function enNP(np, isObj) {
     if (np.pr) return isObj ? np.pr.obj : np.pr.en;
     const adj = (np.num ? NUMEN[np.num] + " " : "") + (np.adj ? np.adj.en + " " : "");
-    const noun = np.plural || np.num ? np.n.pl : np.n.en;
+    const noun = np.plural || np.num > 1 ? np.n.pl : np.n.en;
     if (np.def) return "the " + adj + noun;
     if (np.plural || np.num || np.n.mass) return adj + noun;
     return article(adj + noun) + adj + noun;
@@ -596,7 +601,7 @@
     if (q && L.q.type === "final") seq.push(word([{ syls: L.q.particle.syls, gloss: "Q" }]));
     /* english */
     const S = enNP(subj, false), O = (obj ? " " + enNP(obj, true) : "") + (adjunct ? adjunct.en : "");
-    const sg3 = subj.pr ? subj.pr.sg : !subj.plural;
+    const sg3 = subj.pr ? subj.pr.sg : !(subj.plural || subj.num > 1);
     const base = verb.en;
     let en;
     if (q) en = `${tense === "PST" ? "Did" : tense === "FUT" ? "Will" : sg3 ? "Does" : "Do"} ${S} ${base}${O}?`;
