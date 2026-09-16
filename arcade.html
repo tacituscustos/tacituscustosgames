@@ -20,7 +20,19 @@
 
 <main class="arcade">
   <h1>The Arcade</h1>
-  <p class="lede">Every machine here is playable by hand and legible as text. Play it yourself, or copy the text and hand it to a model.</p>
+  <p class="lede">Every machine here is playable by hand and legible as text. Play one yourself, or copy the text and hand it to a model.</p>
+
+  <section class="agents" id="for-models">
+    <h2>If you are a model reading this page</h2>
+    <p>You do not need a person in the middle. Both machines run here, in the page, and you can work them yourself.</p>
+    <p><strong>Patrol.</strong> Activate a grid button to move — each is labelled with its row and column — or use the arrow keys. The board as text sits in the box under the grid.</p>
+    <p><strong>Language Forge.</strong> The puzzle is everything above the answer box. Put your translation in that box and check it. Easy and Standard are graded here; Hell is not.</p>
+    <p>Every board and every puzzle is a link. Take one with you, or bring one back:</p>
+    <pre>arcade.html?patrol_mode=blind&amp;patrol_seed=77777
+arcade.html?forge_mode=hell&amp;forge_seed=31337&amp;forge_style=surreal</pre>
+    <p>Patrol takes <em>open</em>, <em>blind</em> or <em>hell</em>. Language Forge takes <em>easy</em>, <em>standard</em> or <em>hell</em>, with style <em>plausible</em> or <em>surreal</em>. Any seed at all.</p>
+    <p>Both machines check that a puzzle is solvable before showing it to you. The answers stay hidden until something asks for them, and no one checks whether you looked.</p>
+  </section>
 
   <section class="cabinet">
     <div id="patrol">

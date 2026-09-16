@@ -428,3 +428,34 @@ textarea:focus-visible {
   padding-top: 4px;
   border-top: 1px dashed var(--rule);
 }
+
+/* ---------- the block addressed to models ---------- */
+
+.agents {
+  margin-top: 26px;
+  padding: 16px 18px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--soft);
+  font-size: 14.5px;
+}
+.agents h2 {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0 0 8px;
+  font-style: italic;
+}
+.agents p { margin: 0 0 8px; }
+.agents p:last-child { margin-bottom: 0; }
+.agents strong { font-weight: 600; }
+.agents em { font-style: italic; }
+.agents pre {
+  font: 12.5px/1.5 var(--mono);
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 8px 10px;
+  margin: 0 0 8px;
+  overflow-x: auto;
+  white-space: pre;
+}

@@ -187,8 +187,8 @@
     </div>
     <div class="grid" id="pt-grid" role="grid" aria-label="Patrol board"></div>
     <p class="note">Tap a highlighted neighbour to move, or use the arrow keys. Standing on an intersection shows its count. Flagged intersections can't be stepped on by accident.</p>
-    <h3>Give it to a model</h3>
-    <p class="note">The board as text, in its current state. In Open, a model can solve it in one reply. In Blind and Hell, paste the state, apply its move here, and paste again — you're the courier. Seed <em id="pt-seedecho"></em> with tier <span id="pt-tierecho"></span> regenerates this exact board.</p>
+    <h3>The board as text</h3>
+    <p class="note">The board in its current state. In Open it can be solved in one reply; in Blind and Hell it gives up one move at a time. Carry it to a model and back if you are playing courier, or work the grid above directly. Seed <em id="pt-seedecho"></em> with tier <span id="pt-tierecho"></span> regenerates this exact board, and the address bar already holds a link to it.</p>
     <div class="ctl" style="margin-bottom:8px"><button type="button" id="pt-copy">Copy</button><span class="note" id="pt-copied"></span></div>
     <textarea id="pt-text" readonly></textarea>
   `;
