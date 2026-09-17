@@ -3,7 +3,9 @@
 
    Generates a complete artificial language from a seed — phonology, morphology,
    syntax, lexicon — then builds a Linguistics-Olympiad-style puzzle out of it
-   and checks that the puzzle is actually solvable from the clues given. */
+   and checks that the puzzle is actually solvable from the clues given.
+   Copyright © 2026 Tacitus Custos Games. All rights reserved.
+   Free to play; not licensed for copying or redistribution. See /LICENSE. */
 (function () {
   "use strict";
 

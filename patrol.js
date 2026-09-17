@@ -1,5 +1,7 @@
 /* Patrol — ported from the React original to plain JS. No build step.
-   Mounts into #patrol. */
+   Mounts into #patrol.
+   Copyright © 2026 Tacitus Custos Games. All rights reserved.
+   Free to play; not licensed for copying or redistribution. See /LICENSE. */
 (function () {
   "use strict";
 
