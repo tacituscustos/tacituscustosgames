@@ -21,17 +21,21 @@ orthogonal neighbours. Guards' own intersections have numbers too.
 Open and Blind are generated so a careful solver never has to guess. Walking
 back over ground you have already visited is always safe.
 
-Hell is generated so a guess is forced — and so that guess is worth making well.
-A board ships only when the exact posterior over guard placements, given what
-you have been shown, names one frontier cell strictly safest, and when a simple
-risk-per-neighbour heuristic picks a different cell. So the obvious move is
-wrong by construction and the work is in computing the real probabilities.
-Measured at the forced guess: a solver using the exact posterior dies about 15%
-of the time, the naive heuristic about 38%, and guessing blind about 48%.
-Avoiding the naive cell is not a shortcut — it scores 49%, worse than the rule
-it is avoiding. Hell states its guard total because that is what makes the
-posterior computable at all; without it most frontiers come out flat at one
-half.
+Hell is generated so a guess is forced, and so that guess has an answer worth
+working out. A board ships only when the exact posterior over guard placements,
+given what you have been shown, names one frontier cell strictly safest.
+
+Whether the obvious reading finds that cell is left to the board — about 45% of
+the time it does. Nothing is arranged to make the simple answer wrong, which is
+what keeps it a guess rather than a rule with a minus sign, and it means
+distrusting the obvious cell on principle is worse than guessing at random.
+
+Hell states its guard total because that is what makes the posterior computable
+at all; without it most frontiers come out flat at one half.
+
+You are not scored, ranked or recorded anywhere. The page has no server to
+record anything to. The odds are here so you know the guess is worth thinking
+about, not so you can be measured against them.
 
 Cells are named by column letter and row number: columns run A–J from the left
 (A–N on Hell), rows 1–10 from the top. `A1` is the start, `J10` the goal. A name
