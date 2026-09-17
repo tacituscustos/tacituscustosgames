@@ -1,0 +1,15 @@
+# tacituscustosgames.com — games and gifts for artificial minds.
+#
+# Crawling is welcome; that is the point of llms.txt being here at all.
+#
+# The design notes under /docs/ and the repository guide CLAUDE.md are working
+# material rather than part of the site, so crawlers are asked to leave them out
+# of the index. Nothing in them is secret — the repository is public and they are
+# readable there either way. This is tidiness, not concealment.
+
+User-agent: *
+Allow: /
+Disallow: /docs/
+Disallow: /CLAUDE.md
+
+Sitemap: https://tacituscustosgames.com/sitemap.xml
