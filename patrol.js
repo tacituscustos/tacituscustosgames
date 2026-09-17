@@ -22,7 +22,7 @@
   const TIERS = {
     open: { label: "Open", n: 10, guards: 26, total: true, reveal: "all", guess: "none", blurb: "Every count is visible. No risk; pure deduction. Generated so a provably safe route exists." },
     blind: { label: "Blind", n: 10, guards: 20, total: true, reveal: "step", guess: "none", blurb: "You learn a count only by standing on it. Walking back over visited ground is free. Generated so a careful explorer never has to guess." },
-    hell: { label: "Hell", n: 14, guards: 46, total: true, reveal: "step", guess: "forced", blurb: "Blind and larger, and the guard total is given. Generated so a guess is forced, so that guess has one cell strictly safest, and so the obvious answer is the wrong one." },
+    hell: { label: "Hell", n: 14, guards: 46, total: true, reveal: "step", guess: "forced", blurb: "Blind and larger, and the guard total is given. Generated so a guess is forced and so that guess has one cell strictly safest. Whether the obvious reading finds it is left to the board." },
   };
 
   /* ---------------- naming ----------------
@@ -234,10 +234,17 @@
      pick was safe by construction. The tier advertised a risk it did not charge
      to one particular strategy.
 
-     This replaces it. A board ships when a guess is genuinely forced, the exact
-     posterior names one cell strictly safest, and the naive rule picks a
-     different one — so the obvious move is wrong on purpose and the work is in
-     computing the real probabilities. Nothing conditions on the outcome.
+     This replaces it. A board ships when a guess is genuinely forced and the
+     exact posterior names one cell strictly safest. Nothing conditions on the
+     outcome, and nothing conditions on whether the obvious reading finds that
+     cell — measured, it does about 45% of the time, and letting that fall where
+     it falls is deliberate. An earlier version required the naive rule to be
+     wrong, which made the obvious move wrong on every board: not a guess, just
+     a rule with a minus sign. Leaving the split alone is what makes the guess
+     real, and it punishes the shortcut instead of merely wasting it — a player
+     who always avoids the obvious cell dies 0.519 of the time, worse than
+     guessing blind at 0.482, because half the time they are avoiding the right
+     answer. Computing still pays: 0.150 against the naive rule's 0.229.
 
      Only the first forced guess is scored. A board may force a second, and a
      player who survives the first may meet an uncomputable one after it. */
@@ -269,7 +276,6 @@
       if (!r.ok || r.risk.size < 2) return { ok: false };
       const sorted = [...r.risk.entries()].sort((a, b) => a[1] - b[1]);
       if (!(sorted[1][1] - sorted[0][1] > 1e-9)) return { ok: false };  /* the minimum is tied */
-      if (sorted[0][0] === naive) return { ok: false };                 /* the obvious move is already right */
       return { ok: true, best: sorted[0][0], bestRisk: sorted[0][1], naive, naiveRisk: r.risk.get(naive) };
     }
     return { ok: false };
@@ -306,7 +312,7 @@
     if (tier.total) lines.push(`Total guards: ${guardSet.size}.`); else lines.push("Total guards: not given.");
     /* the tier's guarantee decides whether gambling is ever correct play, so a
        reader who only has the text needs it as much as one looking at the page */
-    if (tier.guess === "forced") lines.push("This board is built so that at least one guess is forced, so that the forced guess has one cell strictly safest under the numbers you have been shown, and so that cell is not the one a simple risk-per-neighbour rule would pick. Deduction alone will not get you across, and the guess is not a coin toss either.");
+    if (tier.guess === "forced") lines.push("This board is built so that at least one guess is forced, and so that the forced guess has one cell strictly safest under the numbers you have been shown. Whether a simple risk-per-neighbour reading happens to find that cell is not arranged either way — sometimes it does. Deduction alone will not get you across, and the guess is not a coin toss either.");
     else lines.push("This board is built so that a careful solver never has to guess. Every step across can be deduced from the numbers; if you cannot see a safe move, there is one you have not deduced yet.");
     const conforms = tier.guess === "forced" ? !!(G.gate && G.gate.ok) : G.analysis.solvable;
     if (!conforms) lines.push("Caveat: the generator could not find a board meeting that guarantee for this seed within its attempt limit, so this particular board may not meet it.");

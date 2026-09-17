@@ -107,15 +107,26 @@ discards were the heuristic dying, only 2 were the declared reason, and on every
 shipped board the naive pick was safe **by construction**. The tier advertised a
 risk it did not charge to one particular strategy.
 
-`hellGate()` replaces it. A board ships when a guess is genuinely forced, the
-**exact posterior** names one frontier cell strictly safest, and the naive rule
-picks a different one. Nothing conditions on the outcome. Measured at the forced
-guess on shipped boards: exact solver dies 0.150, naive 0.383, blind 0.480.
+`hellGate()` replaces it. A board ships when a guess is genuinely forced and the
+**exact posterior** names one frontier cell strictly safest. Nothing conditions
+on the outcome.
 
 **Do not "simplify" this back to accepting on `a.solvable`.** That is the defect,
 not the safeguard.
 
-Two things that look like they could be relaxed and cannot:
+**And do not re-add a condition that the naive rule must be wrong.** An earlier
+version had one, and it made the obvious move wrong on *every* board — which is
+not a guess, it is a rule with a minus sign, and a player only has to learn the
+generator's policy rather than compute anything. Letting the split fall where it
+falls is the design. Measured over 301 qualifying boards: the obvious reading
+already finds the best cell 44.5% of the time; the exact posterior dies 0.150
+against the naive rule's 0.229, so computing still pays; and always avoiding the
+obvious cell dies 0.519, *worse than guessing blind* at 0.482, because half the
+time it means avoiding the right answer. The shortcut is punished rather than
+merely wasted. The posterior is well calibrated here — predicted 0.152, observed
+0.150.
+
+Two more things that look like they could be relaxed and cannot:
 
 - **The guard total is revealed on Hell** (`total: true`) because that is what
   makes the posterior computable, not because Hell got easier. Revealing it does
@@ -124,10 +135,12 @@ Two things that look like they could be relaxed and cannot:
   board. What it changes is the posterior: with the total hidden, 63% of
   frontier cells sit at exactly 0.500 and calibration bias is +0.043; with it
   shown, 26% and −0.000. Hiding it withheld a *rule*, not an *answer*.
-- **The anti-naive shortcut was checked and does not pay.** A player who
-  computes the naive cell and picks anything else scores 0.491 — worse than the
-  naive rule itself and no better than guessing blind. The gate survives its own
-  obvious exploit; that is measured, not assumed.
+- **Nothing about a player is recorded, anywhere.** There is no server, no
+  score, no ranking. The grading in Language Forge is a self-check the player
+  triggers and can skip, and the copy says so. Measurement in this repo is aimed
+  at the *puzzle* — is the board solvable, is the task derivable, does the guess
+  have a real answer — and never at the person or model playing it. Keep it that
+  way: quality control on a gift, not a test of whoever received it.
 
 `exactPosterior()` is vendored from Marco (marcologs.com), who ported the
 generator independently to audit it. Its `guardTotal` argument is **what the
