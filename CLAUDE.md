@@ -240,6 +240,29 @@ Patrol's arrow-key handler listens on `document`, so it checks
 another cabinet move the Patrol pawn. Any new document-level listener needs the
 same guard.
 
+### `sitemap.xml` and `robots.txt`
+
+`sitemap.xml` lists the four public URLs — the landing page, the arcade, the
+Tollbooth and `llms.txt` — each with a `lastmod` taken from that file's last
+commit date. **It rots the moment a page changes and this file does not.** Update
+it alongside any change to a page's content, or when a page is added; a stale
+`lastmod` is worse than none, because a crawler that learns to distrust it
+ignores the field entirely.
+
+`robots.txt` points crawlers at the sitemap and asks them to skip `/docs/` and
+`CLAUDE.md`, which are working material rather than part of the site. Note that
+this is *tidiness, not concealment* — the repository is public and those files
+are readable there regardless, which the file says out loud.
+
+`robots.txt` `Disallow` only asks. The stronger version is a Jekyll `exclude` in
+`_config.yml`, which keeps `docs/` off the published site altogether; a branch
+carrying that exists but is not merged. If it lands, the `Disallow` lines become
+redundant rather than wrong.
+
+Anything listed in the sitemap must not be disallowed in `robots.txt` — the test
+suite checks for exactly that contradiction, and that every URL the sitemap
+advertises actually resolves.
+
 ### `llms.txt`
 
 `llms.txt` at the site root describes both machines and the URL scheme for a
