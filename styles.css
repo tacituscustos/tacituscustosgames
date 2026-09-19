@@ -14,6 +14,14 @@
 
 * { box-sizing: border-box; }
 
+/* `hidden` has to win. The UA stylesheet's [hidden] { display: none } is a
+   single attribute selector, so any class rule that sets `display` outranks it
+   — .ctl is flex, and an element with its hidden attribute set stayed on
+   screen. This has bitten twice: Language Forge's answer key, where it was
+   patched one selector at a time, and Pareidolia's copy-probes row, where it
+   shipped. Fix it once, here, rather than remembering it per element. */
+[hidden] { display: none !important; }
+
 html { -webkit-text-size-adjust: 100%; }
 
 body {

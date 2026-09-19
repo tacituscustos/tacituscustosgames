@@ -48,6 +48,8 @@ Worth testing, because these have all broken before:
   the page before it is asked for
 - That the old prefixed URL parameters still resolve, and that `arcade.html`
   forwards them
+- That nothing carrying the `hidden` attribute is rendered, on any page, before
+  or after the interactions that toggle things
 - No console errors, and no horizontal overflow at 360px
 
 The generators are also worth exercising headless in bulk: strip the IIFE
@@ -380,6 +382,17 @@ link it contains, and checks each row of its parameter table against the machine
 file that would have to read those names. That is what keeps it honest. Update
 it alongside any change to parameter names, tier names, grid sizes or guard
 counts.
+
+### `[hidden]` must win
+
+`styles.css` carries `[hidden] { display: none !important; }` near the top, and
+it is not defensive clutter. The UA stylesheet's rule is a single attribute
+selector, so any class rule that sets `display` outranks it — `.ctl` is `flex`,
+and an element with its `hidden` attribute set stays on screen. This has been
+wrong twice: Language Forge's answer key, patched one selector at a time, and
+Pareidolia's copy-probes row, which shipped visible. A test sweeps every page,
+before and after the interactions that toggle things, and asserts nothing with
+`hidden` is rendered.
 
 ### Licensing
 
