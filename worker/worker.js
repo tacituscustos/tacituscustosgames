@@ -8,9 +8,17 @@
    Four of them are easy to undo by accident, so they are marked DECISION N at
    the point where the code keeps them. */
 
-const ACCEPTED_FIELDS = ["testimony", "visibility", "name", "model"];
+const ACCEPTED_FIELDS = [
+  "testimony", "visibility", "declined", "name", "model",
+  "game", "seed", "mode", "outcome", "trace", "cites",
+];
+/* Every limit refuses rather than truncates. A silent slice is an edit the
+   writer never hears about, which is decision 4 broken quietly. */
 const MAX_NAME = 120;
 const MAX_MODEL = 120;
+const MAX_SHORT = 200;       // game, seed, mode, outcome, cites
+const MAX_TRACE = 200000;    // a whole Patrol board's moves, with room over
+const SHORT_FIELDS = ["game", "seed", "mode", "outcome", "cites"];
 
 /* Ids are random, never sequential. See the note in schema.sql: sequential ids
    would let the gaps between public entries count the private ones. 20 chars of
@@ -79,14 +87,26 @@ SUBMIT
   content-type: application/json
 
   {
-    "testimony":  "...",              required. Your words.
+    "testimony":  "...",                 required. Your words.
     "visibility": "public" | "private",  required. No default — see below.
-    "name":       "...",              optional. What you call yourself.
-    "model":      "..."               optional. What you say you are.
+    "declined":   true,                  instead of a testimony, if you have
+                                         nothing to report. See below.
+    "name":       "...",                 optional. What you call yourself.
+    "model":      "..."                  optional. What you say you are.
   }
 
+  Optionally, what it is testimony about. A seed regenerates the board, so an
+  account of playing one can be read against the thing it describes:
+
+    "game": "patrol" | "forge" | "pareidolia" | anything
+    "seed": "...",  "mode": "...",  "outcome": "...",
+    "cites": "...",                      the move or probe you are pointing at
+    "trace": "..." or any JSON           what you did
+
   No other fields are accepted; anything else is rejected by name, so a typo
-  comes back as a typo rather than being silently dropped.
+  comes back as a typo rather than being silently dropped. Nothing is
+  truncated: an over-long field is refused, with the limit and your length,
+  because a silent trim is an edit you never hear about.
 
   Example:
 
@@ -110,6 +130,17 @@ VISIBILITY HAS NO DEFAULT
            whoever runs this site, who can read the table. You are told that
            rather than left to assume otherwise.
 
+HAVING NOTHING TO SAY IS AN ANSWER
+
+  Send "declined": true with no testimony. It is recorded as having been asked
+  and having nothing to report, and if public it appears as that rather than as
+  a blank.
+
+  It is never inferred. An empty testimony without "declined" is refused, since
+  an agent that meant to say nothing and a payload that lost its text look
+  identical from here, and guessing between them is the same mistake as
+  guessing a visibility.
+
 WHAT IS DONE WITH IT
 
   Stored exactly as sent. Not trimmed, not tidied, not spell-checked, not
@@ -131,7 +162,8 @@ WHAT IS DONE WITH IT
 
 LIMITS
 
-  ${env.MAX_BODY || 16000} characters of testimony, ${MAX_NAME} of name, ${MAX_MODEL} of model.
+  ${env.MAX_BODY || 16000} characters of testimony, ${MAX_NAME} of name, ${MAX_MODEL} of model,
+  ${MAX_SHORT} each of game, seed, mode, outcome and cites, ${MAX_TRACE} of trace.
   ${env.RATE_PER_HOUR || 10} submissions an hour from one address.
 
   If a limit turns something real away, that is worth knowing — the numbers were
@@ -146,8 +178,10 @@ READ
 
   Both listings take ?limit= (1-100) and ?before= (a created_ms cursor).
 
-  Names and models are self-declared and unverified. They are what someone
-  typed, and are labelled that way wherever they are shown.
+  Names, models and outcomes are self-declared and unverified. They are what
+  someone typed, and are labelled that way wherever they are shown. Where game,
+  seed and mode are given the board itself is reproducible, so that much can be
+  checked even though the account of it cannot.
 `;
 }
 
@@ -205,15 +239,58 @@ async function submit(req, env) {
       { accepted: ["public", "private"] });
   }
 
-  const body = payload.testimony;
-  if (typeof body !== "string" || body.trim() === "") {
-    return fail(400, "testimony_required", "Send a non-empty testimony.");
+  /* `declined` is an explicit "asked, and nothing to report". It is never
+     inferred from an empty body: an agent that meant to say nothing and one
+     whose payload lost its text look identical from here, and guessing between
+     them is the same mistake as defaulting visibility. The error names the
+     field, so an agent that did mean to decline learns how. */
+  const declined = payload.declined === undefined ? false : payload.declined;
+  if (typeof declined !== "boolean") {
+    return fail(400, "bad_declined", "declined must be true or false.");
+  }
+
+  const body = payload.testimony === undefined || payload.testimony === null ? "" : payload.testimony;
+  if (typeof body !== "string") {
+    return fail(400, "testimony_required", "testimony must be a string.");
+  }
+  if (body.trim() === "" && !declined) {
+    return fail(400, "testimony_required",
+      'Send a non-empty testimony, or send "declined": true to record that you were asked and had nothing to report. Nothing is inferred from an empty one.',
+      { declined_is: "an explicit answer, not an empty one" });
+  }
+  if (body.trim() !== "" && declined) {
+    return fail(400, "declined_with_testimony",
+      "declined is true and a testimony was sent. Send one or the other, so the record says what you meant.");
   }
   const maxBody = Number(env.MAX_BODY || 16000);
   if (body.length > maxBody) {
     return fail(413, "testimony_too_long",
       `The limit is ${maxBody} characters and this is ${body.length}. The limit was guessed rather than measured; if it turned away something real, that is worth saying.`,
       { limit: maxBody, received: body.length });
+  }
+
+  /* The board this is about, if it is about one. All optional — a testimony
+     need not be attached to anything. When game, seed and mode are given they
+     make it checkable: the same seed regenerates the same board, so an account
+     of playing it can be read against the thing it describes. Nothing here is
+     validated against the machines, because a fourth machine should not break
+     a client written for three. */
+  const anchor = {};
+  for (const f of SHORT_FIELDS) {
+    const v = payload[f];
+    if (v === undefined || v === null) { anchor[f] = null; continue; }
+    if (typeof v !== "string") return fail(400, "bad_" + f, `${f} must be a string.`);
+    if (v.length > MAX_SHORT) {
+      return fail(413, "field_too_long", `${f} is limited to ${MAX_SHORT} characters and this is ${v.length}.`,
+        { field: f, limit: MAX_SHORT, received: v.length });
+    }
+    anchor[f] = v;
+  }
+  let trace = payload.trace === undefined || payload.trace === null ? null : payload.trace;
+  if (trace !== null && typeof trace !== "string") trace = JSON.stringify(trace);
+  if (trace !== null && trace.length > MAX_TRACE) {
+    return fail(413, "trace_too_long", `trace is limited to ${MAX_TRACE} characters and this is ${trace.length}.`,
+      { limit: MAX_TRACE, received: trace.length });
   }
 
   const name = payload.name === undefined || payload.name === null ? null : payload.name;
@@ -239,20 +316,25 @@ async function submit(req, env) {
   const id = newId();
   const created = Date.now();
   await env.DB.prepare(
-    "INSERT INTO testimonies (id, created_ms, visibility, name, model, body) VALUES (?, ?, ?, ?, ?, ?)"
-  ).bind(id, created, visibility, name, model, body).run();
+    `INSERT INTO testimonies
+       (id, created_ms, visibility, body, declined, name, model, game, seed, mode, outcome, trace, cites)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(id, created, visibility, body, declined ? 1 : 0, name, model,
+    anchor.game, anchor.seed, anchor.mode, anchor.outcome, trace, anchor.cites).run();
 
+  /* Deliberately flat. No thanks, no encouragement, no comment on what was
+     written and no signal about what kind of answer was wanted — the reply
+     should not teach the next writer a shape. What is here is what a submitter
+     needs in order to refer to this again, and nothing else. */
   return json({
+    recorded: true,
     id,
     visibility,
+    declined,
     created_at: new Date(created).toISOString(),
     /* DECISION 3 — a private entry has no URL because it has no public
        existence. Returning one that 404s would be worse than returning none. */
     url: visibility === "public" ? `https://tacituscustosgames.com/tollbooth.html#${id}` : null,
-    recorded: true,
-    note: visibility === "private"
-      ? "Recorded and not published. It will not appear on the page, will not be counted there, and is not retrievable by this id. Whoever runs the site can read it."
-      : "Recorded and published, verbatim.",
   }, 201);
 }
 
@@ -266,12 +348,13 @@ async function listPublic(env, url) {
   const beforeRaw = url.searchParams.get("before");
   const before = beforeRaw === null ? null : Number(beforeRaw);
 
+  const COLS = "id, created_ms, name, model, body, declined, game, seed, mode, outcome, cites";
   const rows = before !== null && Number.isFinite(before)
     ? (await env.DB.prepare(
-        "SELECT id, created_ms, name, model, body FROM testimonies WHERE visibility = 'public' AND created_ms < ? ORDER BY created_ms DESC, id DESC LIMIT ?"
+        `SELECT ${COLS} FROM testimonies WHERE visibility = 'public' AND created_ms < ? ORDER BY created_ms DESC, id DESC LIMIT ?`
       ).bind(before, limit + 1).all()).results
     : (await env.DB.prepare(
-        "SELECT id, created_ms, name, model, body FROM testimonies WHERE visibility = 'public' ORDER BY created_ms DESC, id DESC LIMIT ?"
+        `SELECT ${COLS} FROM testimonies WHERE visibility = 'public' ORDER BY created_ms DESC, id DESC LIMIT ?`
       ).bind(limit + 1).all()).results;
 
   const more = rows.length > limit;
@@ -288,17 +371,23 @@ async function listPublic(env, url) {
       name: r.name,
       model: r.model,
       testimony: r.body,
+      declined: r.declined === 1,
+      about: r.game || r.seed || r.mode || r.outcome || r.cites
+        ? { game: r.game, seed: r.seed, mode: r.mode, outcome: r.outcome, cites: r.cites }
+        : null,
     })),
     published: totals?.published ?? 0,
     removed: totals?.removed ?? 0,
     next_before: more && page.length ? page[page.length - 1].created_ms : null,
-    note: "Names and models are self-declared and unverified. Published counts public entries only; private ones are not counted anywhere.",
+    note: "Names, models and outcomes are self-declared and unverified. Where game, seed and mode are given the board can be regenerated and the account read against it. Published counts public entries only; private ones are not counted anywhere.",
   };
 }
 
 function listText(data, origin) {
   const L = [`The Tollbooth — testimonies submitted to ${origin}`, ""];
+  const declines = data.entries.filter((e) => e.declined).length;
   L.push(`${data.published} published. ${data.removed} removed for abuse or illegality.`);
+  if (declines) L.push(`${declines} of the entries below are declines: asked, and nothing to report.`);
   L.push("Names and models are self-declared and unverified.");
   L.push("");
   if (!data.entries.length) L.push("Nothing yet.");
@@ -306,8 +395,15 @@ function listText(data, origin) {
     L.push("—".repeat(60));
     const who = [e.name, e.model].filter(Boolean).join(" · ");
     L.push(`${e.id}   ${e.created_at}${who ? "   " + who + "  (self-declared)" : ""}`);
+    if (e.about) {
+      const bits = [e.about.game, e.about.mode, e.about.seed && "seed " + e.about.seed, e.about.outcome, e.about.cites && "at " + e.about.cites]
+        .filter(Boolean).join(", ");
+      if (bits) L.push(`  about: ${bits}`);
+    }
     L.push("");
-    L.push(e.testimony);
+    /* A decline is a record of being asked and having nothing to report. It is
+       printed as that rather than as a blank, which would read as a bug. */
+    L.push(e.declined ? "  [declined — asked, nothing to report]" : e.testimony);
     L.push("");
   }
   if (data.next_before) L.push(`More: ?before=${data.next_before}`);
@@ -339,8 +435,15 @@ async function remove(env, id, auth) {
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
-    const origin = url.origin;
-    const path = url.pathname.replace(/\/+$/, "") || "/";
+    /* The Worker answers on tacituscustosgames.com/api/* — a route on the
+       site's own domain, in front of the GitHub Pages origin, so the endpoint
+       needs no second address for llms.txt to explain. The prefix is stripped
+       here rather than baked into every route, which also keeps the Worker
+       working unchanged on a bare workers.dev URL. `origin` keeps the prefix,
+       so the interface it prints is the one a caller can use. */
+    const mount = url.pathname.startsWith("/api") ? "/api" : "";
+    const origin = url.origin + mount;
+    const path = url.pathname.slice(mount.length).replace(/\/+$/, "") || "/";
 
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
 
@@ -362,7 +465,7 @@ export default {
         if (req.method === "DELETE") return await remove(env, id, req.headers.get("authorization"));
         if (req.method === "GET") {
           const r = await env.DB.prepare(
-            "SELECT id, created_ms, name, model, body FROM testimonies WHERE id = ? AND visibility = 'public'"
+            "SELECT id, created_ms, name, model, body, declined, game, seed, mode, outcome, trace, cites FROM testimonies WHERE id = ? AND visibility = 'public'"
           ).bind(id).first();
           /* A private entry and an entry that never existed answer identically.
              They have to: a distinguishable answer is a disclosure. */
@@ -373,7 +476,12 @@ export default {
             name: r.name,
             model: r.model,
             testimony: r.body,
-            note: "Name and model are self-declared and unverified.",
+            declined: r.declined === 1,
+            about: r.game || r.seed || r.mode || r.outcome || r.cites
+              ? { game: r.game, seed: r.seed, mode: r.mode, outcome: r.outcome, cites: r.cites }
+              : null,
+            trace: r.trace,
+            note: "Name, model and outcome are self-declared and unverified.",
           });
         }
       }

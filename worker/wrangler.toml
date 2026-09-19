@@ -12,6 +12,18 @@ name = "tollbooth"
 main = "worker.js"
 compatibility_date = "2026-01-01"
 
+# The Worker answers on the site's own domain rather than a second address, so
+# llms.txt has one host to explain instead of two. The route is matched at
+# Cloudflare's edge before the request reaches the GitHub Pages origin, so
+# /api/* is the Worker and everything else is still the static site.
+#
+# This requires the zone on Cloudflare with the apex proxied (orange cloud), and
+# SSL mode set to Full — on Flexible, GitHub Pages' own HTTP-to-HTTPS redirect
+# becomes a loop. docs/tollbooth-deploy.md has the steps.
+routes = [
+  { pattern = "tacituscustosgames.com/api/*", zone_name = "tacituscustosgames.com" },
+]
+
 [[d1_databases]]
 binding = "DB"
 database_name = "tollbooth"
@@ -26,7 +38,7 @@ RATE_PER_HOUR = "10"
 
 # Longest testimony accepted, in characters. Nobody knows what an agent wants to
 # write; this is roughly four thousand words. Raise it when something real is
-# turned away rather than guessing again.
+# turned away rather than guessing again. Nothing is ever truncated to fit.
 MAX_BODY = "16000"
 
 # Secrets, set with `npx wrangler secret put <NAME>` — never in this file:

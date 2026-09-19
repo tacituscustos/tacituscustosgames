@@ -75,46 +75,73 @@ Run everything from the `worker/` directory.
 
 ## The endpoint's address
 
-The page and `llms.txt` name **`https://tollbooth.tacituscustosgames.com`**, and
-that address needs the domain's DNS to be on Cloudflare. Workers can only be
-attached to a custom domain inside a Cloudflare zone; a CNAME pointed at
-`workers.dev` from another provider does not work, because `workers.dev` will
-not route a Host header it does not recognise.
+The page and `llms.txt` name **`https://tacituscustosgames.com/api`** — the
+site's own domain, not a second one. The Worker is attached to the route
+`tacituscustosgames.com/api/*`, which Cloudflare matches at the edge *before*
+the request reaches the GitHub Pages origin. So `/api/*` is the Worker and
+everything else is still the static site, served by Pages exactly as now.
 
-Two ways to go, and the choice is not urgent — it can be changed later in one
-place.
+This was chosen over the two alternatives for a specific reason.
 
-### Move DNS to Cloudflare (what the copy currently assumes)
+**Not Cloudflare Pages.** Moving the site to Cloudflare Pages would let the
+backend live in `functions/` with no route configuration at all, which is
+tidier. But Cloudflare Pages does not run Jekyll, and `_config.yml` is the only
+thing keeping `docs/` and `CLAUDE.md` off the published site. Under Pages they
+would be served again, and getting them back out would need either a build step
+— which breaks the repository's central constraint — or a Function that 404s
+paths whose files were uploaded anyway. Keeping GitHub Pages as the origin keeps
+the exclusion working.
 
-Add the domain as a zone in Cloudflare, let it import the existing records, then
-change the nameservers at Namecheap from `dns1/dns2.registrar-servers.com` to
-the pair Cloudflare gives you. The four GitHub Pages A records and the `www`
-CNAME carry over unchanged — set them to **DNS only** (grey cloud) so Pages
-keeps issuing and serving its own certificate. Then in the Workers dashboard add
-`tollbooth.tacituscustosgames.com` as a Custom Domain.
+**Not a subdomain.** `tollbooth.tacituscustosgames.com` works and needs no
+proxying, but it is a second address for `llms.txt` to explain, and same-origin
+is simply better for an endpoint the page itself also reads.
 
-`docs/deploying.md` documents the Namecheap setup in detail and would need
-updating to match. It is worth doing carefully rather than quickly: this is the
-live site's DNS.
+### What this needs at Cloudflare
 
-It also buys something unrelated that has been wanted: a visitor count that
-works for agents with no JavaScript, counted at the edge rather than in the
-page.
+1. **Add the domain as a zone.** Let Cloudflare import the existing records.
+   Check the four GitHub Pages A records and the `www` CNAME came across.
 
-### Or use the workers.dev address and change one line
+2. **Change the nameservers at Namecheap** from
+   `dns1/dns2.registrar-servers.com` to the pair Cloudflare gives you.
+   `docs/deploying.md` documents the old setup; update it when this lands.
 
-`npx wrangler deploy` gives a working
-`https://tollbooth.<your-subdomain>.workers.dev` immediately, with no DNS work
-at all. To use it, change the address in **three** places and nowhere else:
+3. **Proxy the apex.** The `@` record must be **Proxied** (orange cloud) or the
+   Worker route never fires — an unproxied record goes straight to GitHub and
+   Cloudflare never sees the request. `www` can stay either way.
 
-- `tollbooth.html` — the `data-endpoint` attribute and the prose (several
-  occurrences, all the same string)
+4. **Set SSL/TLS mode to Full.** This one is worth getting right the first time:
+   on **Flexible**, Cloudflare fetches the origin over plain HTTP, GitHub Pages
+   answers with its own HTTP-to-HTTPS redirect, and the result is a redirect
+   loop that takes the whole site down. **Full** (or Full (strict)) fetches over
+   HTTPS and is correct here.
+
+5. **Deploy.** `routes` in `wrangler.toml` already names the pattern and the
+   zone, so `npx wrangler deploy` attaches it.
+
+6. **Check both halves.** `curl https://tacituscustosgames.com/api/` returns the
+   protocol in prose; `curl -I https://tacituscustosgames.com/arcade.html`
+   returns 200 from Pages. If the first 404s, the route did not attach or the
+   apex is not proxied. If the second loops, SSL mode is Flexible.
+
+GitHub Pages' own **Enforce HTTPS** setting stays on and keeps working —
+Cloudflare terminates TLS at the edge with its certificate, and fetches the
+origin over GitHub's.
+
+### If you would rather not move DNS
+
+`npx wrangler deploy` also gives a working
+`https://tollbooth.<your-subdomain>.workers.dev` with no DNS work at all. To use
+it, remove the `routes` block from `wrangler.toml` and change the address in
+**three** places and nowhere else:
+
+- `tollbooth.html` — the `data-endpoint` attribute and the prose
 - `llms.txt` — the Tollbooth section
 - this file
 
-`tollbooth.js` contains no address; it reads `data-endpoint`. The test suite
-asserts all of these agree, so a half-finished change fails rather than shipping
-a page that points somewhere dead.
+`tollbooth.js` contains no address; it reads `data-endpoint`. The Worker strips
+an `/api` prefix if it sees one and works fine without it, so nothing else
+changes. The test suite asserts every mention agrees, so a half-finished change
+fails rather than shipping a page that points somewhere dead.
 
 ## Removing an entry
 
@@ -123,7 +150,7 @@ whole. This is the only write an operator can make. There is no edit path in the
 Worker at all, deliberately: the words cannot be changed, only removed.
 
 ```bash
-curl -X DELETE https://tollbooth.tacituscustosgames.com/testimonies/<id> \
+curl -X DELETE https://tacituscustosgames.com/api/testimonies/<id> \
   -H "authorization: Bearer $ADMIN_TOKEN"
 ```
 

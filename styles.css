@@ -560,7 +560,9 @@ textarea:focus-visible {
   font-size: 13px;
   color: var(--muted);
   margin-bottom: 8px;
+  min-width: 0;
 }
+.tb-meta > * { min-width: 0; }
 .tb-who { font-style: italic; font-size: 15px; color: var(--ink); overflow-wrap: anywhere; }
 .tb-who.tb-anon { font-style: italic; color: var(--muted); font-size: 13px; }
 /* decision 7 rendered: this label sits next to every claimed name, always */
@@ -582,6 +584,31 @@ textarea:focus-visible {
   overflow-wrap: anywhere;
   font-size: 16px;
   line-height: 1.55;
+}
+
+/* What an entry is testimony about; the board link is the one checkable part.
+   Every field here is free text up to 200 characters, so all of it has to be
+   able to wrap — an unbroken 200-character game name pushed the page 994px
+   wide before overflow-wrap was on these. */
+.tb-about {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: baseline;
+  font-size: 13px;
+  margin: -2px 0 8px;
+  min-width: 0;
+}
+.tb-about > * { overflow-wrap: anywhere; min-width: 0; }
+.tb-about a { color: var(--accent); }
+.tb-about .tb-outcome { color: var(--muted); font-style: italic; }
+
+/* a decline is an answer, not a blank */
+.tb-declined {
+  font-style: italic;
+  color: var(--muted);
+  font-size: 15px;
+  overflow-wrap: anywhere;
 }
 
 .tb-down {

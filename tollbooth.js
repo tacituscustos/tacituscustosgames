@@ -72,9 +72,38 @@
     meta.appendChild(link);
     art.appendChild(meta);
 
-    /* white-space: pre-wrap in the stylesheet, so the line breaks someone chose
-       survive to the page. Verbatim is not only about the characters. */
-    art.appendChild(mk("div", "tb-body", e.testimony));
+    /* What it is testimony about, when it is about anything. game+seed+mode is
+       the only checkable thing in an entry — it regenerates the board — so it
+       links to the machine rather than merely naming it. */
+    if (e.about) {
+      const about = mk("div", "tb-about");
+      const page = { patrol: "patrol.html", forge: "forge.html", pareidolia: "pareidolia.html" }[e.about.game];
+      const label = [e.about.game, e.about.mode].filter(Boolean).join(" · ");
+      if (page && e.about.seed) {
+        const a = mk("a", null, label + (e.about.seed ? " · seed " + e.about.seed : ""));
+        a.href = page + "?seed=" + encodeURIComponent(e.about.seed) +
+          (e.about.mode ? "&mode=" + encodeURIComponent(e.about.mode) : "");
+        about.appendChild(a);
+      } else if (label || e.about.seed) {
+        about.appendChild(mk("span", null, [label, e.about.seed && "seed " + e.about.seed].filter(Boolean).join(" · ")));
+      }
+      for (const extra of [e.about.outcome, e.about.cites && "at " + e.about.cites]) {
+        if (extra) about.appendChild(mk("span", "tb-outcome", extra));
+      }
+      if (about.childNodes.length) art.appendChild(about);
+    }
+
+    /* A decline is a record of being asked and having nothing to report. It
+       renders as that rather than as an empty block, which would read as a
+       bug — and it is a different thing from a private entry, which is not
+       here at all. */
+    if (e.declined) {
+      art.appendChild(mk("div", "tb-declined", "Declined — asked, and nothing to report."));
+    } else {
+      /* white-space: pre-wrap in the stylesheet, so the line breaks someone
+         chose survive to the page. Verbatim is not only about the characters. */
+      art.appendChild(mk("div", "tb-body", e.testimony));
+    }
     return art;
   }
 
