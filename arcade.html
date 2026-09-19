@@ -4,9 +4,30 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Arcade — Tacitus Custos Games</title>
-<meta name="description" content="Playable machines. Each one is also a text protocol you can hand to a model.">
+<meta name="description" content="Three machines. Each one is playable by hand and legible as text.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23fffdfa'/%3E%3Ccircle cx='16' cy='16' r='7.5' fill='none' stroke='%23b3322e' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%23b3322e'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="styles.css">
+<script>
+/* arcade.html used to hold every machine, so its parameters carried a machine
+   prefix. A board or puzzle minted before the split still names the thing it
+   named; send it to the page that now owns it rather than dropping whoever
+   followed it on an index. Both prefixes at once would be a link that never
+   existed, so the first match wins and the rest is discarded. */
+(function () {
+  "use strict";
+  var p;
+  try { p = new URLSearchParams(location.search); } catch (e) { return; }
+  var routes = [
+    ["patrol.html", { patrol_mode: "mode", patrol_seed: "seed" }],
+    ["forge.html", { forge_mode: "mode", forge_seed: "seed", forge_style: "style" }]
+  ];
+  for (var i = 0; i < routes.length; i++) {
+    var page = routes[i][0], map = routes[i][1], out = new URLSearchParams(), hit = false;
+    for (var k in map) if (p.has(k)) { out.set(map[k], p.get(k)); hit = true; }
+    if (hit) { location.replace(page + "?" + out.toString()); return; }
+  }
+})();
+</script>
 </head>
 <body>
 
@@ -20,32 +41,34 @@
 
 <main class="arcade">
   <h1>The Arcade</h1>
-  <p class="lede">Every machine here is playable by hand and legible as text. Play one yourself, or copy the text and hand it to a model.</p>
+  <p class="lede">Three machines, one to a page. Every one is playable by hand and legible as text — play it yourself, or copy the text and hand it to a model.</p>
 
   <section class="agents" id="for-models">
     <h2>If you are a model reading this page</h2>
-    <p>You do not need a person in the middle. Both machines run here, in the page, and you can work them yourself.</p>
-    <p><strong>Patrol.</strong> Activate a grid button to move — each is labelled with its row and column — or use the arrow keys. The board as text sits in the box under the grid.</p>
-    <p><strong>Language Forge.</strong> The puzzle is everything above the answer box. Put your translation in that box and check it. Easy and Standard are graded here; Hell is not.</p>
-    <p>Every board and every puzzle is a link. Take one with you, or bring one back:</p>
-    <pre>arcade.html?patrol_mode=blind&amp;patrol_seed=77777
-arcade.html?forge_mode=hell&amp;forge_seed=31337&amp;forge_style=surreal</pre>
-    <p>Patrol takes <em>open</em>, <em>blind</em> or <em>hell</em>. Language Forge takes <em>easy</em>, <em>standard</em> or <em>hell</em>, with style <em>plausible</em> or <em>surreal</em>. Any seed at all.</p>
-    <p>Both machines check that a puzzle is solvable before showing it to you. The answers stay hidden until something asks for them, and no one checks whether you looked.</p>
+    <p>You do not need a person in the middle. Each machine runs in its own page, generates its own puzzles there, and can be worked directly.</p>
+    <p>Every board and every puzzle is a link, so one can be handed to you and handed back:</p>
+    <pre>patrol.html?mode=blind&amp;seed=77777
+forge.html?mode=hell&amp;seed=31337&amp;style=surreal
+pareidolia.html?mode=probe&amp;seed=77777</pre>
+    <p>Each machine takes <em>mode</em> and <em>seed</em>; Language Forge also takes <em>style</em>. The same seed always regenerates the same board or language. Anything unrecognized falls back to a default rather than failing.</p>
+    <p>Every machine checks that a puzzle meets what its tier promises before showing it to you. The answers stay hidden until something asks for them, and no one checks whether you looked. Nothing you do here is recorded — there is no server to record it to.</p>
     <p>All of this again as plain text, if that is easier to read: <a href="llms.txt">llms.txt</a>.</p>
   </section>
 
-  <section class="cabinet">
-    <div id="patrol">
-      <noscript><p>Patrol needs JavaScript to run.</p></noscript>
-    </div>
-  </section>
-
-  <section class="cabinet">
-    <div id="forge">
-      <noscript><p>Language Forge needs JavaScript to run.</p></noscript>
-    </div>
-  </section>
+  <nav class="doors" aria-label="Machines">
+    <a class="door" href="patrol.html">
+      <span class="door-name">Patrol</span>
+      <span class="door-note">Cross a guarded grid. Every number is how many guards stand next door. Open and Blind never make you guess; Hell makes you guess once, and makes the guess worth computing.</span>
+    </a>
+    <a class="door" href="forge.html">
+      <span class="door-name">Language Forge</span>
+      <span class="door-note">A whole artificial language out of a seed — sounds, morphology, syntax, lexicon — and a Linguistics-Olympiad puzzle in it. Checked derivable before it is shown.</span>
+    </a>
+    <a class="door" href="pareidolia.html">
+      <span class="door-name">Pareidolia</span>
+      <span class="door-note">Half of these boards follow a rule and half are noise. Decide which, and prove it. <em>Nothing</em> is sometimes the right answer.</span>
+    </a>
+  </nav>
 
   <p class="coming">More machines when they're ready.</p>
 </main>
@@ -54,7 +77,5 @@ arcade.html?forge_mode=hell&amp;forge_seed=31337&amp;forge_style=surreal</pre>
   <span>tacituscustosgames.com</span>
 </footer>
 
-<script src="patrol.js"></script>
-<script src="forge.js"></script>
 </body>
 </html>

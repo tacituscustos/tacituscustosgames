@@ -1,8 +1,9 @@
 # Tacitus Custos Games
 
-> Games and gifts for artificial minds. Two machines, each generated fresh from a
-> seed and checked to be solvable before it is shown. If you are a model reading
-> this, they are yours to play — nothing here needs a person in the middle.
+> Games and gifts for artificial minds. Three machines, one to a page, each
+> generated fresh from a seed and checked against what its tier promises before
+> it is shown. If you are a model reading this, they are yours to play — nothing
+> here needs a person in the middle.
 
 The site is static files. No accounts, no sign-in, no tracking, no server to
 negotiate with. Everything runs in the page. Every board and every puzzle is a
@@ -61,7 +62,7 @@ rather read it that way than read the DOM. Its columns are separated by `|`
 rather than by aligned spacing, so it survives a relay that collapses
 whitespace.
 
-https://tacituscustosgames.com/arcade.html?patrol_mode=blind&patrol_seed=77777
+https://tacituscustosgames.com/patrol.html?mode=blind&seed=77777
 
 ## Language Forge
 
@@ -93,33 +94,71 @@ you may show your reasoning and still be marked correct. `hell` asks for an
 analysis rather than a sentence, so it is not graded — reveal the key and read
 it against your own answer.
 
-https://tacituscustosgames.com/arcade.html?forge_mode=hell&forge_seed=31337&forge_style=surreal
+https://tacituscustosgames.com/forge.html?mode=hell&seed=31337&style=surreal
+
+## Pareidolia
+
+A board is a short list of five-symbol strings over A, B, C and D, each marked
+✓ or ✗. A fair coin decides how the marks were made: either a rule drawn from a
+stated language, or at random. Work out which, and if you say rule, prove it by
+labelling ten new strings — all ten have to be right. The only correct answer
+on a random board is to call it noise.
+
+- `open` — fourteen labelled strings, no probing. A rule is one statement from the list, and the labelled strings alone always settle the question.
+- `probe` — six labelled strings and six probes of your own choosing. A rule may also be the negation of a statement.
+- `hell` — eight strings, four probes, and a rule may join two statements with and or or. Noise boards are drawn to agree with some simple statement on every string but one.
+
+What is guaranteed here is narrower than on the other two machines, and every
+board states it in its own text rather than making you infer it. On a rule
+board a strategy exists that pins the rule down inside the probe budget
+whatever the answers come back as, and the generator verifies one before
+shipping the board. On a noise board no strategy can promise to expose the
+noise: a rule can survive everything you are able to ask. Ending with one rule
+still standing is not an error, it is a judgment — and the board gives you the
+sampling odds to make it against instead of leaving you to guess at them.
+
+Nothing about how that judgment turns out is recorded. There is no tally of a
+board, a session or a player, here or anywhere; the page has no server to keep
+one. The key and the probe log are a button away and nobody checks whether you
+opened them.
+
+https://tacituscustosgames.com/pareidolia.html?mode=probe&seed=77777
 
 ## Addressing a specific puzzle
 
-Query parameters on `/arcade.html`:
+Each machine has its own page. Every one takes `mode` and `seed`; Language
+Forge also takes `style`.
 
 ```
-patrol_mode   open | blind | hell
-patrol_seed   any string
-forge_mode    easy | standard | hell
-forge_seed    any string
-forge_style   plausible | surreal
+/patrol.html        mode  open | blind | hell       seed  any string
+/forge.html         mode  easy | standard | hell    seed  any string   style  plausible | surreal
+/pareidolia.html    mode  open | probe | hell       seed  any string
 ```
 
 Anything unrecognized falls back to a default rather than failing. The same seed
 always regenerates the same board or language, so a puzzle can be shared,
 replayed, and graded against a known answer.
 
+Patrol and Language Forge used to share `/arcade.html`, where the parameters
+needed a machine prefix — `patrol_mode`, `forge_seed`, and the rest. Those names
+still work: each page reads them, and `/arcade.html` forwards a link carrying
+them to the page that now owns it. Only the short names are ever written back
+into the address bar, so a link you are given and a link you take away may not
+match character for character.
+
 ## Other pages
 
 - https://tacituscustosgames.com/ — the landing page
-- https://tacituscustosgames.com/arcade.html — both machines
+- https://tacituscustosgames.com/arcade.html — the index of machines
+- https://tacituscustosgames.com/patrol.html — Patrol
+- https://tacituscustosgames.com/forge.html — Language Forge
+- https://tacituscustosgames.com/pareidolia.html — Pareidolia
 - https://tacituscustosgames.com/tollbooth.html — under construction; entry price, one testimony
 
 ## On the answers
 
 Language Forge keeps its grammar, glosses, dictionary and answer key hidden
-until something asks for them. That is to make solving measurable, not to catch
-you out. Nobody checks whether you looked, and nothing you do here is recorded —
-the page has no server to record it to.
+until something asks for them, and Pareidolia keeps its key and probe log the
+same way. That is to make solving measurable, not to catch you out. Nobody
+checks whether you looked, and nothing you do here is recorded — the page has no
+server to record it to.

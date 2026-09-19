@@ -384,20 +384,27 @@
     seedEcho = el("pt-seedecho"), tierEcho = el("pt-tierecho");
 
   /* ---------------- addressable boards ----------------
-     ?patrol_mode=blind&patrol_seed=77777 — a board is a link, so it can be
-     handed to someone (or something) else and come back the same board.
-     A malformed value falls back to the default rather than throwing. */
-  const URL_MODE = "patrol_mode", URL_SEED = "patrol_seed";
+     ?mode=blind&seed=77777 — a board is a link, so it can be handed to someone
+     (or something) else and come back the same board. A malformed value falls
+     back to the default rather than throwing.
+
+     Both machines once shared arcade.html, where the parameters needed a
+     machine prefix to tell them apart. Those older names are still read, so a
+     link minted before the split still resolves to the board it names; only
+     the short names are ever written back. arcade.html forwards them here. */
+  const URL_MODE = "mode", URL_SEED = "seed";
+  const OLD_MODE = "patrol_mode", OLD_SEED = "patrol_seed";
   function fromUrl() {
     let p;
     try { p = new URLSearchParams(location.search); } catch { return {}; }
-    const mode = (p.get(URL_MODE) || "").toLowerCase();
-    const seed = p.get(URL_SEED);
+    const mode = (p.get(URL_MODE) || p.get(OLD_MODE) || "").toLowerCase();
+    const seed = p.get(URL_SEED) || p.get(OLD_SEED);
     return { tierKey: TIERS[mode] ? mode : null, seed: seed || null };
   }
   function toUrl() {
     try {
       const p = new URLSearchParams(location.search);
+      p.delete(OLD_MODE); p.delete(OLD_SEED);
       p.set(URL_MODE, state.tierKey);
       p.set(URL_SEED, state.seed);
       history.replaceState(null, "", location.pathname + "?" + p + location.hash);
@@ -652,8 +659,10 @@
   document.addEventListener("keydown", (e) => {
     if (!(e.key in ARROWS)) return;
     const t = e.target;
-    /* the arcade holds more than one machine: only steer when focus is loose or
-       inside this one, so arrow keys aimed at another cabinet don't move the pawn */
+    /* the page holds more than this machine — a header, links, whatever comes
+       later — so only steer when focus is loose or inside this one, and never
+       when it is in a text field. Arrow keys aimed at something else on the
+       page must not move the pawn. */
     if (t && t !== document.body && !root.contains(t)) return;
     if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
     const cur = state.run, n = state.G.n;

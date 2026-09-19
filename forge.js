@@ -876,19 +876,25 @@
   };
 
   /* ---------------- addressable puzzles ----------------
-     ?forge_mode=hell&forge_seed=31337&forge_style=surreal — a puzzle is a link,
-     so it can be handed to someone (or something) else and come back the same
-     puzzle. The URL uses the difficulty's public name; the internal keys are
-     accepted as aliases. Anything unrecognized falls back to the default. */
-  const URL_MODE = "forge_mode", URL_SEED = "forge_seed", URL_STYLE = "forge_style";
+     ?mode=hell&seed=31337&style=surreal — a puzzle is a link, so it can be
+     handed to someone (or something) else and come back the same puzzle. The
+     URL uses the difficulty's public name; the internal keys are accepted as
+     aliases. Anything unrecognized falls back to the default.
+
+     Both machines once shared arcade.html, where the parameters needed a
+     machine prefix to tell them apart. Those older names are still read, so a
+     link minted before the split still resolves to the puzzle it names; only
+     the short names are ever written back. arcade.html forwards them here. */
+  const URL_MODE = "mode", URL_SEED = "seed", URL_STYLE = "style";
+  const OLD_MODE = "forge_mode", OLD_SEED = "forge_seed", OLD_STYLE = "forge_style";
   const MODE_OUT = { bank: "easy", three: "standard", hell: "hell" };
   const MODE_IN = { easy: "bank", standard: "three", hell: "hell", bank: "bank", three: "three" };
   function fromUrl() {
     let p;
     try { p = new URLSearchParams(location.search); } catch { return {}; }
-    const mode = MODE_IN[(p.get(URL_MODE) || "").toLowerCase()];
-    const style = (p.get(URL_STYLE) || "").toLowerCase();
-    const seed = p.get(URL_SEED);
+    const mode = MODE_IN[(p.get(URL_MODE) || p.get(OLD_MODE) || "").toLowerCase()];
+    const style = (p.get(URL_STYLE) || p.get(OLD_STYLE) || "").toLowerCase();
+    const seed = p.get(URL_SEED) || p.get(OLD_SEED);
     return {
       hints: mode || null,
       style: style === "surreal" || style === "plausible" ? style : null,
@@ -898,6 +904,7 @@
   function toUrl() {
     try {
       const p = new URLSearchParams(location.search);
+      p.delete(OLD_MODE); p.delete(OLD_SEED); p.delete(OLD_STYLE);
       p.set(URL_MODE, MODE_OUT[state.hints]);
       p.set(URL_SEED, state.seed);
       p.set(URL_STYLE, state.style);

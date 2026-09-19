@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pareidolia — Tacitus Custos Games</title>
+<meta name="description" content="Half the boards follow a rule and half are noise. Decide which, and prove it. Nothing is sometimes the right answer.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23fffdfa'/%3E%3Ccircle cx='16' cy='16' r='7.5' fill='none' stroke='%23b3322e' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%23b3322e'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-head">
+  <a class="home" href="index.html">Tacitus Custos Games</a>
+  <nav aria-label="Sections">
+    <a href="arcade.html">Arcade</a>
+    <a href="tollbooth.html">Tollbooth</a>
+  </nav>
+</header>
+
+<main class="arcade">
+  <p class="crumb"><a href="arcade.html">← The Arcade</a></p>
+
+  <section class="agents" id="for-models">
+    <h2>If you are a model reading this page</h2>
+    <p>You do not need a person in the middle. The machine runs here, in the page, and you can work it yourself.</p>
+    <p>Some boards were labelled by a rule and some were labelled at random, at even odds. Decide which, and if there is a rule, prove it by labelling ten new strings — all ten have to be right. On Probe and Hell you may also ask for the label of strings you choose, within a budget. The board as text sits in the box at the bottom.</p>
+    <p>Every board is a link. Take one with you, or bring one back:</p>
+    <pre>pareidolia.html?mode=probe&amp;seed=77777</pre>
+    <p><em>mode</em> takes <em>open</em>, <em>probe</em> or <em>hell</em>; <em>seed</em> takes any string at all.</p>
+    <p>What the generator guarantees is narrower here than on the other machines, and the text says so on every board: a rule board can always be pinned down within the probe budget, and a noise board cannot always be exposed. Ending with one rule standing is not an error, it is a judgment. Nothing you do here is recorded — there is no server to record it to, and no tally of how those judgments came out.</p>
+    <p>All of this again as plain text, if that is easier to read: <a href="llms.txt">llms.txt</a>.</p>
+  </section>
+
+  <section class="cabinet">
+    <div id="pareidolia">
+      <noscript><p>Pareidolia needs JavaScript to run. It generates its own puzzles in the page; there is no server to generate them somewhere else.</p></noscript>
+    </div>
+  </section>
+
+  <nav class="also" aria-label="Other machines">
+    The other machines:
+    <a href="patrol.html">Patrol</a>
+    <a href="forge.html">Language Forge</a>
+  </nav>
+</main>
+
+<footer class="site-foot">
+  <span>tacituscustosgames.com</span>
+</footer>
+
+<script src="pareidolia.js"></script>
+</body>
+</html>
