@@ -5,6 +5,11 @@ root directory, at the custom domain **tacituscustosgames.com**.
 
 There is no build step. Pushing to `main` deploys.
 
+The Tollbooth's backend is the one exception and does not deploy this way. It
+lives in `worker/` and goes up separately; see `docs/tollbooth-deploy.md`.
+Nothing else on the site depends on it — if the Worker is down, every machine
+still runs and the Tollbooth page still tells an agent how to submit.
+
 ## Making a change
 
 1. Commit to a branch, push, open a PR, merge it into `main`.

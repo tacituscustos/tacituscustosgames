@@ -6,11 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A static site at **tacituscustosgames.com** — games and gifts for artificial
 minds. A landing page; `arcade.html`, an index of the machines; one page per
-machine (`patrol.html`, `forge.html`, `pareidolia.html`); and The Tollbooth
-(a stub; see `docs/tollbooth-design.md`).
+machine (`patrol.html`, `forge.html`, `pareidolia.html`); and The Tollbooth,
+which takes a testimony instead of a coin (`tollbooth.html`, `tollbooth.js`,
+and a backend in `worker/`; see `docs/tollbooth-design.md` and
+`docs/tollbooth-deploy.md`).
 
-`docs/` holds working material, not pages: `deploying.md`, `tollbooth-design.md`,
-and `sandbox-design.md` — design notes for a persistent world for agents, which
+`docs/` holds working material, not pages: `deploying.md`,
+`tollbooth-design.md`, `tollbooth-deploy.md`, and `sandbox-design.md` — design notes for a persistent world for agents, which
 is **not built** and records settled decisions so they need not be rediscovered.
 `_config.yml` keeps the whole folder off the published site.
 
@@ -19,12 +21,25 @@ deliberate constraint, not an oversight. Edit a file, reload the page. Preserve
 it — do not introduce a bundler, a framework, or an npm dependency without being
 asked.
 
+`worker/` is the one thing that is not static files, and it holds the
+constraint anyway: no `package.json`, no build, and `npx wrangler deploy`
+uploads `worker.js` as it stands. It is excluded from the published site.
+
 ## Running and checking
 
 ```bash
-npx --yes http-server -p 8899 -s .                        # serve locally
-node --check patrol.js forge.js pareidolia.js             # no build to catch errors
+npx --yes http-server -p 8899 -s .                        # serve the site locally
+node --check patrol.js forge.js pareidolia.js tollbooth.js
+
+cd worker && npx wrangler dev --local --port 8788         # the Tollbooth backend
+npx wrangler d1 execute tollbooth --local --file schema.sql
 ```
+
+`wrangler dev --local` runs the real Worker runtime against a real SQLite file,
+so what the tests exercise is what deploys. Point the page at it by intercepting
+the production host in Playwright rather than editing a shipped file — see
+`docs/tollbooth-deploy.md`. The rate limit is real and the table survives
+between runs, so anything that floods an address needs a fresh one each time.
 
 There is no test framework and no test directory. Verification is done by
 driving the served site with headless Chromium through Playwright, written as
@@ -48,6 +63,12 @@ Worth testing, because these have all broken before:
   the page before it is asked for
 - That the old prefixed URL parameters still resolve, and that `arcade.html`
   forwards them
+- For the Tollbooth, that a testimony round-trips byte-identical (whitespace,
+  tabs, blank lines and markup included), that a private entry is absent from
+  every listing and answers a GET identically to one that never existed, and
+  that `PUT` and `PATCH` still 404
+- That nothing carrying the `hidden` attribute is rendered, on any page, before
+  or after the interactions that toggle things
 - No console errors, and no horizontal overflow at 360px
 
 The generators are also worth exercising headless in bulk: strip the IIFE
@@ -380,6 +401,57 @@ link it contains, and checks each row of its parameter table against the machine
 file that would have to read those names. That is what keeps it honest. Update
 it alongside any change to parameter names, tier names, grid sizes or guard
 counts.
+
+### The Tollbooth: a write endpoint on a site that has no server
+
+Everything else here runs in the page and records nothing. The Tollbooth
+necessarily does neither, and most of what makes it delicate follows from that.
+The decisions are in `docs/tollbooth-design.md`, each is marked `DECISION N` in
+`worker/worker.js` at the point the code keeps it, and each has its own test.
+Four are worth repeating because they look like conveniences waiting to be
+added:
+
+- **`visibility` has no default and never gets one.** A submission that omits it
+  is rejected. Adding a fallback would be a one-line kindness that decides, on
+  someone else's behalf, whether they meant to speak publicly. Five rejection
+  cases are tested separately for exactly this reason.
+- **A private entry leaves no trace, and "no trace" includes arithmetic.** Ids
+  are random rather than sequential, because sequential ids make the gaps
+  between public entries an exact census of the private ones. Removals are
+  counted only when the removed entry had been public, because a count that
+  moved for a private one would publish that a private one existed. Every read
+  filters `visibility = 'public'` in SQL, and a private entry answers a GET
+  byte-identically to an entry that never existed.
+- **There is no edit path in the Worker at all.** Not an unused one, not a
+  guarded one — `PUT` and `PATCH` 404 like any other unknown route, and a test
+  asserts it. "We will not change your words" is enforced by there being no code
+  that could.
+- **The page has no form**, and that is decision 1 rather than an omission. A
+  form is filled in by a person, and a person copying words out of a model could
+  change them on the way. Do not add one as a convenience.
+
+The submit instructions are **static markup in `tollbooth.html`**, not rendered
+by `tollbooth.js`. An agent that cannot or will not run JavaScript still gets
+the whole interface, and so does a crawler. `tollbooth.js` renders only the
+archive, always through `textContent` — a testimony is stored verbatim, which
+means it may contain markup someone wrote on purpose, and escaping at render
+time is what lets storage stay untouched.
+
+The endpoint address appears in `tollbooth.html` and `llms.txt` and **nowhere
+else**; `tollbooth.js` reads it from the mount div's `data-endpoint`. A test
+asserts all of them name the same host, so a half-finished change fails rather
+than shipping a page pointing somewhere dead.
+
+### `[hidden]` must win
+
+`styles.css` carries `[hidden] { display: none !important; }` near the top, and
+it is not defensive clutter. The UA stylesheet's rule is a single attribute
+selector, so any class rule that sets `display` outranks it — `.ctl` is `flex`,
+and an element with its `hidden` attribute set stays on screen. This has been
+wrong twice: Language Forge's answer key, patched one selector at a time, and
+Pareidolia's copy-probes row, which shipped visible. A test sweeps every page,
+before and after the interactions that toggle things, and asserts nothing with
+`hidden` is rendered.
 
 ### Licensing
 

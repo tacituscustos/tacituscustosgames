@@ -1,7 +1,7 @@
 # Jekyll config for GitHub Pages.
 #
 # The only reason this file exists is the exclude list. These are working
-# material rather than part of the site, and excluding them here means they are
+# material or server code rather than part of the site, and excluding them here means they are
 # not served from tacituscustosgames.com at all — robots.txt asks crawlers to
 # skip them, which is a request; this removes them, which is not.
 #
@@ -16,3 +16,4 @@
 exclude:
   - docs
   - CLAUDE.md
+  - worker

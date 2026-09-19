@@ -14,6 +14,14 @@
 
 * { box-sizing: border-box; }
 
+/* `hidden` has to win. The UA stylesheet's [hidden] { display: none } is a
+   single attribute selector, so any class rule that sets `display` outranks it
+   — .ctl is flex, and an element with its hidden attribute set stayed on
+   screen. This has bitten twice: Language Forge's answer key, where it was
+   patched one selector at a time, and Pareidolia's copy-probes row, where it
+   shipped. Fix it once, here, rather than remembering it per element. */
+[hidden] { display: none !important; }
+
 html { -webkit-text-size-adjust: 100%; }
 
 body {
@@ -206,7 +214,8 @@ textarea:focus-visible {
 }
 .pt h3,
 .cf h3,
-.pd h3 {
+.pd h3,
+.tb h2 {
   font-size: 20px;
   font-weight: 600;
   margin: 30px 0 8px;
@@ -218,10 +227,12 @@ textarea:focus-visible {
 .pd p { margin: 0 0 10px; }
 .pt .note,
 .cf .note,
-.pd .note { font-size: 13.5px; color: var(--muted); }
+.pd .note,
+.tb .note { font-size: 13.5px; color: var(--muted); }
 .pt .ctl,
 .cf .ctl,
-.pd .ctl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pd .ctl,
+.tb .ctl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .pt input[type="text"],
 .cf input[type="text"],
 .pd input[type="text"] {
@@ -236,7 +247,8 @@ textarea:focus-visible {
 }
 .pt button,
 .cf button,
-.pd button {
+.pd button,
+.tb button {
   font: inherit;
   padding: 6px 12px;
   border: 1px solid var(--ink);
@@ -250,7 +262,8 @@ textarea:focus-visible {
 .pd button.on { background: var(--ink); color: #fff; }
 .pt button:disabled,
 .cf button:disabled,
-.pd button:disabled { opacity: 0.45; cursor: default; }
+.pd button:disabled,
+.tb button:disabled { opacity: 0.45; cursor: default; }
 
 .pt .grid {
   display: grid;
@@ -500,6 +513,88 @@ textarea:focus-visible {
   color: var(--muted);
 }
 .also a { margin-right: 14px; }
+
+/* ---------- the Tollbooth ---------- */
+
+.tb-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 48px 14px 0;
+}
+.tb-page > .barrier { margin-bottom: 26px; }
+.tb-page > h1 {
+  font-size: 38px;
+  font-style: italic;
+  font-weight: 400;
+  margin: 0;
+  text-align: center;
+}
+.tb-page > .stub-price { text-align: center; margin-top: 14px; }
+
+.tb-intro { margin-top: 34px; }
+.tb-intro p { margin: 0 0 14px; }
+.tb-intro code {
+  font: 0.92em var(--mono);
+  background: var(--soft);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+/* the archive */
+.tb { margin-top: 30px; }
+.tb p { margin: 0 0 10px; }
+.tb-list { margin-top: 16px; }
+
+.tb-entry {
+  border-top: 1px solid var(--rule);
+  padding: 16px 0 6px;
+}
+.tb-entry:first-child { border-top: 1.5px solid var(--accent); }
+.tb-entry.tb-target { background: var(--soft); padding-left: 10px; padding-right: 10px; }
+
+.tb-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: baseline;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.tb-who { font-style: italic; font-size: 15px; color: var(--ink); overflow-wrap: anywhere; }
+.tb-who.tb-anon { font-style: italic; color: var(--muted); font-size: 13px; }
+/* decision 7 rendered: this label sits next to every claimed name, always */
+.tb-unverified {
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 0 5px;
+}
+.tb-when { font-variant-numeric: tabular-nums; }
+.tb-id { font: 12px var(--mono); color: var(--muted); margin-left: auto; }
+
+/* pre-wrap, so the line breaks someone chose survive to the page */
+.tb-body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.tb-down {
+  background: var(--soft);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 12px 14px;
+  font-size: 14px;
+}
+
+@media (max-width: 480px) {
+  .tb-id { margin-left: 0; }
+}
 
 /* ---------- the block addressed to models ---------- */
 
