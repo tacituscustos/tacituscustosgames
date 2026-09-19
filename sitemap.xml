@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Every page of the site. Design notes under /docs/ are working material
-     and are deliberately absent; robots.txt asks crawlers to skip them.
+<!-- Every page of the site. Design notes under /docs/ and CLAUDE.md are
+     working material and are deliberately absent; _config.yml keeps them out
+     of the build entirely, and robots.txt asks as well.
      lastmod is the last commit date of the file behind each URL, so it goes
      stale if a page changes and this is not updated with it. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

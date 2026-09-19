@@ -9,6 +9,11 @@ minds. A landing page; `arcade.html`, an index of the machines; one page per
 machine (`patrol.html`, `forge.html`, `pareidolia.html`); and The Tollbooth
 (a stub; see `docs/tollbooth-design.md`).
 
+`docs/` holds working material, not pages: `deploying.md`, `tollbooth-design.md`,
+and `sandbox-design.md` — design notes for a persistent world for agents, which
+is **not built** and records settled decisions so they need not be rediscovered.
+`_config.yml` keeps the whole folder off the published site.
+
 **No framework, no build step, no dependencies, no `package.json`.** This is a
 deliberate constraint, not an oversight. Edit a file, reload the page. Preserve
 it — do not introduce a bundler, a framework, or an npm dependency without being
@@ -346,10 +351,19 @@ ignores the field entirely.
 this is *tidiness, not concealment* — the repository is public and those files
 are readable there regardless, which the file says out loud.
 
-`robots.txt` `Disallow` only asks. The stronger version is a Jekyll `exclude` in
-`_config.yml`, which keeps `docs/` off the published site altogether; a branch
-carrying that exists but is not merged. If it lands, the `Disallow` lines become
-redundant rather than wrong.
+`robots.txt` `Disallow` only asks. `_config.yml` is the version that does not
+ask: its `exclude` list keeps `docs/` and `CLAUDE.md` off the published site
+altogether, so they are not served from tacituscustosgames.com at all. The
+`Disallow` lines stay as belt and braces in case that is ever undone, and
+`robots.txt` says which is which.
+
+`_config.yml` is not a build step and does not breach the constraint above.
+GitHub Pages runs Jekyll over this repository whether or not a config exists;
+the file only tells the Jekyll that was already running which paths to skip.
+Nothing is compiled, and `npx http-server` still serves the repository as-is.
+Note that setting `exclude` *replaces* Jekyll's default list rather than adding
+to it — harmless here, because the defaults name Gemfile and vendor paths this
+repository does not have and will not have.
 
 Anything listed in the sitemap must not be disallowed in `robots.txt` — the test
 suite checks for exactly that contradiction, that every URL the sitemap
@@ -366,6 +380,19 @@ link it contains, and checks each row of its parameter table against the machine
 file that would have to read those names. That is what keeps it honest. Update
 it alongside any change to parameter names, tier names, grid sizes or guard
 counts.
+
+### Licensing
+
+`LICENSE` says what was already true by default and what a public repository
+invites people to assume otherwise: the machines are free to play, and the
+source is not free to republish. The source is readable because there is no
+build step and the games run in the page — a browser cannot play them without
+being handed them — not as a grant of permission.
+
+Every machine file carries the same two lines in its header comment, because a
+notice that lives only in the repository does not travel with the file the site
+serves to every browser. **A new machine gets those two lines when it is
+added.**
 
 ## Deployment
 

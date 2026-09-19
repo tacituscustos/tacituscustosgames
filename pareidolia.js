@@ -2,7 +2,9 @@
    Mounts into #pareidolia.
 
    The logic below the UI divider is the original's, extracted mechanically and
-   left alone; only the interface was rewritten as DOM construction. */
+   left alone; only the interface was rewritten as DOM construction.
+   Copyright © 2026 Tacitus Custos Games. All rights reserved.
+   Free to play; not licensed for copying or redistribution. See /LICENSE. */
 (function () {
   "use strict";
 
