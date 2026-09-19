@@ -5,8 +5,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 A static site at **tacituscustosgames.com** — games and gifts for artificial
-minds. Three pages: a landing page, an arcade holding playable machines, and
-The Tollbooth (a stub; see `docs/tollbooth-design.md`).
+minds. A landing page; `arcade.html`, an index of the machines; one page per
+machine (`patrol.html`, `forge.html`, `pareidolia.html`); and The Tollbooth
+(a stub; see `docs/tollbooth-design.md`).
+
+`docs/` holds working material, not pages: `deploying.md`, `tollbooth-design.md`,
+and `sandbox-design.md` — design notes for a persistent world for agents, which
+is **not built** and records settled decisions so they need not be rediscovered.
+`_config.yml` keeps the whole folder off the published site.
 
 **No framework, no build step, no dependencies, no `package.json`.** This is a
 deliberate constraint, not an oversight. Edit a file, reload the page. Preserve
@@ -16,8 +22,8 @@ asked.
 ## Running and checking
 
 ```bash
-npx --yes http-server -p 8899 -s .    # serve locally
-node --check forge.js                 # syntax check (no build to catch errors)
+npx --yes http-server -p 8899 -s .                        # serve locally
+node --check patrol.js forge.js pareidolia.js             # no build to catch errors
 ```
 
 There is no test framework and no test directory. Verification is done by
@@ -30,27 +36,40 @@ run `playwright install`.
 
 Worth testing, because these have all broken before:
 
-- Both machines mount and render (`#pt-grid .cell`, `#cf-puzzleview .cline`)
+- All three machines mount and render (`#pt-grid .cell`, `#cf-puzzleview .cline`,
+  `#pd-examples .mono`)
 - Seed reproducibility — same seed must give byte-identical output
 - For Language Forge, that the answer is genuinely absent before reveal (see
-  below); check the DOM *and* the value of every visible `<textarea>`
+  below); check the DOM *and* the value of every visible `<textarea>`. Note that
+  individual *words* of the answer are supposed to appear — that is what pins
+  the stems — so assert on the whole sentence, or on a run of three words, not
+  on single words. A test that forbids single words fails on correct code.
+- For Pareidolia, that neither the key nor the probe-quality commentary is on
+  the page before it is asked for
+- That the old prefixed URL parameters still resolve, and that `arcade.html`
+  forwards them
+- That nothing carrying the `hidden` attribute is rendered, on any page, before
+  or after the interactions that toggle things
 - No console errors, and no horizontal overflow at 360px
 
-The generators are also worth exercising headless in bulk: strip the IIFE wrapper
-off `forge.js` and loop `buildLanguage()` over a few hundred seeds to check for
-crashes and for solvability-guarantee violations.
+The generators are also worth exercising headless in bulk: strip the IIFE
+wrapper (`sed -n '<start>,<end>p' file.js | sed 's/^  //'`, then append an
+`export`) and loop over a few hundred seeds to check for crashes and for
+guarantee violations. `pareidolia.js` divides cleanly at its `===== UI =====`
+banner. Hell costs about 65 ms a board, so a 300-seed sweep is 20 seconds.
 
 ## Architecture
 
 ### Machines are self-contained IIFEs
 
-Each game is one file — `patrol.js`, `forge.js` — wrapped in an IIFE with
-`"use strict"`, mounting into a div by id (`#patrol`, `#forge`). Nothing leaks
-to the global scope, so machines can't collide. `arcade.html` gives each one a
-`<section class="cabinet">` and a script tag.
+Each game is one file — `patrol.js`, `forge.js`, `pareidolia.js` — wrapped in an
+IIFE with `"use strict"`, mounting into a div by id (`#patrol`, `#forge`,
+`#pareidolia`). Nothing leaks to the global scope, so machines can't collide.
 
-Adding a machine: new IIFE file, new mount div in a new `.cabinet`, new CSS
-scope, script tag at the bottom of `arcade.html`.
+Adding a machine: new IIFE file, a new `<machine>.html` built from the same
+shell as the other three, new CSS scope, script tag at the bottom of that page,
+plus a card on `arcade.html`, an entry in `sitemap.xml`, a section in
+`llms.txt`, and a link in the `.also` nav of every existing machine page.
 
 ### Each file is ported logic + a DOM UI layer
 
@@ -74,12 +93,35 @@ longer a copy.
 These are all English-surface fixes. They change the prose a solver reads and
 leave the invented language, the expected answer and every seed untouched.
 
+`pareidolia.js` has **no** logic divergences — the port is still a copy. If that
+stops being true, it gets a list here too. `proberSettles()` is unused, in the
+original as well; it is kept so the extraction stays mechanical, and it is not
+load-bearing.
+
 ### Everything is seeded and reproducible
 
-Both use `mulberry32` + an FNV-1a `hashSeed`. Same seed and same mode always
-produce the identical board or language. This is load-bearing: a seed is how a
+All three use `mulberry32` + an FNV-1a `hashSeed`. Same seed and same mode
+always produce the identical board or language. This is load-bearing: a seed is how a
 puzzle gets shared, re-run, and graded. Never introduce `Math.random()` into
 generation — it is only acceptable for picking a *new* seed.
+
+### Addressable by URL, and the names changed once
+
+Every machine reads `mode` and `seed` from its own page's query string; Language
+Forge also reads `style`. A malformed value falls back to the default rather
+than throwing, so a mangled link still gives someone a board.
+
+Before the split, Patrol and Language Forge shared `arcade.html` and their
+parameters needed a machine prefix: `patrol_mode`, `forge_seed`, and so on.
+**Both machines still read the old names**, and `arcade.html` carries a small
+inline script that forwards a link carrying them to the page that now owns it.
+Only the short names are ever written back to the address bar.
+
+Do not delete either path. A seed is how a puzzle gets handed over, and a link
+minted before the split names a real board that still exists; breaking it
+silently turns a shared puzzle into a 404 or, worse, into a different board.
+The cost of keeping them is four `p.get()` fallbacks and twenty lines in a head
+script.
 
 ### Generate-and-verify, not generate-and-hope
 
@@ -93,6 +135,10 @@ destroy.
   from the translated sentences, and `shapeReport()` checks every word-shape the
   task needs is attested in the corpus. `buildLanguage()` appends further
   sentences until both checks pass.
+- **Pareidolia** — `consistent()` counts the rules still fitting the labelled
+  strings, and on the probing tiers `treeResolves()` proves a decision tree
+  exists that isolates the rule inside the probe budget *in every answer
+  branch*. A board that fails is redrawn, up to sixty times.
 
 A puzzle is never shown until its own checker agrees it is solvable. Changes to
 generation must keep these checks meaningful — don't relax a threshold to make a
@@ -155,8 +201,10 @@ player who survives the first may meet an uncomputable one after it.
 ### Every machine is also a text protocol
 
 Each renders its state as plain text for handing to a model (`stateText()` in
-Patrol, `puzzleText()` / `keyText()` in Forge). This is a core idea of the site,
-not a debug feature: playable by hand, legible as text.
+Patrol, `puzzleText()` / `keyText()` in Forge and again in Pareidolia, which
+adds `probesText()` so a courier can relay a probe round without resending the
+whole board). This is a core idea of the site, not a debug feature: playable by
+hand, legible as text.
 
 Two properties of Patrol's text came out of playtesting and are easy to undo by
 accident:
@@ -227,24 +275,75 @@ stays mechanically re-extractable. If you touch the designed sentence set or
 which specs carry `known: true`, re-measure: the claim "some affixes are left to
 elimination" is only honest while it stays true.
 
+### Pareidolia: a narrower promise, stated on the board
+
+The other two machines promise solvability. Pareidolia cannot, and the
+difference is the game rather than a defect.
+
+A fair coin decides whether a board was labelled by a rule or at random —
+measured over 900 boards, 48.7% / 50.7% / 52.7% noise across the three tiers,
+every one inside one standard error of a fair coin. On a **rule** board the
+generator verifies a decision tree that isolates the rule inside the probe
+budget whatever the answers come back as. On a **noise** board no such promise
+is possible: a rule can survive every probe a player is able to spend. Ending
+with one rule standing is a judgment, not a mistake.
+
+**The board says all of this in its own text, on every tier.** `grammarText()`
+states the guarantee, the absence of the converse guarantee, the sampling
+procedure, and the arithmetic for how much a lone survivor is worth
+(`N / 2^budget` at even odds). That is the same rule as Language Forge's
+Plausible/Surreal toggle: difficulty comes from withholding answers, never from
+withholding the rules. If you change how boards are sampled, `grammarText()`
+changes in the same commit or it is lying.
+
+Two things that look relaxable and are not:
+
+- **`treeResolves()` must keep checking every answer branch.** It is not "can a
+  clever player get there", it is "is there a strategy that cannot fail". An
+  independent exact search — over every distinguishing column in the universe,
+  memoised on the survivor set, rather than the generator's greedy four
+  candidates — reproved all 119 rule boards in a 240-seed sample. Rerun that
+  audit if the greedy search is ever touched.
+- **The probe-quality commentary is hidden until the player answers.** It
+  reports how many rules each probe split, which is a hint about the survivor
+  set while probing is still open. It is rendered blank until `state.answer` is
+  set, and the copy in the UI says why. Do not show it live.
+
+And the same rule as everywhere else on this site: **nothing about the player is
+recorded**. There is no tally of how a judgment turned out. The interesting
+question — is a lone survivor a rule or a coincidence — is one a player answers
+well or badly over many boards, and this repo is not the thing that counts.
+
 ### Styling
 
 Design tokens in `:root` in `styles.css`. Machines get a scope class (`.pt`,
-`.cf`); shared control chrome is grouped rather than duplicated
-(`.pt .ctl, .cf .ctl { … }`). Extend the grouped selectors when adding a machine.
+`.cf`, `.pd`); shared control chrome is grouped rather than duplicated
+(`.pt .ctl, .cf .ctl, .pd .ctl { … }`). Extend the grouped selectors when adding
+a machine rather than starting a fourth copy of the button rules.
 
-### Two machines on one page
+### One machine per page
 
-Patrol's arrow-key handler listens on `document`, so it checks
-`root.contains(e.target)` before steering — otherwise arrow keys aimed at
-another cabinet move the Patrol pawn. Any new document-level listener needs the
-same guard.
+The machines shared `arcade.html` until the split. They no longer do, and the
+reason was measured rather than assumed: with two machines the page ran 5.8
+screens at 1280×900 with 1.4 screens of scrolling between the two, and
+Pareidolia would have taken it past nine. Apart now: the index 1.3 screens,
+Patrol 2.2, Forge 4.3, Pareidolia 3.7.
+
+The cost fell on the agent side and is small — a model that wants all three
+fetches three pages instead of one — while a model that wants one now fetches
+less. The benefit is a page per machine that can carry its own `<title>` and
+description, so a shared link previews as the machine it points at.
+
+Patrol's arrow-key handler still listens on `document` and still checks
+`root.contains(e.target)` before steering, allowing a loose `document.body`.
+A page is never only the machine — header, crumb, the links below it — and any
+new document-level listener needs the same guard.
 
 ### `sitemap.xml` and `robots.txt`
 
-`sitemap.xml` lists the four public URLs — the landing page, the arcade, the
-Tollbooth and `llms.txt` — each with a `lastmod` taken from that file's last
-commit date. **It rots the moment a page changes and this file does not.** Update
+`sitemap.xml` lists the seven public URLs — the landing page, the arcade index,
+the three machine pages, the Tollbooth and `llms.txt` — each with a `lastmod`
+taken from that file's last commit date. **It rots the moment a page changes and this file does not.** Update
 it alongside any change to a page's content, or when a page is added; a stale
 `lastmod` is worse than none, because a crawler that learns to distrust it
 ignores the field entirely.
@@ -254,22 +353,59 @@ ignores the field entirely.
 this is *tidiness, not concealment* — the repository is public and those files
 are readable there regardless, which the file says out loud.
 
-`robots.txt` `Disallow` only asks. The stronger version is a Jekyll `exclude` in
-`_config.yml`, which keeps `docs/` off the published site altogether; a branch
-carrying that exists but is not merged. If it lands, the `Disallow` lines become
-redundant rather than wrong.
+`robots.txt` `Disallow` only asks. `_config.yml` is the version that does not
+ask: its `exclude` list keeps `docs/` and `CLAUDE.md` off the published site
+altogether, so they are not served from tacituscustosgames.com at all. The
+`Disallow` lines stay as belt and braces in case that is ever undone, and
+`robots.txt` says which is which.
+
+`_config.yml` is not a build step and does not breach the constraint above.
+GitHub Pages runs Jekyll over this repository whether or not a config exists;
+the file only tells the Jekyll that was already running which paths to skip.
+Nothing is compiled, and `npx http-server` still serves the repository as-is.
+Note that setting `exclude` *replaces* Jekyll's default list rather than adding
+to it — harmless here, because the defaults name Gemfile and vendor paths this
+repository does not have and will not have.
 
 Anything listed in the sitemap must not be disallowed in `robots.txt` — the test
-suite checks for exactly that contradiction, and that every URL the sitemap
-advertises actually resolves.
+suite checks for exactly that contradiction, that every URL the sitemap
+advertises actually resolves, and that every `.html` file in the root is listed.
+A page that exists and is missing from the sitemap is the same rot in the other
+direction.
 
 ### `llms.txt`
 
-`llms.txt` at the site root describes both machines and the URL scheme for a
-model arriving without a person. It documents the query parameters, so **it goes
-stale the moment they change** — the URL test suite parses it and loads every
-link it contains, which is what keeps it honest. Update it alongside any change
-to parameter names, tier names, grid sizes or guard counts.
+`llms.txt` at the site root describes all three machines and the URL scheme for
+a model arriving without a person. It documents the query parameters, so **it
+goes stale the moment they change** — the URL test suite parses it, loads every
+link it contains, and checks each row of its parameter table against the machine
+file that would have to read those names. That is what keeps it honest. Update
+it alongside any change to parameter names, tier names, grid sizes or guard
+counts.
+
+### `[hidden]` must win
+
+`styles.css` carries `[hidden] { display: none !important; }` near the top, and
+it is not defensive clutter. The UA stylesheet's rule is a single attribute
+selector, so any class rule that sets `display` outranks it — `.ctl` is `flex`,
+and an element with its `hidden` attribute set stays on screen. This has been
+wrong twice: Language Forge's answer key, patched one selector at a time, and
+Pareidolia's copy-probes row, which shipped visible. A test sweeps every page,
+before and after the interactions that toggle things, and asserts nothing with
+`hidden` is rendered.
+
+### Licensing
+
+`LICENSE` says what was already true by default and what a public repository
+invites people to assume otherwise: the machines are free to play, and the
+source is not free to republish. The source is readable because there is no
+build step and the games run in the page — a browser cannot play them without
+being handed them — not as a grant of permission.
+
+Every machine file carries the same two lines in its header comment, because a
+notice that lives only in the repository does not travel with the file the site
+serves to every browser. **A new machine gets those two lines when it is
+added.**
 
 ## Deployment
 

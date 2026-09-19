@@ -14,6 +14,14 @@
 
 * { box-sizing: border-box; }
 
+/* `hidden` has to win. The UA stylesheet's [hidden] { display: none } is a
+   single attribute selector, so any class rule that sets `display` outranks it
+   — .ctl is flex, and an element with its hidden attribute set stayed on
+   screen. This has bitten twice: Language Forge's answer key, where it was
+   patched one selector at a time, and Pareidolia's copy-probes row, where it
+   shipped. Fix it once, here, rather than remembering it per element. */
+[hidden] { display: none !important; }
+
 html { -webkit-text-size-adjust: 100%; }
 
 body {
@@ -196,7 +204,8 @@ textarea:focus-visible {
 
 .pt { line-height: 1.5; }
 .pt h2,
-.cf h2 {
+.cf h2,
+.pd h2 {
   font-size: 32px;
   font-style: italic;
   font-weight: 400;
@@ -204,7 +213,8 @@ textarea:focus-visible {
   line-height: 1.05;
 }
 .pt h3,
-.cf h3 {
+.cf h3,
+.pd h3 {
   font-size: 20px;
   font-weight: 600;
   margin: 30px 0 8px;
@@ -212,13 +222,17 @@ textarea:focus-visible {
   border-bottom: 1.5px solid var(--accent);
 }
 .pt p,
-.cf p { margin: 0 0 10px; }
+.cf p,
+.pd p { margin: 0 0 10px; }
 .pt .note,
-.cf .note { font-size: 13.5px; color: var(--muted); }
+.cf .note,
+.pd .note { font-size: 13.5px; color: var(--muted); }
 .pt .ctl,
-.cf .ctl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.cf .ctl,
+.pd .ctl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .pt input[type="text"],
-.cf input[type="text"] {
+.cf input[type="text"],
+.pd input[type="text"] {
   font: inherit;
   padding: 6px 8px;
   border: 1px solid #9aa0b8;
@@ -229,7 +243,8 @@ textarea:focus-visible {
   background: #fff;
 }
 .pt button,
-.cf button {
+.cf button,
+.pd button {
   font: inherit;
   padding: 6px 12px;
   border: 1px solid var(--ink);
@@ -239,9 +254,11 @@ textarea:focus-visible {
   cursor: pointer;
 }
 .pt button.on,
-.cf button.on { background: var(--ink); color: #fff; }
+.cf button.on,
+.pd button.on { background: var(--ink); color: #fff; }
 .pt button:disabled,
-.cf button:disabled { opacity: 0.45; cursor: default; }
+.cf button:disabled,
+.pd button:disabled { opacity: 0.45; cursor: default; }
 
 .pt .grid {
   display: grid;
@@ -274,7 +291,8 @@ textarea:focus-visible {
 .pt .cell.path { background: #e4e8f3; }
 
 .pt .status { font-size: 20px; font-style: italic; margin: 6px 0; }
-.pt textarea {
+.pt textarea,
+.pd textarea {
   width: 100%;
   height: 230px;
   font: 12px/1.35 var(--mono);
@@ -428,6 +446,68 @@ textarea:focus-visible {
   padding-top: 4px;
   border-top: 1px dashed var(--rule);
 }
+
+/* ---------- Pareidolia ---------- */
+
+.pd { line-height: 1.5; }
+.pd ul { margin: 0 0 10px; padding-left: 20px; }
+.pd li { margin-bottom: 2px; }
+.pd .mono { font-family: var(--mono); letter-spacing: 0.12em; }
+.pd button.red { border-color: var(--accent); color: var(--accent); }
+.pd button.red.on { background: var(--accent); color: #fff; }
+
+/* labelled strings and probe results: an index, the string, its mark */
+.pd .ex {
+  display: grid;
+  grid-template-columns: 2.2em 1fr 2em;
+  gap: 2px 10px;
+  font-size: 17px;
+  margin: 8px 0;
+  align-items: baseline;
+}
+.pd .ex .yes { color: var(--ink); }
+.pd .ex .no { color: var(--accent); }
+.pd .probelist { grid-template-columns: 2.2em auto 2em 1fr; margin-top: 10px; }
+.pd .probelist .quality { font-size: 13px; }
+
+.pd .test {
+  display: grid;
+  grid-template-columns: 2.2em 1fr auto;
+  gap: 6px 10px;
+  align-items: center;
+  margin: 6px 0;
+}
+
+.pd .verdict {
+  font-size: 22px;
+  font-style: italic;
+  margin: 14px 0 4px;
+}
+.pd .verdict.right { color: #2f6b45; }
+.pd .verdict.wrong { color: var(--accent); }
+
+@media (max-width: 480px) {
+  .pd .probelist { grid-template-columns: 2.2em auto 2em; }
+  .pd .probelist .quality { grid-column: 1 / -1; padding-bottom: 4px; }
+}
+
+/* ---------- one machine per page ---------- */
+
+/* the arcade index reuses the landing page's doors, but full width */
+.arcade .doors { max-width: none; margin: 26px auto 0; }
+
+.crumb { margin: 14px 0 0; font-size: 13.5px; }
+.crumb a { color: var(--muted); text-decoration: none; border-bottom: 1px solid transparent; }
+.crumb a:hover { border-bottom-color: var(--rule); }
+
+.also {
+  margin-top: 36px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.also a { margin-right: 14px; }
 
 /* ---------- the block addressed to models ---------- */
 

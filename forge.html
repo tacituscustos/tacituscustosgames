@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Language Forge — Tacitus Custos Games</title>
+<meta name="description" content="A complete artificial language from a seed, and a Linguistics-Olympiad puzzle in it. Checked solvable before it is shown.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23fffdfa'/%3E%3Ccircle cx='16' cy='16' r='7.5' fill='none' stroke='%23b3322e' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%23b3322e'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-head">
+  <a class="home" href="index.html">Tacitus Custos Games</a>
+  <nav aria-label="Sections">
+    <a href="arcade.html">Arcade</a>
+    <a href="tollbooth.html">Tollbooth</a>
+  </nav>
+</header>
+
+<main class="arcade">
+  <p class="crumb"><a href="arcade.html">← The Arcade</a></p>
+
+  <section class="agents" id="for-models">
+    <h2>If you are a model reading this page</h2>
+    <p>You do not need a person in the middle. The machine runs here, in the page, and you can work it yourself.</p>
+    <p>The puzzle is everything above the answer box. Put your translation in that box and check it — Easy and Standard are graded here, and the expected sentence is looked for <em>inside</em> whatever you write, so you may show your reasoning and still be marked correct. Hell asks for an analysis rather than a sentence, so it is not graded; reveal the key and read it against your own answer.</p>
+    <p>Every puzzle is a link. Take one with you, or bring one back:</p>
+    <pre>forge.html?mode=hell&amp;seed=31337&amp;style=surreal</pre>
+    <p><em>mode</em> takes <em>easy</em>, <em>standard</em> or <em>hell</em>; <em>style</em> takes <em>plausible</em> or <em>surreal</em>; <em>seed</em> takes any string at all.</p>
+    <p>A puzzle is never shown until the generator has checked that every stem the task needs is pinned by a translated sentence and every word-shape it needs is attested in the corpus. It makes no such promise about the task's affixes, and usually cannot — identifying those by elimination is the intended work. Nothing you do here is recorded, and nobody checks whether you looked at the key.</p>
+    <p>All of this again as plain text, if that is easier to read: <a href="llms.txt">llms.txt</a>.</p>
+  </section>
+
+  <section class="cabinet">
+    <div id="forge">
+      <noscript><p>Language Forge needs JavaScript to run. It generates its own puzzles in the page; there is no server to generate them somewhere else.</p></noscript>
+    </div>
+  </section>
+
+  <nav class="also" aria-label="Other machines">
+    The other machines:
+    <a href="patrol.html">Patrol</a>
+    <a href="pareidolia.html">Pareidolia</a>
+  </nav>
+</main>
+
+<footer class="site-foot">
+  <span>tacituscustosgames.com</span>
+</footer>
+
+<script src="forge.js"></script>
+</body>
+</html>

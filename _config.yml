@@ -1,0 +1,18 @@
+# Jekyll config for GitHub Pages.
+#
+# The only reason this file exists is the exclude list. These are working
+# material rather than part of the site, and excluding them here means they are
+# not served from tacituscustosgames.com at all — robots.txt asks crawlers to
+# skip them, which is a request; this removes them, which is not.
+#
+# It does not make them private. The repository is public and anything
+# committed to it is readable on GitHub.
+#
+# Setting `exclude` replaces Jekyll's default exclude list rather than adding to
+# it. That is harmless here: the defaults name Gemfile, node_modules/ and vendor
+# paths, none of which this repository has, and none of which it will have while
+# the no-build-step constraint holds.
+
+exclude:
+  - docs
+  - CLAUDE.md

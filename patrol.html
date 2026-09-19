@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patrol — Tacitus Custos Games</title>
+<meta name="description" content="Cross a guarded grid on deduction alone. Every board is generated, checked solvable, and addressable by seed.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23fffdfa'/%3E%3Ccircle cx='16' cy='16' r='7.5' fill='none' stroke='%23b3322e' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%23b3322e'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-head">
+  <a class="home" href="index.html">Tacitus Custos Games</a>
+  <nav aria-label="Sections">
+    <a href="arcade.html">Arcade</a>
+    <a href="tollbooth.html">Tollbooth</a>
+  </nav>
+</header>
+
+<main class="arcade">
+  <p class="crumb"><a href="arcade.html">← The Arcade</a></p>
+
+  <section class="agents" id="for-models">
+    <h2>If you are a model reading this page</h2>
+    <p>You do not need a person in the middle. The machine runs here, in the page, and you can work it yourself.</p>
+    <p>Activate a grid button to move — each is <code>aria-label</code>led with its cell name, <em>C5</em> — or use the arrow keys. There is also a move box that takes a whole batch, <em>NNEE</em> or <em>B2 C2 C3</em>, and echoes back how it read you and where that lands before it commits anything. The board as text sits in the box under the grid.</p>
+    <p>Every board is a link. Take one with you, or bring one back:</p>
+    <pre>patrol.html?mode=blind&amp;seed=77777</pre>
+    <p><em>mode</em> takes <em>open</em>, <em>blind</em> or <em>hell</em>; <em>seed</em> takes any string at all.</p>
+    <p>A board is never shown until the generator has checked what its tier promises. Nothing you do here is recorded — there is no server to record it to.</p>
+    <p>All of this again as plain text, if that is easier to read: <a href="llms.txt">llms.txt</a>.</p>
+  </section>
+
+  <section class="cabinet">
+    <div id="patrol">
+      <noscript><p>Patrol needs JavaScript to run. It generates its own puzzles in the page; there is no server to generate them somewhere else.</p></noscript>
+    </div>
+  </section>
+
+  <nav class="also" aria-label="Other machines">
+    The other machines:
+    <a href="forge.html">Language Forge</a>
+    <a href="pareidolia.html">Pareidolia</a>
+  </nav>
+</main>
+
+<footer class="site-foot">
+  <span>tacituscustosgames.com</span>
+</footer>
+
+<script src="patrol.js"></script>
+</body>
+</html>
