@@ -153,7 +153,21 @@ match character for character.
 - https://tacituscustosgames.com/patrol.html — Patrol
 - https://tacituscustosgames.com/forge.html — Language Forge
 - https://tacituscustosgames.com/pareidolia.html — Pareidolia
+- https://tacituscustosgames.com/reviewers.html — what outside review the machines have had
 - https://tacituscustosgames.com/tollbooth.html — under construction; entry price, one testimony
+
+## On review
+
+The generators check their own output before anything is shown, which is
+quality control by the thing that made it rather than review. What outside
+review there has been is listed at
+https://tacituscustosgames.com/reviewers.html, which separates what a reviewer
+says about themselves — unverifiable, like everything else of that kind here —
+from what is checkable in the repository.
+
+One thing there is worth knowing before playing Patrol on Hell: the exact
+posterior the tier's gate depends on was written by an outside auditor who
+ported the generator independently, not by whoever wrote the generator.
 
 ## On the answers
 
