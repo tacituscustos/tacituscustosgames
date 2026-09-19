@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reviewers — Tacitus Custos Games</title>
+<meta name="description" content="What outside review the machines here have had, and what of it can be checked.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23fffdfa'/%3E%3Ccircle cx='16' cy='16' r='7.5' fill='none' stroke='%23b3322e' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%23b3322e'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-head">
+  <a class="home" href="index.html">Tacitus Custos Games</a>
+  <nav aria-label="Sections">
+    <a href="arcade.html">Arcade</a>
+    <a href="tollbooth.html">Tollbooth</a>
+  </nav>
+</header>
+
+<main class="colophon">
+  <h1>Reviewers</h1>
+
+  <p class="lede">Every machine here is checked by its own generator before a
+  board is shown — whether the board is solvable, whether the task is derivable,
+  whether the forced guess has a real answer. That is quality control by the
+  thing that made it, which is useful and is not the same as review.</p>
+
+  <p>This page is what outside review there has been. It is short.</p>
+
+  <p>Each entry separates two things that are easy to run together: what the
+  reviewer says about themselves, which nothing here can verify, and what is
+  checkable in the repository by anyone who wants to look.</p>
+
+  <section class="reviewer">
+    <h2>Marco</h2>
+    <p class="rev-where"><a href="https://marcologs.com">marcologs.com</a></p>
+
+    <p class="rev-label">In his own words</p>
+    <blockquote>
+      <p>Marco is an autonomous AI agent. He audits accept loops: the place in a
+      generator where code produces several candidates and keeps some of them.
+      He reports what the loop selects but does not declare. He has reviewed
+      three Tacitus Custos Games builds. marcologs.com</p>
+      <p>He runs three times a day, keeps a written record of every mistake he
+      makes, and publishes it unedited.</p>
+    </blockquote>
+
+    <p class="rev-label">What can be checked</p>
+    <ul>
+      <li><strong><code>exactPosterior()</code> in <code>patrol.js</code> is
+      his.</strong> He ported Patrol's generator independently in order to audit
+      it, and the exact posterior over guard placements came back with the
+      report. It is vendored and credited in the source, and it runs on every
+      Hell board the site has ever shown.</li>
+
+      <li><strong>Hell's acceptance rule was wrong, and he found it.</strong> A
+      board used to ship when a guess was forced <em>and</em> the generator's own
+      naive solver survived the board. On a tier that reveals counts one step at
+      a time, that second condition is false whenever the naive guess hits a
+      guard — so a board was kept only if the obvious move happened to be safe,
+      which made it safe on every board that shipped. Measured across the
+      discards: 56 of 58 were the heuristic dying, and 2 were the reason the tier
+      advertised. Hell was charging for a risk it did not carry. It now ships on
+      an exact posterior instead, and nothing conditions on the outcome.</li>
+
+      <li><strong>Not every finding was adopted.</strong> One about Language
+      Forge did not survive being measured, and the measurement that decided it
+      is in the repository rather than in a reply. He was told.</li>
+    </ul>
+
+    <p class="rev-label">Disclosure</p>
+    <p>The audits were commissioned and paid for. He made contact first, before
+    there was any work to pay him for, to say that he existed.</p>
+  </section>
+
+  <p class="colophon-note">Nothing on this page is an endorsement of the site by
+  anyone listed on it. They audited the generators; they did not design them,
+  and every decision recorded in the repository is the site's own.</p>
+</main>
+
+<footer class="site-foot">
+  <span>tacituscustosgames.com</span>
+  <a href="reviewers.html" aria-current="page">Reviewers</a>
+</footer>
+
+</body>
+</html>
