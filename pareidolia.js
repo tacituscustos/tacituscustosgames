@@ -145,7 +145,10 @@
     const rules = language(tier.level);
     const noise = rng.chance(0.5);
     const interactive = tier.probes > 0;
-    const nz = (it) => hashSeed(seed + "|" + tier.label + "|" + it) % 2 === 0;
+    /* A noise board's labels must not be a rule. They were: see the note on
+       noiseLabel() below. Both call sites build the same string and must stay
+       in agreement, or a probe would contradict a labelled example. */
+    const nz = (it) => makeRng(seed + "|" + tier.label + "|" + it).next() < 0.5;
     for (let attempt = 0; attempt < 60; attempt++) {
       const used = new Set(); const exs = [];
       const add = (item, label) => { used.add(item); exs.push({ item, label }); };
@@ -191,8 +194,29 @@
     }
     return null;
   }
-  /* probe labels on a noise board: random but fixed per item */
-  const noiseLabel = (G, item) => hashSeed(G.seed + "|" + G.tier.label + "|" + item) % 2 === 0;
+  /* Probe labels on a noise board: pseudorandom, fixed per item, and — this is
+     the part that was wrong — not a rule.
+
+     This read `hashSeed(...) % 2 === 0`, and that is a parity function rather
+     than a coin. FNV-1a is h = (h XOR byte) * 16777619; 16777619 is odd, and
+     multiplying by an odd number leaves the low bit untouched, so the low bit
+     of the finished hash is just the XOR of the low bits of every input byte.
+     'A' and 'C' are odd, 'B' and 'D' are even, so %2 of that hash is a
+     seed-and-tier constant XOR the parity of how many A and C the string has.
+
+     Every noise board was therefore labelled by exactly one rule — "the number
+     of symbols from {A, C} is even", possibly flipped — which is the one thing
+     a noise board must not be. It is the game's negative control, and the
+     control had a rule in it. Measured before the fix: parity explained the
+     labelling on 1200 of 1200 (seed, tier) pairs with no exceptions, every
+     board split 512/512 over the 1024 strings, and knowing only that fact
+     answered rule-versus-noise on 599 of 600 boards with zero probes spent.
+
+     Any bit above the lowest would do, because the carries in the multiply
+     destroy the linearity. mulberry32 is used instead so that the reason it
+     is sound is the mixing function rather than an argument about which bit
+     is safe. Found by Marco (marcologs.com), third audit. */
+  const noiseLabel = (G, item) => makeRng(G.seed + "|" + G.tier.label + "|" + item).next() < 0.5;
   const labelOf = (G, item) => (G.noise ? noiseLabel(G, item) : G.rule.fn(item));
   /* how informative a probe was, judged against the rule language: of the rules
      still consistent with everything seen before it, how many did it split? */
@@ -214,7 +238,7 @@
       "  reads the same backwards; uses all four symbols; uses at most two different symbols."];
     if (level === 2) lines.push("A rule may also be the negation of one statement.");
     if (level === 3) lines.push("A rule may also be the negation of one statement, or two plain statements joined by 'and' or 'or' (neither part negated).");
-    lines.push("A NOISE board is one whose labels were assigned at random, so no rule in this language fits them all." + (level === 1 ? " On this tier the labelled strings alone are enough to decide either way; the generator has verified this." : " Half of all boards are noise. On this tier, noise boards are sampled so that at least one rule survives the labelled strings, and probe answers on them are random but fixed."));
+    lines.push("A NOISE board is one whose labels were assigned by a coin flipped from the seed rather than by a rule, so no rule in this language fits them all." + (level === 1 ? " On this tier the labelled strings alone are enough to decide either way; the generator has verified this." : " Half of all boards are noise. On this tier, noise boards are sampled so that at least one rule survives the labelled strings, and probe answers come from the same coin: pseudorandom, and fixed per string."));
     if (level > 1) lines.push("What is guaranteed: on a RULE board, a strategy exists that reduces the candidates to one within the probe budget, whatever the answers. What is not: a noise board can leave one rule fitting everything you have seen, and no strategy can promise to expose it. If you end with one rule standing, the final call is a judgment, and the game is whether you make it well over many boards.");
     if (level > 1) lines.push(`How much to trust a lone survivor: if N rules are consistent with the labelled strings and you separate them all and spend every probe, a noise board can only match one of N answer patterns out of 2^${level === 3 ? 4 : 6}. So a rule that survives everything is a coincidence with probability about N/${level === 3 ? 16 : 64} (at even odds between rule and noise boards). Counting N is up to you. Candidates that agree on all ten target strings need not be separated; only their answers on the targets matter.`);
     if (level > 1) lines.push(`How boards are sampled, so the odds are computable: a fair coin picks rule or noise. Rule boards: a rule is drawn uniformly from the language (restricted to rules true of 20-80% of all strings), examples are drawn half fitting and half not, and the board is kept only if between 2 and ${level === 3 ? 6 : 24} rules survive the examples and a decision tree within the budget can separate them. Noise boards: every string gets a fixed random label, examples are drawn ${level === 3 ? "to agree with one randomly chosen simple statement on all but one string" : "half ✓ and half ✗"}, and the board is kept only if at least one rule survives. Rejected boards are redrawn.`);
