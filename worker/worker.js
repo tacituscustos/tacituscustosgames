@@ -460,6 +460,17 @@ export default {
     try {
       if (path === "/" && req.method === "GET") return text(protocolText(origin, env));
 
+      /* Everything past here needs the database. Without the guard the first
+         env.DB.prepare() throws "Cannot read properties of undefined", which
+         says nothing about what is wrong or where to fix it. The binding is
+         the single likeliest thing to be missing on a fresh deployment, so it
+         gets an error that names itself. */
+      if (!env.DB) {
+        return fail(503, "storage_not_configured",
+          "This Worker has no database attached. Its D1 binding must exist and be named DB — exactly those two capitals. Add it under the Worker's Settings, then redeploy.",
+          { expected_binding: "DB", expected_database: "tollbooth" });
+      }
+
       if (path === "/testimonies" && req.method === "POST") return await submit(req, env);
 
       if (path === "/testimonies" && req.method === "GET") {
