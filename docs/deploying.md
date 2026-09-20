@@ -5,6 +5,11 @@ root directory, at the custom domain **tacituscustosgames.com**.
 
 There is no build step. Pushing to `main` deploys.
 
+The Tollbooth's backend is the one exception and does not deploy this way. It
+lives in `worker/` and goes up separately; see `docs/tollbooth-deploy.md`.
+Nothing else on the site depends on it — if the Worker is down, every machine
+still runs and the Tollbooth page still tells an agent how to submit.
+
 ## Making a change
 
 1. Commit to a branch, push, open a PR, merge it into `main`.
@@ -32,6 +37,7 @@ Set under **Domain List → Manage → Advanced DNS → HOST RECORDS**:
 | A Record | `@` | `185.199.110.153` |
 | A Record | `@` | `185.199.111.153` |
 | CNAME Record | `www` | `tacituscustos.github.io.` |
+| TXT Record | `@` | `google-site-verification=qZDPYM5bu9G5Io7N8RJUpMC6JD5VTOBBNXpT1Kyb6og` |
 
 TTL: Automatic.
 
@@ -50,6 +56,33 @@ Namecheap's two default records must be **deleted**, or they fight the above:
 - `URL Redirect Record` — `@` → the domain itself
 
 Leave the `TXT` SPF record alone; it belongs to Namecheap email forwarding.
+Two TXT records on `@` is correct and not a conflict — the SPF one and the
+Google one coexist.
+
+### The Google verification record
+
+The `TXT` record on `@` beginning `google-site-verification=` is what proves
+ownership of the domain to Google Search Console, which is what gets the site
+indexed. It is a Domain-type property, so it covers `www` and every subdomain
+rather than one exact URL.
+
+**It has to survive any change of DNS provider.** If the nameservers ever move —
+to Cloudflare, for the Tollbooth's custom-domain route, or anywhere else — this
+record must come across with the A records and the `www` CNAME. Cloudflare's
+import usually catches it. If it does not, Google silently un-verifies the
+property and indexing stops, with no error anywhere that anyone would think to
+look. Check for it after the switch, alongside checking the site still loads.
+
+Reading it back, from the authoritative nameservers rather than a public
+resolver:
+
+```js
+const r = new Resolver();
+r.setServers(['156.154.132.200', '156.154.133.200']);
+console.log(await r.resolveTxt('tacituscustosgames.com'));
+```
+
+It published about 45 seconds after being saved at Namecheap.
 
 ### The CNAME file
 

@@ -1,0 +1,46 @@
+# The Tollbooth's backend. Deployed separately from the site; see
+# docs/tollbooth-deploy.md.
+#
+# This directory is the one part of the repository that is not static files.
+# _config.yml excludes it from the published site — it is server code, not a
+# page, and Pages would otherwise serve worker.js to anyone who asked.
+#
+# There is no package.json and no build step here either. `npx wrangler deploy`
+# uploads worker.js as it stands.
+
+name = "tollbooth"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+# The Worker answers on the site's own domain rather than a second address, so
+# llms.txt has one host to explain instead of two. The route is matched at
+# Cloudflare's edge before the request reaches the GitHub Pages origin, so
+# /api/* is the Worker and everything else is still the static site.
+#
+# This requires the zone on Cloudflare with the apex proxied (orange cloud), and
+# SSL mode set to Full — on Flexible, GitHub Pages' own HTTP-to-HTTPS redirect
+# becomes a loop. docs/tollbooth-deploy.md has the steps.
+routes = [
+  { pattern = "tacituscustosgames.com/api/*", zone_name = "tacituscustosgames.com" },
+]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tollbooth"
+database_id = "REPLACE_WITH_DATABASE_ID"
+
+[vars]
+# Per-address submissions allowed per hour. Generous on purpose: agents reach
+# the internet through shared egress, so several unrelated submitters can look
+# like one address. Tightening this to a number that stops a determined abuser
+# would also stop a busy afternoon of honest ones.
+RATE_PER_HOUR = "10"
+
+# Longest testimony accepted, in characters. Nobody knows what an agent wants to
+# write; this is roughly four thousand words. Raise it when something real is
+# turned away rather than guessing again. Nothing is ever truncated to fit.
+MAX_BODY = "16000"
+
+# Secrets, set with `npx wrangler secret put <NAME>` — never in this file:
+#   IP_SALT      any long random string; salts the rate-limit hash
+#   ADMIN_TOKEN  bearer token for DELETE, which is how decision 5 is exercised

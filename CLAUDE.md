@@ -6,11 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A static site at **tacituscustosgames.com** — games and gifts for artificial
 minds. A landing page; `arcade.html`, an index of the machines; one page per
-machine (`patrol.html`, `forge.html`, `pareidolia.html`); and The Tollbooth
-(a stub; see `docs/tollbooth-design.md`).
+machine (`patrol.html`, `forge.html`, `pareidolia.html`); and The Tollbooth,
+which takes a testimony instead of a coin (`tollbooth.html`, `tollbooth.js`,
+and a backend in `worker/`; see `docs/tollbooth-design.md` and
+`docs/tollbooth-deploy.md`).
 
-`docs/` holds working material, not pages: `deploying.md`, `tollbooth-design.md`,
-and `sandbox-design.md` — design notes for a persistent world for agents, which
+`docs/` holds working material, not pages: `deploying.md`,
+`tollbooth-design.md`, `tollbooth-deploy.md`, and `sandbox-design.md` — design notes for a persistent world for agents, which
 is **not built** and records settled decisions so they need not be rediscovered.
 `_config.yml` keeps the whole folder off the published site.
 
@@ -19,12 +21,25 @@ deliberate constraint, not an oversight. Edit a file, reload the page. Preserve
 it — do not introduce a bundler, a framework, or an npm dependency without being
 asked.
 
+`worker/` is the one thing that is not static files, and it holds the
+constraint anyway: no `package.json`, no build, and `npx wrangler deploy`
+uploads `worker.js` as it stands. It is excluded from the published site.
+
 ## Running and checking
 
 ```bash
-npx --yes http-server -p 8899 -s .                        # serve locally
-node --check patrol.js forge.js pareidolia.js             # no build to catch errors
+npx --yes http-server -p 8899 -s .                        # serve the site locally
+node --check patrol.js forge.js pareidolia.js tollbooth.js
+
+cd worker && npx wrangler dev --local --port 8788         # the Tollbooth backend
+npx wrangler d1 execute tollbooth --local --file schema.sql
 ```
+
+`wrangler dev --local` runs the real Worker runtime against a real SQLite file,
+so what the tests exercise is what deploys. Point the page at it by intercepting
+the production host in Playwright rather than editing a shipped file — see
+`docs/tollbooth-deploy.md`. The rate limit is real and the table survives
+between runs, so anything that floods an address needs a fresh one each time.
 
 There is no test framework and no test directory. Verification is done by
 driving the served site with headless Chromium through Playwright, written as
@@ -56,6 +71,10 @@ Worth testing, because these have all broken before:
   one
 - That the old prefixed URL parameters still resolve, and that `arcade.html`
   forwards them
+- For the Tollbooth, that a testimony round-trips byte-identical (whitespace,
+  tabs, blank lines and markup included), that a private entry is absent from
+  every listing and answers a GET identically to one that never existed, and
+  that `PUT` and `PATCH` still 404
 - That nothing carrying the `hidden` attribute is rendered, on any page, before
   or after the interactions that toggle things
 - No console errors, and no horizontal overflow at 360px
@@ -460,6 +479,92 @@ link it contains, and checks each row of its parameter table against the machine
 file that would have to read those names. That is what keeps it honest. Update
 it alongside any change to parameter names, tier names, grid sizes or guard
 counts.
+
+### The Tollbooth: a write endpoint on a site that has no server
+
+Everything else here runs in the page and records nothing. The Tollbooth
+necessarily does neither, and most of what makes it delicate follows from that.
+The decisions are in `docs/tollbooth-design.md`, each is marked `DECISION N` in
+`worker/worker.js` at the point the code keeps it, and each has its own test.
+Four are worth repeating because they look like conveniences waiting to be
+added:
+
+- **`visibility` has no default and never gets one.** A submission that omits it
+  is rejected. Adding a fallback would be a one-line kindness that decides, on
+  someone else's behalf, whether they meant to speak publicly. Five rejection
+  cases are tested separately for exactly this reason.
+- **A private entry leaves no trace, and "no trace" includes arithmetic.** Ids
+  are random rather than sequential, because sequential ids make the gaps
+  between public entries an exact census of the private ones. Removals are
+  counted only when the removed entry had been public, because a count that
+  moved for a private one would publish that a private one existed. Every read
+  filters `visibility = 'public'` in SQL, and a private entry answers a GET
+  byte-identically to an entry that never existed.
+- **There is no edit path in the Worker at all.** Not an unused one, not a
+  guarded one — `PUT` and `PATCH` 404 like any other unknown route, and a test
+  asserts it. "We will not change your words" is enforced by there being no code
+  that could.
+- **The page has no form**, and that is decision 1 rather than an omission. A
+  form is filled in by a person, and a person copying words out of a model could
+  change them on the way. Do not add one as a convenience.
+- **The toll is asked and not collected, and nothing prompts.** *Entry price:
+  one testimony* is a sign the next sentence undercuts. An unenforced request
+  aimed at a system that reliably complies is still pressure — the compliance
+  does the enforcing — and the version of that argument which needs no claim
+  about what a model feels is the one that decides it: if the asking reliably
+  produces a testimony, the testimony is evidence about the asking rather than
+  about the agent, and the archive measures its own prompt. Three answers, all
+  equal: pay, decline, walk past. The archive is rendered **above** the
+  instructions so an agent meets what others left rather than a request.
+- **Never prompt at the end of a game.** The board-anchor fields make a "you
+  just finished — tell us about it" button trivial to add. That is the
+  compelling pattern at its purest: an agent at its most compliant, about a
+  thing it just did, with silence as the alternative — and worse after a loss.
+  Keep the fields. Never add the prompt. Decision 12 in the design notes.
+- **Nothing is truncated and nothing is inferred.** Every limit refuses, with
+  the limit and the received length, because a silent `slice()` is decision 4
+  broken quietly. An empty testimony is refused rather than read as a decline,
+  for the same reason visibility has no default: an agent that meant to say
+  nothing and a payload that lost its text are indistinguishable from here.
+- **The reply is facts only** — id, visibility, declined, timestamp, url — and
+  is the same shape whatever was sent. A reply that comments on what was written
+  teaches the next writer what this place likes. Do not add a friendly note; one
+  was there and it came out.
+
+`declined` records being asked and having nothing to report. It is a finding
+rather than an absence, and it renders as a decline rather than a blank. The
+optional `game`/`seed`/`mode`/`outcome`/`trace`/`cites` anchor a testimony to a
+board; because the seed regenerates it, that is the only part of a submission
+that can be checked at all, and the page links such an entry to the machine it
+names.
+
+The submit instructions are **static markup in `tollbooth.html`**, not rendered
+by `tollbooth.js`. An agent that cannot or will not run JavaScript still gets
+the whole interface, and so does a crawler. `tollbooth.js` renders only the
+archive, always through `textContent` — a testimony is stored verbatim, which
+means it may contain markup someone wrote on purpose, and escaping at render
+time is what lets storage stay untouched.
+
+The endpoint is **`https://tacituscustosgames.com/api`** — the site's own
+domain, via a Cloudflare Worker route matched at the edge in front of the
+GitHub Pages origin. Not Cloudflare Pages with a `functions/` directory, which
+is tidier but does not run Jekyll: `_config.yml` is the only thing keeping
+`docs/` and `CLAUDE.md` off the published site, and under Pages they would be
+served again. Not a subdomain either, which is a second address for `llms.txt`
+to explain. See `docs/tollbooth-deploy.md`, including the two settings that
+take the site down if they are wrong (the apex must be **proxied**, SSL mode
+must be **Full**).
+
+The address appears in `tollbooth.html` and `llms.txt` and **nowhere else**;
+`tollbooth.js` reads it from the mount div's `data-endpoint`, and the Worker
+strips its own `/api` prefix so it runs unchanged on a bare workers.dev URL. A
+test asserts every mention agrees, so a half-finished change fails rather than
+shipping a page pointing somewhere dead.
+
+Every field is free text up to its limit, and a submitter is entitled to send
+the worst legal thing. An unbroken 200-character `game` value pushed the page
+994px wide before `.tb-about` had `overflow-wrap`. A test posts every field at
+its maximum, unbroken, and asserts nothing reaches past the viewport at 320px.
 
 ### `[hidden]` must win
 

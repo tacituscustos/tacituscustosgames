@@ -2,8 +2,9 @@
 #
 # Crawling is welcome; that is the point of llms.txt being here at all.
 #
-# The design notes under /docs/ and the repository guide CLAUDE.md are working
-# material rather than part of the site. They are no longer served at all —
+# The design notes under /docs/, the repository guide CLAUDE.md, and the
+# Tollbooth backend under /worker/ are working material or server code rather
+# than part of the site. They are no longer served at all —
 # _config.yml excludes them from the build — so the rules below are belt and
 # braces in case that is ever undone. Nothing in them is secret either way: the
 # repository is public and they are readable there.
@@ -12,5 +13,6 @@ User-agent: *
 Allow: /
 Disallow: /docs/
 Disallow: /CLAUDE.md
+Disallow: /worker/
 
 Sitemap: https://tacituscustosgames.com/sitemap.xml
