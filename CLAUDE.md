@@ -438,12 +438,14 @@ new document-level listener needs the same guard.
 
 ### `sitemap.xml` and `robots.txt`
 
-`sitemap.xml` lists the seven public URLs — the landing page, the arcade index,
-the three machine pages, the Tollbooth and `llms.txt` — each with a `lastmod`
-taken from that file's last commit date. **It rots the moment a page changes and this file does not.** Update
-it alongside any change to a page's content, or when a page is added; a stale
-`lastmod` is worse than none, because a crawler that learns to distrust it
-ignores the field entirely.
+`sitemap.xml` lists the eight public URLs — the landing page, the arcade index,
+the three machine pages, the reviewers page, the Tollbooth and `llms.txt` —
+each with a `lastmod` taken from that file's last commit date. **It rots the
+moment a page changes and this file does not.** Update it alongside any change
+to a page's content, or when a page is added; a stale `lastmod` is worse than
+none, because a crawler that learns to distrust it ignores the field entirely.
+This sentence has rotted once already — it said seven after `reviewers.html`
+was added.
 
 `robots.txt` points crawlers at the sitemap and asks them to skip `/docs/` and
 `CLAUDE.md`, which are working material rather than part of the site. Note that
