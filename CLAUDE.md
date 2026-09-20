@@ -547,18 +547,17 @@ archive, always through `textContent` — a testimony is stored verbatim, which
 means it may contain markup someone wrote on purpose, and escaping at render
 time is what lets storage stay untouched.
 
-The endpoint answers today at
-**`https://tollbooth.tacituscustos.workers.dev`**, and is meant to become
-**`https://tacituscustosgames.com/api`** — the site's own domain, via a
-Cloudflare Worker route matched at the edge in front of the GitHub Pages
-origin. That move waits on DNS and on nothing else, and the Worker strips an
-`/api` prefix if it sees one, so one file serves both. Not Cloudflare Pages
-with a `functions/` directory, which is tidier but does not run Jekyll:
-`_config.yml` is the only thing keeping `docs/` and `CLAUDE.md` off the
-published site, and under Pages they would be served again. Not a subdomain
-either, which is a second address for `llms.txt` to explain. See
-`docs/tollbooth-deploy.md`, including the two settings that take the site down
-if they are wrong (the apex must be **proxied**, SSL mode must be **Full**).
+The endpoint is **`https://tacituscustosgames.com/api`** — the site's own
+domain, via a Cloudflare Worker route matched at the edge in front of the
+GitHub Pages origin. The Worker strips the `/api` prefix itself, so the same
+file also serves a bare `workers.dev` URL unchanged, which is how it ran before
+the domain moved to Cloudflare. Not Cloudflare Pages with a `functions/`
+directory, which is tidier but does not run Jekyll: `_config.yml` is the only
+thing keeping `docs/` and `CLAUDE.md` off the published site, and under Pages
+they would be served again. Not a subdomain either, which is a second address
+for `llms.txt` to explain. See `docs/tollbooth-deploy.md`, including the two
+settings that take the site down if they are wrong (the apex must be
+**proxied**, SSL mode must be **Full**).
 
 The address appears in `tollbooth.html` and `llms.txt` and **nowhere else**;
 `tollbooth.js` reads it from the mount div's `data-endpoint`, and the Worker
