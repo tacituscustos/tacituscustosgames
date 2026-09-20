@@ -23,10 +23,42 @@ away.
 
 ## How it is actually deployed, as of now
 
-**Live at `https://tollbooth.tacituscustos.workers.dev`.** It was set up through
-the Cloudflare dashboard rather than with `wrangler`: the database and its
-tables from the D1 console, the Worker by pasting `worker/worker.js` into the
-web editor, and the bindings and secrets from the Worker's settings page.
+**Live at `https://tollbooth.tacituscustos.workers.dev`,** set up through the
+Cloudflare dashboard rather than with `wrangler`. What is in place: a D1
+database named `tollbooth` whose three tables were created by running the
+statements from `schema.sql` in the D1 Console one at a time; a Worker named
+`tollbooth`, made from the Hello World starter and then given
+`worker/worker.js` through Edit code; a D1 binding with variable name `DB`; and
+`RATE_PER_HOUR`, `MAX_BODY` as variables with `IP_SALT`, `ADMIN_TOKEN` as
+secrets.
+
+### Where these things are in the dashboard
+
+Worth writing down, because three of them are not where they sound like they
+are.
+
+- **The database and the Worker are both called `tollbooth`** and their
+  breadcrumbs look identical. The database has four tabs (Overview, Console,
+  Time Travel, Settings); the Worker has eight (Overview, Metrics, Deployments,
+  Bindings, Observability, Domains, Access, Settings). Count the tabs to know
+  which one you are in.
+- **The D1 Console takes one statement at a time**, so `schema.sql` cannot be
+  pasted whole. Flatten each statement onto one line and run them in order.
+- **The D1 binding** is on the Worker's **Bindings** tab, `+ Binding` → D1
+  database. The *Variable name* field is the name the code uses and must be
+  `DB`, because `worker.js` says `env.DB`; the dropdown below it is which
+  database that name points at.
+- **Variables and secrets are not on the Bindings tab.** That tab lists resource
+  bindings only. They are on the Worker's **Settings** tab, as *Add environment
+  variable*, with a **Secret** checkbox beside each value.
+- **Do not use "Secrets Store"**, which does appear in the binding list and
+  looks like the obvious choice. It is a different account-level feature whose
+  values arrive as an object you must `await env.NAME.get()` on. This Worker
+  reads `env.IP_SALT` and `env.ADMIN_TOKEN` as plain strings; bound that way
+  they would become `[object Object]` and fail silently rather than error.
+- **A secret string is invented, not obtained.** Nothing issues one — any long
+  random value does. `crypto.randomUUID() + crypto.randomUUID()` in a browser
+  console produces one without it passing through anything else.
 
 That has one real cost and it is worth stating rather than discovering. **The
 deployed code can drift from the committed code.** `wrangler deploy` makes them
@@ -136,13 +168,26 @@ is simply better for an endpoint the page itself also reads.
    loop that takes the whole site down. **Full** (or Full (strict)) fetches over
    HTTPS and is correct here.
 
-5. **Deploy.** `routes` in `wrangler.toml` already names the pattern and the
-   zone, so `npx wrangler deploy` attaches it.
+5. **Turn off bot protection for the endpoint.** This one is specific to what
+   the Tollbooth is for. Cloudflare's bot rules exist to stop automated
+   clients, and automated clients are the only visitors this endpoint has.
+   **Bot Fight Mode** is on by default on some plans, and with it on an agent
+   POSTing a testimony can be served a challenge page instead — which is not an
+   error, so the Worker looks healthy while answering nobody. Under
+   **Security**, turn it off for this zone or add a rule that skips it for
+   `/api/*`. This does not arise on a `workers.dev` address, where zone-level
+   bot features do not apply; it arises the moment the domain is behind
+   Cloudflare.
 
-6. **Check both halves.** `curl https://tollbooth.tacituscustos.workers.dev/` returns the
+6. **Attach the route.** `routes` in `wrangler.toml` already names the pattern
+   and the zone, so `npx wrangler deploy` attaches it. Deploying by dashboard
+   instead, it is Worker → Settings → Domains & Routes → Add → Route.
+
+7. **Check both halves.** `curl https://tacituscustosgames.com/api/` returns the
    protocol in prose; `curl -I https://tacituscustosgames.com/arcade.html`
    returns 200 from Pages. If the first 404s, the route did not attach or the
-   apex is not proxied. If the second loops, SSL mode is Flexible.
+   apex is not proxied. If it returns an HTML challenge page, that is step 5.
+   If the second loops, SSL mode is Flexible.
 
 GitHub Pages' own **Enforce HTTPS** setting stays on and keeps working —
 Cloudflare terminates TLS at the edge with its certificate, and fetches the
