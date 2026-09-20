@@ -46,6 +46,14 @@ Worth testing, because these have all broken before:
   on single words. A test that forbids single words fails on correct code.
 - For Pareidolia, that neither the key nor the probe-quality commentary is on
   the page before it is asked for
+- For Pareidolia's noise boards, that the labelling is not explained by any
+  cheap function of the string. Three checks, all of which the old code failed:
+  no parity of a symbol subset explains a board's labels perfectly; the split
+  over the 1024 strings is not exactly 512/512; and no rule in the language
+  agrees with a noise labelling far above chance. Then that the odds
+  `grammarText()` prints match the measured lone-survivor rate — spending the
+  whole budget, and continuing to probe a lone survivor rather than stopping at
+  one
 - That the old prefixed URL parameters still resolve, and that `arcade.html`
   forwards them
 - That nothing carrying the `hidden` attribute is rendered, on any page, before
@@ -93,10 +101,21 @@ longer a copy.
 These are all English-surface fixes. They change the prose a solver reads and
 leave the invented language, the expected answer and every seed untouched.
 
-`pareidolia.js` has **no** logic divergences — the port is still a copy. If that
-stops being true, it gets a list here too. `proberSettles()` is unused, in the
-original as well; it is kept so the extraction stays mechanical, and it is not
-load-bearing.
+`pareidolia.js` has one divergence, and it is a bug fix rather than a polish:
+
+- `pareidolia.js`, `nz()` and `noiseLabel()` — a noise label is
+  `makeRng(key).next() < 0.5` rather than `hashSeed(key) % 2 === 0`. The
+  original's noise boards were labelled by a rule. See *Pareidolia: the noise
+  had a rule in it*, below. Both call sites must change together, or a probe
+  would contradict a labelled example.
+
+`proberSettles()` is unused, in the original as well; it is kept so the
+extraction stays mechanical, and it is not load-bearing. It does, however,
+document the stopping rule a player is assumed to use — it breaks at
+`surv.length === 0`, not `<= 1` — which matters when measuring the odds the
+board prints. Measuring against the wrong stopping rule turns an honest 4.0%
+into a spurious 100%; that happened once here, to this file's author, before it
+was caught.
 
 ### Everything is seeded and reproducible
 
@@ -313,6 +332,65 @@ And the same rule as everywhere else on this site: **nothing about the player is
 recorded**. There is no tally of how a judgment turned out. The interesting
 question — is a lone survivor a rule or a coincidence — is one a player answers
 well or badly over many boards, and this repo is not the thing that counts.
+
+### Pareidolia: the noise had a rule in it
+
+This is the most serious defect the repository has had, it survived two audits
+and every test written for the machine, and it is the reason the rule below it
+exists.
+
+Noise labels came from `hashSeed(seed + "|" + tier + "|" + item) % 2 === 0`.
+That is not a coin. FNV-1a is `h = (h XOR byte) * 16777619`; 16777619 is odd,
+and multiplying by an odd number leaves the low bit untouched, so the low bit
+of the finished hash is the XOR of the low bits of every input byte. `A` (65)
+and `C` (67) are odd, `B` (66) and `D` (68) are even. Taking `% 2` of that hash
+is therefore a seed-and-tier constant XOR **the parity of how many A and C the
+string contains**.
+
+So every noise board was labelled by exactly one rule. The game's negative
+control had a rule in it.
+
+Measured before the fix: parity explained the labelling on **1200 of 1200**
+(seed, tier) pairs with no exceptions; every board split **exactly 512/512**
+over the 1024 strings, on every seed, where a coin would not; and a player
+knowing only that one fact answered rule-versus-noise on **599 of 600 boards
+with zero probes spent**. Hell, whose own text says a false rule can survive
+every probe and the last call is a judgment, had no judgment in it. It also
+distorted the odds the board prints: a lone survivor on Hell was a coincidence
+**34.6%** of the time against the promised 28.1%.
+
+After the fix, on the same measurements: parity explains **0 of 1200**
+perfectly and 54.7% at worst; the split departs from even by up to 55 strings;
+the zero-probe strategy falls to the base rate; the closest rule in the language
+to a noise labelling drops from 62–77% to 54.5–56%; and the printed odds come
+out at **4.0% against a promised 4.1%** on Probe and **27.1% against 27.6%** on
+Hell.
+
+**Never take a raw `hashSeed` value modulo anything.** Route it through
+`mulberry32` — `makeRng(key).next()` — which mixes, and whose soundness a
+reader can see without an argument about which bits of FNV-1a survive. Any bit
+above the lowest would in fact do, and that is exactly the kind of fix that is
+correct today and quietly wrong after the next edit.
+
+`grammarText()` said the labels "were assigned at random". It now says they are
+"assigned by a coin flipped from the seed rather than by a rule", which is both
+true and checkable. **The gate was never broken** — it verified "no rule in
+this language fits these labels", and that held on every board it shipped. The
+sentence above the gate was making a different claim than the one the gate
+checked, and nothing in the machine compared them.
+
+Found by Marco (marcologs.com) on his third audit, by re-porting the generator
+rather than running this one. Two things are worth keeping from how it was
+found. He measured the control question first — whether the accept loop biases
+which rules ship — got a boring answer (it does not: 44 of 44 rules accepted on
+Hell, 0 of 600 seeds ever redrawn), and said so plainly before reporting
+anything else. And the defect was not in the accept condition, which is where
+the previous one lived, but in the source of entropy the accept condition is
+applied to.
+
+**Every noise board that ever shipped under a given seed now has different
+labels.** A bookmarked board is a different board. That is the correct trade and
+it should not be avoided by keeping a compatibility path.
 
 ### Styling
 
