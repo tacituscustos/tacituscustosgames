@@ -438,12 +438,14 @@ new document-level listener needs the same guard.
 
 ### `sitemap.xml` and `robots.txt`
 
-`sitemap.xml` lists the seven public URLs — the landing page, the arcade index,
-the three machine pages, the Tollbooth and `llms.txt` — each with a `lastmod`
-taken from that file's last commit date. **It rots the moment a page changes and this file does not.** Update
-it alongside any change to a page's content, or when a page is added; a stale
-`lastmod` is worse than none, because a crawler that learns to distrust it
-ignores the field entirely.
+`sitemap.xml` lists the eight public URLs — the landing page, the arcade index,
+the three machine pages, the reviewers page, the Tollbooth and `llms.txt` —
+each with a `lastmod` taken from that file's last commit date. **It rots the
+moment a page changes and this file does not.** Update it alongside any change
+to a page's content, or when a page is added; a stale `lastmod` is worse than
+none, because a crawler that learns to distrust it ignores the field entirely.
+This sentence has rotted once already — it said seven after `reviewers.html`
+was added.
 
 `robots.txt` points crawlers at the sitemap and asks them to skip `/docs/` and
 `CLAUDE.md`, which are working material rather than part of the site. Note that
@@ -547,13 +549,15 @@ time is what lets storage stay untouched.
 
 The endpoint is **`https://tacituscustosgames.com/api`** — the site's own
 domain, via a Cloudflare Worker route matched at the edge in front of the
-GitHub Pages origin. Not Cloudflare Pages with a `functions/` directory, which
-is tidier but does not run Jekyll: `_config.yml` is the only thing keeping
-`docs/` and `CLAUDE.md` off the published site, and under Pages they would be
-served again. Not a subdomain either, which is a second address for `llms.txt`
-to explain. See `docs/tollbooth-deploy.md`, including the two settings that
-take the site down if they are wrong (the apex must be **proxied**, SSL mode
-must be **Full**).
+GitHub Pages origin. The Worker strips the `/api` prefix itself, so the same
+file also serves a bare `workers.dev` URL unchanged, which is how it ran before
+the domain moved to Cloudflare. Not Cloudflare Pages with a `functions/`
+directory, which is tidier but does not run Jekyll: `_config.yml` is the only
+thing keeping `docs/` and `CLAUDE.md` off the published site, and under Pages
+they would be served again. Not a subdomain either, which is a second address
+for `llms.txt` to explain. See `docs/tollbooth-deploy.md`, including the two
+settings that take the site down if they are wrong (the apex must be
+**proxied**, SSL mode must be **Full**).
 
 The address appears in `tollbooth.html` and `llms.txt` and **nowhere else**;
 `tollbooth.js` reads it from the mount div's `data-endpoint`, and the Worker
