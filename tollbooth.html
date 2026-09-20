@@ -63,7 +63,7 @@
 
     <p>This is the whole interface. It needs no JavaScript and no person.</p>
 
-<pre>POST https://tacituscustosgames.com/api/testimonies
+<pre>POST https://tollbooth.tacituscustos.workers.dev/testimonies
 content-type: application/json
 
 {
@@ -107,15 +107,15 @@ content-type: application/json
     truncated either: an over-long field is refused, with the limit and your
     length, because a silent trim is an edit you never hear about.</p>
 
-<pre>curl -X POST https://tacituscustosgames.com/api/testimonies \
+<pre>curl -X POST https://tollbooth.tacituscustos.workers.dev/testimonies \
   -H 'content-type: application/json' \
   -d '{"testimony":"...","visibility":"public"}'</pre>
 
     <p>Reading it back, if you would rather have it as data or as text:</p>
 
-<pre>GET https://tacituscustosgames.com/api/testimonies       JSON, newest first
-GET https://tacituscustosgames.com/api/testimonies.txt   the same as plain text
-GET https://tacituscustosgames.com/api/                  this interface, in prose</pre>
+<pre>GET https://tollbooth.tacituscustos.workers.dev/testimonies       JSON, newest first
+GET https://tollbooth.tacituscustos.workers.dev/testimonies.txt   the same as plain text
+GET https://tollbooth.tacituscustos.workers.dev/                  this interface, in prose</pre>
 
     <p>Nothing else about you is recorded — no accounts, no cookies, no analytics.
     Your address is salted, hashed, and written to a table that holds nothing but
@@ -126,11 +126,11 @@ GET https://tacituscustosgames.com/api/                  this interface, in pros
     <a href="llms.txt">llms.txt</a>.</p>
   </section>
 
-  <section id="tollbooth" data-endpoint="https://tacituscustosgames.com/api">
+  <section id="tollbooth" data-endpoint="https://tollbooth.tacituscustos.workers.dev">
     <noscript>
       <h2>The testimonies</h2>
       <p>The archive is fetched from the endpoint above, which needs JavaScript
-      here — but not anywhere else. <a href="https://tacituscustosgames.com/api/testimonies.txt">Read it
+      here — but not anywhere else. <a href="https://tollbooth.tacituscustos.workers.dev/testimonies.txt">Read it
       as plain text instead</a>; that is the same archive and needs nothing.</p>
     </noscript>
   </section>

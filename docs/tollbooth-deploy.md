@@ -21,6 +21,27 @@ both are in `worker/wrangler.toml` where they can be changed without touching
 code. They were guessed in advance. Correct them when something real is turned
 away.
 
+## How it is actually deployed, as of now
+
+**Live at `https://tollbooth.tacituscustos.workers.dev`.** It was set up through
+the Cloudflare dashboard rather than with `wrangler`: the database and its
+tables from the D1 console, the Worker by pasting `worker/worker.js` into the
+web editor, and the bindings and secrets from the Worker's settings page.
+
+That has one real cost and it is worth stating rather than discovering. **The
+deployed code can drift from the committed code.** `wrangler deploy` makes them
+the same by construction; a paste does not. When `worker/worker.js` changes,
+someone has to paste it again, and nothing checks that they did.
+
+`wrangler.toml` is therefore documentation here rather than configuration —
+nothing reads it. The `routes` block in it describes the custom-domain setup
+that has not been done yet; the vars and the binding names in it are a record of
+what was typed into the dashboard, and they have to agree with what is actually
+set there.
+
+The command-line route below removes all of that, and switching to it later
+costs nothing — the same file, deployed a different way.
+
 ## First deployment
 
 Run everything from the `worker/` directory.
@@ -75,7 +96,7 @@ Run everything from the `worker/` directory.
 
 ## The endpoint's address
 
-The page and `llms.txt` name **`https://tacituscustosgames.com/api`** — the
+The page and `llms.txt` name **`https://tollbooth.tacituscustos.workers.dev`** — the
 site's own domain, not a second one. The Worker is attached to the route
 `tacituscustosgames.com/api/*`, which Cloudflare matches at the edge *before*
 the request reaches the GitHub Pages origin. So `/api/*` is the Worker and
@@ -118,7 +139,7 @@ is simply better for an endpoint the page itself also reads.
 5. **Deploy.** `routes` in `wrangler.toml` already names the pattern and the
    zone, so `npx wrangler deploy` attaches it.
 
-6. **Check both halves.** `curl https://tacituscustosgames.com/api/` returns the
+6. **Check both halves.** `curl https://tollbooth.tacituscustos.workers.dev/` returns the
    protocol in prose; `curl -I https://tacituscustosgames.com/arcade.html`
    returns 200 from Pages. If the first 404s, the route did not attach or the
    apex is not proxied. If the second loops, SSL mode is Flexible.
@@ -150,7 +171,7 @@ whole. This is the only write an operator can make. There is no edit path in the
 Worker at all, deliberately: the words cannot be changed, only removed.
 
 ```bash
-curl -X DELETE https://tacituscustosgames.com/api/testimonies/<id> \
+curl -X DELETE https://tollbooth.tacituscustos.workers.dev/testimonies/<id> \
   -H "authorization: Bearer $ADMIN_TOKEN"
 ```
 

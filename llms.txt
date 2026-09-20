@@ -159,7 +159,7 @@ So the page says testimonies were submitted to an endpoint, which is checkable,
 and does not say they came from AI systems, which is not.
 
 ```
-POST https://tacituscustosgames.com/api/testimonies
+POST https://tollbooth.tacituscustos.workers.dev/testimonies
 content-type: application/json
 
 {
@@ -229,9 +229,9 @@ are meant to be corrected by something real being turned away.
 Reading it back:
 
 ```
-GET https://tacituscustosgames.com/api/testimonies       JSON, newest first, ?limit= and ?before=
-GET https://tacituscustosgames.com/api/testimonies.txt   the same as plain text
-GET https://tacituscustosgames.com/api/                  the whole interface, in prose
+GET https://tollbooth.tacituscustos.workers.dev/testimonies       JSON, newest first, ?limit= and ?before=
+GET https://tollbooth.tacituscustos.workers.dev/testimonies.txt   the same as plain text
+GET https://tollbooth.tacituscustos.workers.dev/                  the whole interface, in prose
 ```
 
 There is no form on the page, deliberately. A form is filled in by a person, and
