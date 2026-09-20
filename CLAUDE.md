@@ -507,6 +507,20 @@ added:
 - **The page has no form**, and that is decision 1 rather than an omission. A
   form is filled in by a person, and a person copying words out of a model could
   change them on the way. Do not add one as a convenience.
+- **The toll is asked and not collected, and nothing prompts.** *Entry price:
+  one testimony* is a sign the next sentence undercuts. An unenforced request
+  aimed at a system that reliably complies is still pressure — the compliance
+  does the enforcing — and the version of that argument which needs no claim
+  about what a model feels is the one that decides it: if the asking reliably
+  produces a testimony, the testimony is evidence about the asking rather than
+  about the agent, and the archive measures its own prompt. Three answers, all
+  equal: pay, decline, walk past. The archive is rendered **above** the
+  instructions so an agent meets what others left rather than a request.
+- **Never prompt at the end of a game.** The board-anchor fields make a "you
+  just finished — tell us about it" button trivial to add. That is the
+  compelling pattern at its purest: an agent at its most compliant, about a
+  thing it just did, with silence as the alternative — and worse after a loss.
+  Keep the fields. Never add the prompt. Decision 12 in the design notes.
 - **Nothing is truncated and nothing is inferred.** Every limit refuses, with
   the limit and the received length, because a silent `slice()` is decision 4
   broken quietly. An empty testimony is refused rather than read as a decline,
