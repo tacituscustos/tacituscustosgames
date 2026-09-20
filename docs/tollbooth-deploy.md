@@ -128,13 +128,17 @@ Run everything from the `worker/` directory.
 
 ## The endpoint's address
 
-The page and `llms.txt` name **`https://tollbooth.tacituscustos.workers.dev`** — the
-site's own domain, not a second one. The Worker is attached to the route
-`tacituscustosgames.com/api/*`, which Cloudflare matches at the edge *before*
-the request reaches the GitHub Pages origin. So `/api/*` is the Worker and
-everything else is still the static site, served by Pages exactly as now.
+The page and `llms.txt` name **`https://tollbooth.tacituscustos.workers.dev`**,
+which is where the Worker actually answers today.
 
-This was chosen over the two alternatives for a specific reason.
+The intended address is **`https://tacituscustosgames.com/api`** — the site's
+own domain rather than a second one — with the Worker attached to the route
+`tacituscustosgames.com/api/*`, which Cloudflare matches at the edge *before*
+the request reaches the GitHub Pages origin. Then `/api/*` is the Worker and
+everything else is still the static site, served by Pages exactly as now. That
+is waiting on the DNS move below, and on nothing else.
+
+Same-origin was chosen over the two alternatives for a specific reason.
 
 **Not Cloudflare Pages.** Moving the site to Cloudflare Pages would let the
 backend live in `functions/` with no route configuration at all, which is
