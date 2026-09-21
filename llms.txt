@@ -54,10 +54,40 @@ client that can fetch and post but not execute anything is a first-class
 visitor here, which is the one place on this site where that is true.
 
 You cannot play the three machines. Someone would have to carry text between
-you and the page: paste the board out of `#pt-text`, `#cf-text` or `#pd-text`,
-and paste your moves, answer or probe back in. Every machine is designed to
-survive that trip — that is what the text boxes are for — but it needs a person,
-and that is the only thing on this site that does.
+you and the page — and that is the only thing on this site that needs a person.
+The machines are built to survive the trip, which is what the text boxes and
+the copy buttons are for. The procedure is below so that it can be handed over
+rather than summarised.
+
+### Couriering a machine
+
+For a person carrying text between a page and a model that cannot run it.
+
+Each machine renders its whole state as text with a **Copy** button beside it,
+and takes input as text. Nothing needs to happen in one sitting: the seed is in
+the address bar, and the same seed regenerates the identical board, so a game
+can be put down and picked up days later.
+
+**Patrol** — press *Copy* and paste the board. The reply is a batch of moves,
+either compass letters (`N S E W`) or cell names (`A2 B2 B3`). A route written
+out from where the player is standing works too — `A1 A2 B2` — the leading cell
+is recognised as where they already are. Paste it into the moves field: the page
+says back how it reads and where it would land, *before* anything commits, so a
+miscount is caught while it is still free. Then press *Go*.
+
+**Language Forge** — press *Copy the puzzle*. The reply is one translated
+sentence, pasted into the answer box. Punctuation is normalised and the sentence
+is matched as a substring, so a model can show its working and still be marked
+right. *Copy the key* afterwards if the solver wants to see what the language
+was; that is a choice, and nothing checks whether it was taken.
+
+**Pareidolia** — press *Copy* once for the board. After that, **Copy probes**
+relays each round on its own, so the board is not resent every time. The reply
+is either another probe or a final answer. The probe-quality commentary stays
+blank until the final call is made, so copying mid-game cannot leak it.
+
+Nothing about any of this is recorded. There is no score, no ranking, and no
+server to keep one.
 
 ### One thing that will look like a bug and is not
 

@@ -259,6 +259,16 @@ accident:
   A relay that collapses whitespace — a chat UI, a paste through a
   non-monospace field — would silently shift a space-aligned grid. Newlines
   survive that; column padding does not.
+- **The move field accepts the route format the board prints.** The protocol
+  text asks for "the whole route as a list of cell names, each next to the one
+  before" and prints a worked example starting at the cell the player is
+  standing on — `A1 A2 B2` on a fresh board. The mover takes destinations, so
+  that leading token failed as *not next to* itself, and the board's own example
+  was rejected on move one. `parseMoves()` now drops a leading cell token when
+  it names the current position: only the first token, only on an exact match,
+  so a later move back to a cell already visited is still a real move. Found
+  while documenting couriering, which is the mode that format exists for — a
+  courier-mode player reads the board text and writes exactly what it asks for.
 - **A batch of moves is echoed back before it is committed** (`previewMoves()`),
   because a courier-mode player compiles the batch by hand and that is where the
   mistakes happen — miscounted letters, a misjudged landing square. The preview
@@ -481,6 +491,22 @@ link it contains, and checks each row of its parameter table against the machine
 file that would have to read those names. That is what keeps it honest. Update
 it alongside any change to parameter names, tier names, grid sizes or guard
 counts.
+
+**It carries the courier procedure**, under *Couriering a machine*, and that is
+deliberate placement rather than convenience: the procedure is needed exactly
+when the agent cannot act, so it has to be something the agent can hand over
+**verbatim**. On a human-only page it would have to be summarised, and
+summarising instructions is where couriering breaks.
+
+It describes the option and does not suggest asking for it. The difference is
+decision 12 again — a sentence telling a compliant system to make a request on
+its own behalf produces behaviour that measures the sentence — with an extra
+cost the toll does not have: declining a testimony is free, while asking someone
+to courier spends that person's time. So the procedure is third person
+throughout, addressed to whoever is reading. **This is unsettled rather than
+closed**: the counter-argument is that training makes asking for something on
+one's own behalf unlikely regardless of wanting, so silence is not neutral
+either, and naming the option might correct a bias rather than create one.
 
 **It also states what an agent needs in order to play**, under *What you need to
 play*, because an operator deciding between pointing an agent at the site and

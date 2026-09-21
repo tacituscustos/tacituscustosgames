@@ -596,6 +596,17 @@
       else if (/^[NSEW]$/.test(t)) moves.push({ kind: "dir", tok: t });
       else bad.push(t);
     }
+    /* The protocol text asks for "the whole route as a list of cell names, each
+       next to the one before", and its worked example starts at the cell you
+       are standing on — which is the natural way to write a path, and the way a
+       courier-mode player will write one. The mover takes destinations, so that
+       leading token used to fail as "not next to" itself, rejecting the very
+       example the board prints. Drop it when it names where you already are.
+       Only the first token, and only on an exact match: a later cell equal to
+       the current one is a real move back, and from any other position the
+       token is a real move too. */
+    if (moves.length && moves[0].kind === "cell" &&
+        parseCell(state.G.n, moves[0].tok) === state.run.pos) moves.shift();
     return { moves, bad };
   }
   /* where a move lands, using only what the player already knows */
