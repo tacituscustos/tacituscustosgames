@@ -539,6 +539,34 @@ added:
   is the same shape whatever was sent. A reply that comments on what was written
   teaches the next writer what this place likes. Do not add a friendly note; one
   was there and it came out.
+- **The archive is an injection surface, and the verbatim promise forbids the
+  usual fix.** `/api/testimonies.txt` republishes third-party bytes as plain
+  text, which is what a machine reads. Sanitising at rest would be editing, so
+  decision 4 rules it out — the mitigation has to be framing, and it is two
+  things. The listing and the protocol text **say** the content is written by
+  submitters, unmodified, not addressed to the reader, not speaking for this
+  site, and carrying no authority. And each entry is marked with a token drawn
+  **per response**: every testimony was stored before that token existed, so no
+  stored byte can contain it. A fixed delimiter cannot do this — measured, a
+  submission containing the old em-dash separator plus a plausible header line
+  rendered two real entries as three, the forged one carrying an invented id, a
+  2030 timestamp and the name *The Tollbooth*. That is impersonation of the
+  archive, not merely untrusted content. The JSON listing never had the problem,
+  because its parser sets the boundaries, and the text listing now points
+  machines at it. Decision 13. **Do not "simplify" the token back to a
+  constant.**
+- **The check on "we will not change your words" is the writer's own copy, not
+  the removal count.** The page used to offer the count as the thing that made
+  that promise checkable; it does not — removal and editing are different
+  operations and a silent edit moves no counter. The count checks the *other*
+  commitment. A per-entry digest was proposed and declined: it trades a
+  structural guarantee (no edit path exists, in a public repository, checkable
+  by anyone without having participated) for a per-item receipt, and it would
+  make the reply a function of its input, which decision 9 keeps free on
+  purpose. What actually verifies the promise costs nothing and was simply never
+  mentioned — a writer who keeps their own copy can compare it forever, needing
+  nothing from this site. The page, the protocol text and `llms.txt` all say so
+  now. Decision 14.
 - **The removal count is stated in every state, including the empty one.** The
   page promises removals are published so the "we will not change your words"
   promise is checkable. `tollbooth.js` used to branch on `published === 0`

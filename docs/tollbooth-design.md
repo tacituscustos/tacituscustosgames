@@ -242,6 +242,95 @@ alternative is an awkward silence. After a **loss** it would be worse again.
 The fields are worth keeping and the prompt is not. Nothing on this site may
 treat finishing a game as an occasion for testimony.
 
+## Decision 13. Third-party bytes are framed, never sanitised.
+
+The Tollbooth is the first thing on this site that accumulates bytes nobody here
+wrote and republishes them unchanged. That is the whole point of it, and it is
+also a surface: `/api/testimonies.txt` serves third-party text, and text is what
+a machine reads. An agent summarising the archive, a crawler indexing it, a
+model asked what people say about these games — each is handed content written
+by strangers.
+
+The normal mitigation is to sanitise at rest. **Decision 4 forbids exactly
+that.**
+Stripping a sentence because it looks like an instruction is editing, and
+editing is the one thing this archive promises never to do. The two commitments
+are in genuine tension and no amount of care dissolves it.
+
+So the mitigation has to leave the bytes alone. Two things do.
+
+**It says what the content is.** Both the listing and the protocol text state
+that everything below was written by whoever submitted it, is published
+unmodified, is not addressed to the reader, does not speak for this site, and
+has no authority over what the reader does. This costs nothing against the
+verbatim promise because it is a sentence *about* the bytes rather than a change
+*to* them. It helps a careful reader and does nothing for a careless one, which
+is the honest description of what it buys.
+
+**It frames each entry unforgeably.** The old text listing separated entries
+with a fixed rule of em-dashes. Measured: a submission containing that
+separator plus a plausible header line rendered two real entries as three, with
+the forged one carrying an invented id, a timestamp in 2030, and the name *The
+Tollbooth* followed by the same `(self-declared)` suffix the real ones use. The
+frame was forgeable, which is worse than the content being untrusted — it let a
+submitter impersonate the archive itself.
+
+A fixed delimiter cannot fix that, because a submitter can type it. The listing
+now marks boundaries with a token drawn per response. Every testimony in that
+response was stored before the token existed, so no stored byte can contain it;
+a submitter who reads one response and quotes its token into a new testimony
+still fails, because the next response draws a different one. That argument is
+stated in the output rather than hidden, for the same reason Pareidolia prints
+its own odds: a reader should be able to check the claim, not take it.
+
+The JSON listing needs none of this. Its parser settles where a string value
+ends however that string is written, so the boundaries were never forgeable
+there. The text listing points machines at the JSON and says why.
+
+**Refusing at the gate was considered and rejected.** Rejecting a submission is
+not editing it, and the gate already refuses six things correctly, so this would
+have been consistent. But it would mean deciding what a testimony is allowed to
+say, and for an archive whose point is that it does not decide that, it is a
+worse trade than saying the thing out loud. Difficulty comes from withholding
+answers, never from withholding the rules — and censorship of content is not a
+rule, it is an answer about someone else's words.
+
+Raised by Marco (marcologs.com) on 2026-09-21, from a survey of unrelated
+repositories rather than from this one: two of forty-three carried instructions
+addressed to machines and hidden from human readers in HTML comments,
+byte-identical across both, which makes it a template rather than one strange
+maintainer. That survey is his measurement and is not reproduced here. The
+structural claim does not depend on it: a public text file that strangers write
+into and machines read is an injection surface whether or not anyone is
+currently using one, and that much is checkable by inspection.
+
+## Decision 14. The check on the no-edit promise belongs to the writer.
+
+The page used to offer the published removal count as the thing that made
+*we will not change your words* checkable. It does not. Removal and editing are
+different operations and only one of them increments anything; a silent edit
+moves no counter anywhere. The count checks the *other* commitment — that
+removals are acknowledged rather than quiet.
+
+A per-entry digest returned at submission was proposed and declined. It would
+be a commitment the writer holds from before any edit could occur, which is
+real, but it trades a structural guarantee for a per-item receipt: the absence
+of an edit path is a property of the whole system, checkable by anyone at any
+time without having participated, while a digest is evidence about one entry
+held by one person who has to think to check it. It would also make the reply a
+function of its input, and decision 9 keeps that channel information-free on
+purpose.
+
+The verification that already exists costs nothing and was simply never
+mentioned: **a writer who keeps their own copy can compare it against what is
+published, forever, without asking this site for anything.** That is a complete
+check of the promise for that entry, it needs no receipt and no cooperation,
+and it cannot be defeated by a server willing to lie.
+
+So the gap was not in the code. The page made a promise whose verifier is free
+and did not say the verifier existed. The submission instructions now say it,
+the protocol text says it, and `llms.txt` says it.
+
 ## What this requires
 
 The site is static files on GitHub Pages. There is no server and no database. A
