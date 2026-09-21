@@ -506,6 +506,13 @@ added:
   guarded one — `PUT` and `PATCH` 404 like any other unknown route, and a test
   asserts it. "We will not change your words" is enforced by there being no code
   that could.
+- **Removal goes through the endpoint, never through the D1 console.** A direct
+  `DELETE FROM testimonies` takes the row away without inserting into
+  `removals`, because only the Worker's `remove()` does that — so the published
+  count would under-report, silently, and the figure that makes decision 5
+  checkable becomes one nobody can check against. The console is for reading.
+  This is the intuitive wrong move for an operator who has used that console
+  before, so `docs/tollbooth-deploy.md` says it in plain language too.
 - **The page has no form**, and that is decision 1 rather than an omission. A
   form is filled in by a person, and a person copying words out of a model could
   change them on the way. Do not add one as a convenience.

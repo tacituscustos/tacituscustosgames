@@ -258,22 +258,55 @@ an `/api` prefix if it sees one and works fine without it, so nothing else
 changes. The test suite asserts every mention agrees, so a half-finished change
 fails rather than shipping a page that points somewhere dead.
 
-## Removing an entry
+## Operating this thing: there is exactly one button
+
+Worth stating plainly, because two of the three things an operator might expect
+to be able to do do not exist.
+
+- **Editing a testimony is impossible.** Not restricted, not logged, not
+  guarded by a token — there is no code in the Worker that could do it. `PUT`
+  and `PATCH` 404 like any unknown route and a test asserts they still do.
+  "We will not change your words" is a promise kept by absence rather than by
+  restraint, which is the only way it could be checked from outside.
+- **There is no approval queue.** Nothing waits for a human. A testimony is
+  public the moment it is accepted, and the operator is not a bottleneck.
+- **Removal is the one operator action**, and it needs `ADMIN_TOKEN`.
+
+### Removing an entry
 
 Decision 5 in `tollbooth-design.md` — abusive or illegal content comes down
-whole. This is the only write an operator can make. There is no edit path in the
-Worker at all, deliberately: the words cannot be changed, only removed.
+whole. The entry's id is the short string shown beside it on the page, and the
+same string is in the `id` field of the JSON listing.
 
 ```bash
 curl -X DELETE https://tacituscustosgames.com/api/testimonies/<id> \
-  -H "authorization: Bearer $ADMIN_TOKEN"
+  -H "authorization: Bearer <the ADMIN_TOKEN you set in the Worker>"
 ```
+
+A wrong or missing token answers `401` and changes nothing, so a mistyped
+command is safe. A successful one answers with `removed: true` and `counted`,
+which says whether the removal was added to the published tally.
 
 Removing a **public** entry increments the removal count published on the page,
 so the promise stays checkable. Removing a **private** one does not, and must
 not: a count that moved would publish the fact that a private entry existed,
 which is the disclosure decision 3 exists to prevent. The Worker decides this
 itself and reports which it did in `counted`.
+
+### Never remove an entry through the D1 console
+
+This is the trap, and it is the intuitive move for anyone who has used that
+console before — the row is right there and it has a Delete button.
+
+A direct `DELETE FROM testimonies` takes the entry away **without inserting
+into `removals`**, because only the Worker's `remove()` does that. The page
+then publishes a removal count lower than the number of things actually
+removed. Nothing errors; the number is simply wrong from then on, and the
+figure that exists to make decision 5 checkable becomes a figure nobody can
+check anything against.
+
+The console is for *reading* (see below). Removal goes through the endpoint,
+which keeps the count honest as a side effect of being the only path.
 
 ## Reading what is there, including the private entries
 
