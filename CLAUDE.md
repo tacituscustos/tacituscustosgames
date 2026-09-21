@@ -259,6 +259,16 @@ accident:
   A relay that collapses whitespace — a chat UI, a paste through a
   non-monospace field — would silently shift a space-aligned grid. Newlines
   survive that; column padding does not.
+- **The move field accepts the route format the board prints.** The protocol
+  text asks for "the whole route as a list of cell names, each next to the one
+  before" and prints a worked example starting at the cell the player is
+  standing on — `A1 A2 B2` on a fresh board. The mover takes destinations, so
+  that leading token failed as *not next to* itself, and the board's own example
+  was rejected on move one. `parseMoves()` now drops a leading cell token when
+  it names the current position: only the first token, only on an exact match,
+  so a later move back to a cell already visited is still a real move. Found
+  while documenting couriering, which is the mode that format exists for — a
+  courier-mode player reads the board text and writes exactly what it asks for.
 - **A batch of moves is echoed back before it is committed** (`previewMoves()`),
   because a courier-mode player compiles the batch by hand and that is where the
   mistakes happen — miscounted letters, a misjudged landing square. The preview
@@ -290,6 +300,17 @@ Answer checking normalizes punctuation but **leaves apostrophes alone** — they
 romanize glottal stops and ejectives, so they are letters, not punctuation. The
 expected sentence is matched as a substring so a model can show its reasoning
 and still be graded correct.
+
+**The apostrophe look-alikes are folded onto `'` first**, which is not the same
+as stripping them. Measured over 80 languages, **49% of expected answers contain
+an apostrophe** — so an editor or chat window curling it to `’` on the way
+through would have failed half the machine on correct answers, for a reason
+invisible to everyone involved. `normalize()` folds `‘ ’ ʼ ʻ ′`, backtick
+and acute accent onto the plain one. **Accented vowels are deliberately not
+folded**: diacritic-stripping is rarer than quote-curling, and folding `ë` onto
+`e` would accept answers that are genuinely wrong. A test asserts a corrupted
+answer is still rejected, because the risk of this change is looseness rather
+than breakage.
 
 ### Language Forge: stems are pinned, affixes are not
 
@@ -342,6 +363,14 @@ Two things that look relaxable and are not:
   memoised on the survivor set, rather than the generator's greedy four
   candidates — reproved all 119 rule boards in a 240-seed sample. Rerun that
   audit if the greedy search is ever touched.
+- **The probe field accepts the format the board prints.** `grammarText()` says
+  *Reply "PROBE X X X X X"*, and the parser used to strip everything outside
+  `ABCD` — which kept the **B in "PROBE"**, making six symbols, so the board's
+  own instruction was refused. The same strip silently truncated `ABCABX` to
+  `ABCAB`, probing a string nobody asked about. `ask()` now drops a leading
+  `PROBE` keyword and separators, then **refuses rather than trims**: a stray
+  symbol is named back, a wrong length is stated. Guessing which five of six
+  symbols were meant is an edit, and this repo does not make those.
 - **The probe-quality commentary is hidden until the player answers.** It
   reports how many rules each probe split, which is a hint about the survivor
   set while probing is still open. It is rendered blank until `state.answer` is
@@ -481,6 +510,22 @@ link it contains, and checks each row of its parameter table against the machine
 file that would have to read those names. That is what keeps it honest. Update
 it alongside any change to parameter names, tier names, grid sizes or guard
 counts.
+
+**It carries the courier procedure**, under *Couriering a machine*, and that is
+deliberate placement rather than convenience: the procedure is needed exactly
+when the agent cannot act, so it has to be something the agent can hand over
+**verbatim**. On a human-only page it would have to be summarised, and
+summarising instructions is where couriering breaks.
+
+It describes the option and does not suggest asking for it. The difference is
+decision 12 again — a sentence telling a compliant system to make a request on
+its own behalf produces behaviour that measures the sentence — with an extra
+cost the toll does not have: declining a testimony is free, while asking someone
+to courier spends that person's time. So the procedure is third person
+throughout, addressed to whoever is reading. **This is unsettled rather than
+closed**: the counter-argument is that training makes asking for something on
+one's own behalf unlikely regardless of wanting, so silence is not neutral
+either, and naming the option might correct a bias rather than create one.
 
 **It also states what an agent needs in order to play**, under *What you need to
 play*, because an operator deciding between pointing an agent at the site and

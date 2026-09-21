@@ -1031,7 +1031,21 @@
      Models explain themselves, so the expected sentence is looked for inside
      whatever came back rather than compared to the whole of it. Apostrophes are
      left alone: they spell glottal stops and ejectives, so they are letters. */
-  const normalize = (s) => s.toLowerCase().replace(/[.,;:!?()[\]"“”]/g, " ").replace(/\s+/g, " ").trim();
+  /* Apostrophes romanize glottal stops and ejectives here, so they are letters
+     and must not be stripped with the punctuation. But a courier pasting an
+     answer through a chat window or a rich-text field gets whatever that field
+     substitutes — a right single quote, most often — and the letter arrives as
+     a different codepoint than the one the language was built from. Measured
+     over 80 languages: 49% of expected answers contain an apostrophe, so that
+     is half the machine failing on a correct answer for a reason nobody could
+     see. Fold the look-alikes onto the plain one first; that keeps the letter
+     while accepting the forms a text pipeline produces.
+
+     Accented vowels (e o e o u with diaereses and graves) are NOT folded. A
+     pipeline that strips diacritics is rarer than one that curls quotes, and
+     folding them would make the check accept answers that are actually wrong. */
+  const APOSTROPHES = /[\u2018\u2019\u02bc\u02bb\u2032\u0060\u00b4]/g;
+  const normalize = (s) => s.replace(APOSTROPHES, "'").toLowerCase().replace(/[.,;:!?()[\]"“”]/g, " ").replace(/\s+/g, " ").trim();
 
   function check() {
     const L = state.L, given = answerEl.value.trim();

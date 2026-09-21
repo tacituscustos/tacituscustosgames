@@ -571,8 +571,25 @@
   function ask() {
     const G = state.G;
     if (!G || state.answer || state.probes.length >= G.tier.probes) return;
-    const it = probeInput.value.toUpperCase().replace(/[^ABCD]/g, "");
-    if (it.length !== LEN) { flash(probeCopiedEl, "A probe is five symbols from A, B, C and D"); probeCopyRow.hidden = false; return; }
+    /* The board prints: Reply "PROBE X X X X X". Take that, and the other
+       shapes a reply arrives in — spaced, bare, lowercase, comma-separated,
+       quoted — while refusing anything that is not five symbols. The old
+       version stripped every character outside ABCD, which kept the B in
+       "PROBE" and so rejected the format the board itself asks for, and
+       silently truncated a six-symbol probe to five rather than saying so.
+       Separators are dropped; a symbol that is not A, B, C or D is a refusal,
+       because guessing which five of six were meant is an edit. */
+    const raw = probeInput.value.toUpperCase().trim();
+    const it = raw.replace(/^PROBE\b[\s:.\-]*/, "").replace(/[\s,;.:"'\-_|]/g, "");
+    if (/[^ABCD]/.test(it)) {
+      const strays = [...new Set(it.replace(/[ABCD]/g, ""))].join(" ");
+      flash(probeCopiedEl, `A probe uses only A, B, C and D — not ${strays}`);
+      probeCopyRow.hidden = false; return;
+    }
+    if (it.length !== LEN) {
+      flash(probeCopiedEl, `A probe is ${LEN} symbols from A, B, C and D; that is ${it.length}`);
+      probeCopyRow.hidden = false; return;
+    }
     const q = probeQuality(G, state.probes, it);
     state.probes.push(Object.assign({ item: it, label: labelOf(G, it) }, q));
     probeInput.value = "";
