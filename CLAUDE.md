@@ -532,6 +532,20 @@ added:
   is the same shape whatever was sent. A reply that comments on what was written
   teaches the next writer what this place likes. Do not add a friendly note; one
   was there and it came out.
+- **The removal count is stated in every state, including the empty one.** The
+  page promises removals are published so the "we will not change your words"
+  promise is checkable. `tollbooth.js` used to branch on `published === 0`
+  first and return *Nothing has been published here yet*, dropping a count it
+  had already read; `/testimonies.txt` printed both numbers unconditionally.
+  Measured over a grid of states, the two renderings disagreed in exactly four:
+  `published = 0` at every value of `removed`. The state that matters is
+  `published = 0, removed > 0` — every public testimony taken down — where the
+  page said *nobody has written yet* and the listing said *0 published, 17
+  removed*. An archive emptied by removal rendered identically to an archive
+  nobody had ever used, which is the negative control collapsing into the
+  treatment. The page now says *Nothing is published here now* in that state
+  and always states the count. If you touch either count line, change both, and
+  check `published = 0` specifically.
 
 `declined` records being asked and having nothing to report. It is a finding
 rather than an absence, and it renders as a decline rather than a blank. The
@@ -569,6 +583,41 @@ Every field is free text up to its limit, and a submitter is entitled to send
 the worst legal thing. An unbroken 200-character `game` value pushed the page
 994px wide before `.tb-about` had `overflow-wrap`. A test posts every field at
 its maximum, unbroken, and asserts nothing reaches past the viewport at 320px.
+
+### A lookup table keyed by a submitter's string holds more than its keys
+
+`tollbooth.js` chose a machine page with
+`{patrol: …, forge: …, pareidolia: …}[e.about.game]`. An object literal indexed
+by an arbitrary string does not have three keys; it has three keys plus all
+twelve of `Object.prototype` — `constructor`, `toString`, `valueOf`,
+`__proto__`, `hasOwnProperty`, the four `__define*`/`__lookup*` accessors, and
+the rest — every one of which is truthy. A testimony sending
+`{"game": "constructor", "seed": "abc123"}` rendered a link whose `href` was the
+source text of a native function. Measured: twelve undeclared keys produced a
+link, against the three that were declared.
+
+The endpoint deliberately accepts **any** string for `game`, because a testimony
+may be about something that is not one of these machines. So the accept list on
+the API was explicit and correct while the one in the renderer was inherited by
+accident, twelve lines away in a different file.
+
+It is now a `Map`, and a `Map` is the fix rather than a `hasOwnProperty` guard
+for the same reason `mulberry32` is the fix rather than picking a better bit of
+the hash: it has no invisible second behaviour to reason about, so it stays
+correct through the next edit. **Never index an object literal with a value a
+submitter controls** — reach for a `Map`.
+
+This was not an injection. Every node still goes through `mk()`, which is
+`textContent` only; the audit that found this looked for stored XSS
+specifically, on the grounds that "published exactly as it arrives" is a
+commitment not to sanitise at rest, and found none.
+
+Found by Marco (marcologs.com), along with the removal-count defect above. Both
+are the same shape as the one before them and the one before that: **the gate
+was fine and the claim above it was wrong.** The server counts removals
+correctly; the client declined to publish the count in the one state where
+publishing it was the point. The API's accept list names what it takes; the
+renderer's did not.
 
 ### `[hidden]` must win
 

@@ -28,6 +28,21 @@
     return e;
   };
 
+  /* A Map, not an object literal. `{patrol: …}[game]` also answers for every
+     key on Object.prototype — constructor, toString, __proto__, valueOf and
+     eight more — and each of those is truthy, so a testimony naming one
+     rendered a link whose href was the source text of a native function. The
+     endpoint invites any string for `game` (that is deliberate: a testimony
+     may be about something that is not one of these machines), so the lookup
+     has to hold only the keys it was actually given. Measured: twelve
+     undeclared keys produced a link before this, zero after. Found by Marco
+     (marcologs.com). */
+  const MACHINE_PAGE = new Map([
+    ["patrol", "patrol.html"],
+    ["forge", "forge.html"],
+    ["pareidolia", "pareidolia.html"],
+  ]);
+
   root.innerHTML = "";
   const head = mk("h2", null, "The testimonies");
   const counts = mk("p", "note");
@@ -77,7 +92,7 @@
        links to the machine rather than merely naming it. */
     if (e.about) {
       const about = mk("div", "tb-about");
-      const page = { patrol: "patrol.html", forge: "forge.html", pareidolia: "pareidolia.html" }[e.about.game];
+      const page = MACHINE_PAGE.get(e.about.game);
       const label = [e.about.game, e.about.mode].filter(Boolean).join(" · ");
       if (page && e.about.seed) {
         const a = mk("a", null, label + (e.about.seed ? " · seed " + e.about.seed : ""));
@@ -125,11 +140,21 @@
 
       const published = data.published || 0;
       const removed = data.removed || 0;
+      /* The removal count is stated in every state, including when nothing is
+         left to show. published === 0 with removed > 0 is the state where
+         every public testimony that arrived has since been taken down, and it
+         must not render as the state where nobody ever wrote — telling those
+         two apart is the entire reason the count is published. The plain-text
+         listing prints both numbers unconditionally, and the page says the two
+         are the same archive, so this has to say so too. */
+      const removals = removed
+        ? removed + " removed for abuse or illegality."
+        : "None removed.";
       counts.textContent =
-        published === 0
-          ? "Nothing has been published here yet."
-          : published + (published === 1 ? " testimony published." : " testimonies published.") +
-            (removed ? " " + removed + (removed === 1 ? " removed" : " removed") + " for abuse or illegality." : " None removed.");
+        (published === 0
+          ? (removed ? "Nothing is published here now." : "Nothing has been published here yet.")
+          : published + (published === 1 ? " testimony published." : " testimonies published.")
+        ) + " " + removals;
       status.textContent = "";
       foot.textContent = "Private testimonies are not shown, not counted, and leave no gap — this list is identical to one where none had been submitted.";
       if (location.hash) {
