@@ -482,6 +482,27 @@ file that would have to read those names. That is what keeps it honest. Update
 it alongside any change to parameter names, tier names, grid sizes or guard
 counts.
 
+**It also states what an agent needs in order to play**, under *What you need to
+play*, because an operator deciding between pointing an agent at the site and
+couriering text by hand has no other way to find out. Those claims are
+measurable and were measured: JavaScript is the only hard requirement (with it
+off a machine page renders about 1,100–1,450 characters and no controls);
+clicking and typing suffice, with Patrol's arrow keys a third path rather than a
+requirement; every board is also a read-only text box (`#pt-text`, `#cf-text`,
+`#pd-text`); and the machines use no storage, make no requests after load, and
+run no clock. If any of that stops being true, the section is lying — it names
+element ids, so renaming one breaks it silently.
+
+**Do not put an archive-dependent number in this file.** A draft of that section
+claimed the Tollbooth serves "6,958 characters against 6,978 with JavaScript
+on".
+Both numbers were measured in a sandbox that cannot reach the endpoint, so the
+second was the length of the *failure* state — and it would have rotted anyway
+the moment a testimony arrived, since the archive grows. The claim is now the
+durable one: the submission instructions are static markup, so a client that can
+fetch and post but not execute gets the whole interface. That is checkable
+against the raw HTML and does not move.
+
 ### The Tollbooth: a write endpoint on a site that has no server
 
 Everything else here runs in the page and records nothing. The Tollbooth
