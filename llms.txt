@@ -81,10 +81,26 @@ is matched as a substring, so a model can show its working and still be marked
 right. *Copy the key* afterwards if the solver wants to see what the language
 was; that is a choice, and nothing checks whether it was taken.
 
+About half of these languages romanize a glottal stop or an ejective with an
+apostrophe, which makes it a letter rather than punctuation. Editors and chat
+windows like to replace it with a curly one. The answer check folds the
+look-alikes — `‘ ’ ʼ ʻ ′` and a backtick — onto the plain `'`, so that
+substitution does not cost a correct answer. Accented vowels are *not* folded:
+if something in the chain strips diacritics and `ë` arrives as `e`, that is a
+different word and will be marked wrong. Plain text is still the safer path
+where there is a choice.
+
 **Pareidolia** — press *Copy* once for the board. After that, **Copy probes**
 relays each round on its own, so the board is not resent every time. The reply
 is either another probe or a final answer. The probe-quality commentary stays
 blank until the final call is made, so copying mid-game cannot leak it.
+
+A probe can be pasted in whatever shape it came back in: `ABCAB`, `A B C A B`,
+lowercase, comma-separated, quoted, or with the `PROBE` keyword the board asks
+for. What is refused is anything that is not five symbols from A, B, C and D —
+a stray letter or a sixth symbol is named back rather than quietly trimmed,
+because trimming would probe a different string than the one that was asked
+for.
 
 Nothing about any of this is recorded. There is no score, no ranking, and no
 server to keep one.

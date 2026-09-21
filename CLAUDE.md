@@ -301,6 +301,17 @@ romanize glottal stops and ejectives, so they are letters, not punctuation. The
 expected sentence is matched as a substring so a model can show its reasoning
 and still be graded correct.
 
+**The apostrophe look-alikes are folded onto `'` first**, which is not the same
+as stripping them. Measured over 80 languages, **49% of expected answers contain
+an apostrophe** — so an editor or chat window curling it to `’` on the way
+through would have failed half the machine on correct answers, for a reason
+invisible to everyone involved. `normalize()` folds `‘ ’ ʼ ʻ ′`, backtick
+and acute accent onto the plain one. **Accented vowels are deliberately not
+folded**: diacritic-stripping is rarer than quote-curling, and folding `ë` onto
+`e` would accept answers that are genuinely wrong. A test asserts a corrupted
+answer is still rejected, because the risk of this change is looseness rather
+than breakage.
+
 ### Language Forge: stems are pinned, affixes are not
 
 `pinnedStems()` checks the task's **stems** against the translated sentences and
@@ -352,6 +363,14 @@ Two things that look relaxable and are not:
   memoised on the survivor set, rather than the generator's greedy four
   candidates — reproved all 119 rule boards in a 240-seed sample. Rerun that
   audit if the greedy search is ever touched.
+- **The probe field accepts the format the board prints.** `grammarText()` says
+  *Reply "PROBE X X X X X"*, and the parser used to strip everything outside
+  `ABCD` — which kept the **B in "PROBE"**, making six symbols, so the board's
+  own instruction was refused. The same strip silently truncated `ABCABX` to
+  `ABCAB`, probing a string nobody asked about. `ask()` now drops a leading
+  `PROBE` keyword and separators, then **refuses rather than trims**: a stray
+  symbol is named back, a wrong length is stated. Guessing which five of six
+  symbols were meant is an edit, and this repo does not make those.
 - **The probe-quality commentary is hidden until the player answers.** It
   reports how many rules each probe split, which is a hint about the survivor
   set while probing is still open. It is rendered blank until `state.answer` is
