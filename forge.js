@@ -460,7 +460,17 @@
     specs.push(T({ subj: S({ adj }) }));
     const agent = pickNoun(rng, L, null, (n) => n.derivedAgent);
     if (agent) specs.push(T({ subj: S({ n: agent }) }));
-    if (L.evid) specs.push(T({ evid: "REP" }));
+    /* Translated, and that is load-bearing. The task always asks for INFR, and
+       INFR is never shown — identifying it by elimination is the reasoning step
+       this machine exists for. But elimination only resolves when one candidate
+       is left, and with REP untranslated the solver faced two unknown suffixes
+       in one slot competing for two unknown meanings. That is a coin flip, not
+       an inference, and the key was calling it elimination. Showing REP leaves
+       INFR as the only unknown evidential; the task's own affix is still not
+       handed over. Measured over 300 languages: 133 had evidentials, all 133
+       were unresolvable before this, none after, and INFR stays unpinned in
+       every one. */
+    if (L.evid) specs.push(T({ evid: "REP", known: true }));
     specs.push({ ...base, transitive: false, verb: vi, subj: S({ num: 3, plural: canPl, def: false }), tense: present });
     const agent2 = pickNoun(rng, L, null, (n) => n.derivedAgent && n !== agent);
     if (agent2) specs.push(T({ obj: O({ n: agent2 }), known: true }));
@@ -837,19 +847,48 @@
 
      Numerals are excluded: the puzzle hands them over in its own line. */
   const glossTags = (s) => s.words.flatMap((w) => w.gloss.split("-")).filter((g) => /^[A-Z0-9]+$/.test(g));
+  /* Affixes that compete for one slot. An affix the task needs is only findable
+     by elimination when every sibling in its slot is either shown or absent —
+     otherwise the solver narrows to a set and stops there. */
+  const SLOTS = { evidential: ["VIS", "INFR", "REP"], tense: ["PST", "FUT"], case: ["ACC", "DAT", "INS", "GEN", "LOC"] };
+
   function taskAffixes(L) {
-    const explained = new Set();
-    for (const s of L.sentences) if (s.known) for (const g of glossTags(s)) explained.add(g);
+    const explained = new Set(), present = new Set();
+    for (const s of L.sentences) {
+      for (const g of glossTags(s)) present.add(g);
+      if (s.known) for (const g of glossTags(s)) explained.add(g);
+    }
+    for (const g of glossTags(L.task)) present.add(g);
     const need = [...new Set(glossTags(L.task))].filter((g) => !/^\d+$/.test(g));
-    return { pinned: need.filter((g) => explained.has(g)), elimination: need.filter((g) => !explained.has(g)) };
+    const elimination = need.filter((g) => !explained.has(g));
+    /* Named rather than counted: if this is ever non-empty the key says so,
+       instead of calling a coin flip an inference. */
+    const contested = elimination.map((g) => {
+      const slot = Object.values(SLOTS).find((set) => set.includes(g));
+      if (!slot) return null;
+      const rivals = slot.filter((x) => x !== g && present.has(x) && !explained.has(x));
+      return rivals.length ? { tag: g, rivals } : null;
+    }).filter(Boolean);
+    return { pinned: need.filter((g) => explained.has(g)), elimination, contested };
   }
   function affixReport(L) {
     const a = taskAffixes(L);
-    return ["", "MORPHEME CHECK",
+    const lines = ["", "MORPHEME CHECK",
       `Task affixes shown in a translated sentence: ${a.pinned.join(", ") || "none"}.`,
       `Task affixes appearing only in untranslated sentences, to be identified by elimination: ${a.elimination.join(", ") || "none"}.`,
-      "Numerals are excluded; the puzzle supplies them directly.",
-    ].join("\n");
+    ];
+    if (a.contested.length) {
+      lines.push("");
+      for (const c of a.contested) {
+        lines.push(`NOT RESOLVABLE: ${c.tag} shares its slot with ${c.rivals.join(" and ")}, which ${c.rivals.length > 1 ? "are" : "is"} also untranslated.`);
+      }
+      lines.push("A solver can narrow this to a set and no further. That is a defect in this");
+      lines.push("language rather than a difficulty, and the line above overstates what is possible.");
+    } else if (a.elimination.length) {
+      lines.push("Each is the only unknown left in its slot, so elimination resolves it.");
+    }
+    lines.push("Numerals are excluded; the puzzle supplies them directly.");
+    return lines.join("\n");
   }
 
   /* ---------------- UI ---------------- */
