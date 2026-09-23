@@ -328,11 +328,41 @@ lookup. What was wrong was that nobody said so, and a solver hunting for a
 translation that does not exist may reasonably conclude the puzzle is broken.
 
 So the puzzle half states the rule without naming which affixes — naming them
-*is* the answer — and `taskAffixes()` / `affixReport()` in the UI layer report
-both sets in the key. They live in the UI layer on purpose, so the ported logic
-stays mechanically re-extractable. If you touch the designed sentence set or
-which specs carry `known: true`, re-measure: the claim "some affixes are left to
-elimination" is only honest while it stays true.
+*is* the answer — and `taskAffixes()` / `affixReport()` report both sets in the
+key. If you touch the designed sentence set or which specs carry `known: true`,
+re-measure: the claim "some affixes are left to elimination" is only honest
+while it stays true.
+
+**Elimination only resolves when one candidate is left, and for evidentials it
+never did.** The task always asks for `INFR` (the negated task spec hardcodes
+it). `REP` was pushed into the sentence set untranslated, and every translated
+sentence used `VIS`. So a solver met two unknown suffixes in one slot competing
+for two unknown meanings, narrowed it to a pair, and could go no further — while
+the morpheme check told them the affix was "to be identified by elimination".
+
+Measured over 300 languages: **133 had an evidential system, the task needed
+`INFR` in all 133, `INFR` was shown in 0, `REP` was shown in 0.** Every
+evidential language was a coin flip, which is 44% of all puzzles. Not a bad
+seed — a structural property nobody had checked.
+
+The fix is to translate the `REP` sentence, **not** the `INFR` one. That leaves
+`INFR` the only unknown evidential, so elimination genuinely resolves, and the
+task's own affix is still never handed over — which is the property the whole
+design rests on. After: `INFR` pinned in 0 of 400, `REP` in 188 of 188,
+unresolvable in 0, and `pinnedStems()` and `shapeReport()` still pass on all 400
+across both styles and both hint budgets.
+
+`taskAffixes()` now also returns `contested` — task affixes that share a slot
+with another untranslated affix — and `affixReport()` prints **NOT RESOLVABLE**
+naming the rivals when it is non-empty, instead of claiming elimination works.
+The property now holds by construction, so that branch should never fire; it is
+there because the old key asserted something it had never computed, and the next
+change to the sentence set should make the key say so rather than lie.
+
+Reported by a model that played seed 180421 and flagged the miss as a coin flip
+rather than claiming the answer. It framed the gap as specific to that seed; it
+was every evidential language, which is the part worth remembering — a player
+reporting "this puzzle had a gap" may be reporting a property of the generator.
 
 ### Pareidolia: a narrower promise, stated on the board
 
