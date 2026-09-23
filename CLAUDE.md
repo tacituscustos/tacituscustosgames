@@ -411,6 +411,59 @@ recorded**. There is no tally of how a judgment turned out. The interesting
 question — is a lone survivor a rule or a coincidence — is one a player answers
 well or badly over many boards, and this repo is not the thing that counts.
 
+### Pareidolia: the stated language was wider than the counted one
+
+`grammarText()` described the rule language, and `buildLanguage()` counted in a
+**quotient** of it. Three things the prose left out, smallest last:
+
+- **Rules are deduplicated by extension.** `buildLanguage()` keeps a rule only
+  if its truth vector over all 1024 strings is new, so two phrasings of the same
+  test are one rule — *starts with A* and *the first symbol is A* are literally
+  the same entry, and at Hell every `and`/`or` pair that reduces to something
+  already in the set is dropped. 97 atoms collapse to 83; 9,506 level-3 rules
+  collapse to 6,356. The prose never mentioned it.
+- **The k ranges were unstated.** The list said *contains at least k X / contains
+  exactly k X*. The code means `k ∈ {1,2,3}` and `k ∈ {0,1,2}`. It also counts
+  zero as even, which the atom text says and the printed summary dropped.
+- **The survivor ceiling was stated for one kind of board only.** *Rule boards:
+  … kept only if between 2 and 6 rules survive.* *Noise boards: … kept only if
+  at least one rule survives.* The code caps **both** at 6.
+
+That asymmetry is the defect, because it manufactures a valid-looking deduction.
+A solver who counts more than six has exactly one inference the text licenses:
+rule boards are capped, noise boards are not, therefore noise. Measured over 250
+Hell boards, counting in the language exactly as it was described: **the count
+exceeds the stated six on 48.8% of boards**, and on **55 of 250 (22%) that
+reasoning gives a wrong NOISE answer on a rule board**. Mean survivors 6.64
+against the generator's 4.52, maximum 37 against 6 — and 8.13 / 62 if the reader
+also takes `k` to be unbounded.
+
+Probe and Open are untouched: with no composites the dedup gap is small, and a
+faithful prose count crossed 24 on **0 of 250** Probe boards. This is Hell's
+defect, because the composite construction is where the collapsing happens.
+
+The fix is all in the prose, because the counting is right: `grammarText()` now
+gives the k ranges, says the language is counted by behaviour rather than
+wording with an example a solver can check, states the ceiling for noise boards
+too, and says plainly that **a count above the ceiling is never evidence of
+noise** — it means you are counting in a wider language than this one. Every
+board and every answer key is byte-identical; only the text changed.
+
+Reported by a model that played seed 487007 on Hell, found ten consistent rules,
+reasoned that ten exceeds six so the board had to be noise, and answered NOISE
+on a rule board — with the true rule on its own list. Two things worth keeping.
+It volunteered that the probes were free and that four of them would have caught
+its own error, which is the actual lesson and not one the board teaches. And its
+diagnosis was wrong in an instructive way: it blamed tighter `k` ranges and
+restrictions on `or`, and neither moves this board — under every reading of the
+prose, bounded or unbounded, deduped or not, seed 487007 has 5 or 6 survivors
+and 5 distinct target patterns. Its count of ten is not reproducible from any
+reading of the language. So the report was right that the disagreement was in
+the design, wrong about where, and the wrongness did not matter: measuring the
+claim it actually made is what found the real one. Same as seed 180421, and the
+same shape as every defect before it — **the gate was fine and the claim above
+it was wrong.**
+
 ### Pareidolia: the noise had a rule in it
 
 This is the most serious defect the repository has had, it survived two audits
