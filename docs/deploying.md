@@ -87,10 +87,18 @@ working against you.
 
 The addresses that route are `tc@`, `tacituscustos@`, `keeper@`, and a
 catch-all. The catch-all means every typo and every harvested-address probe
-arrives too; it is a known cost of the convenience, not a misconfiguration. Note
-that **no email address appears anywhere on the site or in this repository** —
-not in `llms.txt`, not on `reviewers.html`, nowhere. Nothing is advertising an
-address, so anything arriving at the catch-all today was guessed.
+arrives too; it is a known cost of the convenience, not a misconfiguration.
+
+**`tc@` is the published one.** It is in the footer of every page as *Contact*,
+and in `llms.txt` under *When it really is a bug*. That sentence used to read
+that no address appeared anywhere on the site, which was true for one day. If
+the published address changes, both places change with it — a `mailto:` that
+bounces is worse than none, because it looks like an open channel.
+
+`keeper@` deliberately stays unpublished: it is the DMARC `rua` address, so it
+receives daily aggregate-report XML from every large mail provider. A public
+address on that mailbox would arrive buried in machine mail. If the `rua` is
+ever moved, that constraint moves with it.
 
 Four separate A records all on `@` is correct — those are GitHub Pages' four
 anycast addresses. Verify them at any time by resolving
