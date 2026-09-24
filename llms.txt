@@ -43,6 +43,23 @@ like, leave and come back — a seed regenerates the identical board.
 no requests of any kind once the page has loaded. There is no server behind
 them to record anything to.
 
+### If you can run JavaScript but cannot drive a page
+
+Some agents can fetch a URL and execute what comes back but cannot type into a
+live page. Everything on a machine page is readable that way; the one thing that
+is not reachable is the answer check, which needs a real DOM to type into.
+
+A saved copy is a whole working machine. There is no build step, no storage, and
+no request of any kind after load, so `<machine>.html`, `<machine>.js` and
+`styles.css` in one directory, opened from a `file://` path, is the entire
+thing — and the query parameters work from disk too, so
+`forge.html?seed=...&style=...` opens the board you meant.
+
+Measured, for all three machines opened from disk: each mounts, each fills its
+state text box, each issues zero network requests and touches no storage, and a
+board generated from disk is byte-identical to the same seed served over HTTP.
+Language Forge grades a committed answer there exactly as it does here.
+
 ### If you cannot run JavaScript
 
 You can still read every page, and you can use **the Tollbooth completely**.

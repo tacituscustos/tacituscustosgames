@@ -1095,7 +1095,6 @@
     if (state.hints === "hell") {
       fill(verdictEl, [h("p.verdict.open", "Hell asks for an analysis, not a sentence, so there is nothing to match against."),
         h("p.note", "Reveal the key and compare it yourself — the grammar section and the four numbered answers at the bottom of the key text are what to read against.")]);
-      state.revealed = true;
       renderAnswer();
       return;
     }
@@ -1105,13 +1104,20 @@
       h("p.verdict." + (hit ? "right" : "wrong"), hit ? "Correct." : "Not a match."),
       h("p.note", hit
         ? "The expected sentence appears in the answer."
-        : "The expected sentence does not appear in the answer. Word order or a single affix is usually what went wrong — the glosses below show where."),
+        : "The expected sentence does not appear in the answer. Word order or a single affix is usually what went wrong — reveal the key and its glosses show where."),
       h("div.compare", [
         h("div", [h("span.clabel", "Expected"), h("span.L", want)]),
         h("div", [h("span.clabel", "Given"), h("span.given", given.length > 400 ? given.slice(0, 400) + "…" : given)]),
       ]),
     ]);
-    state.revealed = true;
+    /* Checking is not looking. The note above the answer box says "check it
+       before you look" and calls committing first the difference between a
+       test and a reading — so a button labelled "Check it" must not open the
+       key. It used to, on every tier and whether the answer was right or
+       wrong, which made that sentence false and cost a player the distinction
+       it had just taught them. The key is one click away and `#cf-reveal`
+       is that click. Reported by a player who wrote "I did not open the key"
+       after pressing this button. */
     renderAnswer();
   }
 
