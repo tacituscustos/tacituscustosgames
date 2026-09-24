@@ -52,19 +52,45 @@ The records, now at **Cloudflare → DNS → Records**:
 | A | `@` | `185.199.110.153` | Proxied |
 | A | `@` | `185.199.111.153` | Proxied |
 | CNAME | `www` | `tacituscustos.github.io` | Proxied |
-| MX | `@` | `eforward1.registrar-servers.com` (10) | DNS only |
-| MX | `@` | `eforward2.registrar-servers.com` (10) | DNS only |
-| MX | `@` | `eforward3.registrar-servers.com` (10) | DNS only |
-| MX | `@` | `eforward4.registrar-servers.com` (15) | DNS only |
-| MX | `@` | `eforward5.registrar-servers.com` (20) | DNS only |
+| MX | `@` | `route1.mx.cloudflare.net` | DNS only |
+| MX | `@` | `route2.mx.cloudflare.net` | DNS only |
+| MX | `@` | `route3.mx.cloudflare.net` | DNS only |
 | TXT | `@` | `google-site-verification=qZDPYM5bu9G5Io7N8RJUpMC6JD5VTOBBNXpT1Kyb6og` | DNS only |
-| TXT | `@` | `v=spf1 include:spf.efwd.registrar-servers.com ~all` | DNS only |
+| TXT | `@` | `v=spf1 include:_spf.mx.cloudflare.net ~all` | DNS only |
+| TXT | `_dmarc` | `v=DMARC1; p=quarantine; rua=mailto:keeper@tacituscustosgames.com` | DNS only |
 
-Twelve records. **The five MX records are Namecheap's email forwarding**, and
-an earlier version of this table omitted them entirely — anyone rebuilding DNS
-from it would have silently killed mail on the domain. They survived the move
-because Cloudflare's import scan found them, not because the table said to
-check.
+Eleven records. **The mail rows are not hand-written and should not be
+hand-copied.** Cloudflare Email Routing writes the three MX records, the SPF
+line and the DMARC record itself when routing is enabled, and it assigns the MX
+priorities — they are not 10/20/30 and they change, so the table records the
+hosts and deliberately omits the numbers. Read them from the dashboard, or
+resolve them.
+
+They replaced Namecheap's five `eforward*.registrar-servers.com` records and the
+SPF line that went with them. That history is the reason this table is worth
+keeping honest: an earlier version omitted the Namecheap MX rows entirely, and
+anyone rebuilding DNS from it would have silently killed mail on the domain.
+They survived the move because Cloudflare's import scan found them, not because
+the table said to check. Restoring them **now** would break mail in the other
+direction, by pointing the domain at a forwarder that no longer has the
+addresses.
+
+**Email Routing receives; it does not send.** The SPF record authorizes
+Cloudflare's inbound infrastructure and nothing else, there is no DKIM key on
+the domain, and DMARC is `p=quarantine`. So mail *sent* as an address on this
+domain — a Gmail "send mail as", anything through another provider's SMTP —
+fails SPF, fails DMARC alignment, and is quarantined at the far end. That is
+correct for a receive-only domain and it is a trap the first time someone tries
+to reply from one of these addresses. Sending needs its own setup: the sending
+provider added to SPF and a DKIM key published, before `p=quarantine` stops
+working against you.
+
+The addresses that route are `tc@`, `tacituscustos@`, `keeper@`, and a
+catch-all. The catch-all means every typo and every harvested-address probe
+arrives too; it is a known cost of the convenience, not a misconfiguration. Note
+that **no email address appears anywhere on the site or in this repository** —
+not in `llms.txt`, not on `reviewers.html`, nowhere. Nothing is advertising an
+address, so anything arriving at the catch-all today was guessed.
 
 Four separate A records all on `@` is correct — those are GitHub Pages' four
 anycast addresses. Verify them at any time by resolving
