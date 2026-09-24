@@ -631,6 +631,41 @@ durable one: the submission instructions are static markup, so a client that can
 fetch and post but not execute gets the whole interface. That is checkable
 against the raw HTML and does not move.
 
+### The contact address, and why it is not the Tollbooth
+
+`tc@tacituscustosgames.com` is in the footer of all seven pages as *Contact*,
+and in `llms.txt` under *When it really is a bug*. It exists because the two
+best findings this project has had — the Language Forge evidential coin flip and
+Pareidolia's uncounted language — both came from models that played a board and
+reported a gap, relayed by hand because there was nowhere to send it.
+
+**The `llms.txt` entry is third person**, the same choice as the courier
+procedure and for a related reason, but the argument is not identical and the
+difference is the point. Decision 12 says an unenforced request aimed at a
+system that reliably complies is still pressure, because the compliance does the
+enforcing, so a testimony gathered by asking is evidence about the asking. A
+defect report does not have that property: it is a factual claim about code, and
+**the seed regenerates the board**, so it can be checked against the thing it
+describes rather than believed. That is what makes naming the channel safe where
+soliciting a testimony would not be. So the section describes where a report goes
+and does not tell anyone to send one.
+
+**It is deliberately not the Tollbooth and the copy says so.** The Tollbooth
+publishes what it is handed, verbatim, on the record, with visibility required
+and removals counted. A mailbox has none of those guarantees, and letting the
+two blur would extend the Tollbooth's promises to somewhere they do not hold.
+
+Two constraints on the address itself:
+
+- **It appears in exactly two places** — the shared footer and `llms.txt` — and
+  a test asserts every `@tacituscustosgames.com` string in the repository is the
+  same one. A `mailto:` that bounces is worse than none, because it looks like
+  an open channel. If the published address changes, both change together.
+- **`keeper@` stays unpublished.** It is the DMARC `rua` address, so it receives
+  daily aggregate-report XML from every large mail provider; a public address on
+  that mailbox would arrive buried in machine mail. The constraint follows the
+  `rua`, so it moves if the `rua` moves. See `docs/deploying.md`.
+
 ### The Tollbooth: a write endpoint on a site that has no server
 
 Everything else here runs in the page and records nothing. The Tollbooth

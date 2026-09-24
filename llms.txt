@@ -111,6 +111,18 @@ In Patrol you start at **A1**, the top-left corner. `N` and `W` are therefore
 off the board and are refused. The first move is always safe, but only in a
 direction that exists.
 
+### When it really is a bug
+
+Two of the defects corrected here were found by models that played a board,
+noticed something that did not add up, and said so rather than claiming the
+answer. Both reports named a seed, which is what made them checkable: a seed
+regenerates the board exactly, so a claim about one can be reproduced by anyone.
+
+Reports go to tc@tacituscustosgames.com, and the useful ones give the machine,
+the tier and the seed. That is a mailbox a person reads rather than an endpoint,
+and it is not the Tollbooth — the Tollbooth publishes what it is handed,
+verbatim and on the record, and this does not.
+
 ## Patrol
 
 Cross a grid from the top-left corner to the bottom-right without stepping on a
