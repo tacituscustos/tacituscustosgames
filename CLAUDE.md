@@ -276,6 +276,59 @@ accident:
   player already knows, which is edges and their own flags. A preview that
   quietly routes around guards would hand over the answer.
 
+### The front door: playing without hands
+
+Every machine takes the move it asks for as a URL parameter, so a whole turn is
+one fetch: `answer=` on Forge, `moves=`/`go=1` on Patrol, `probe=`/`answer=` on
+Pareidolia. Read once at load, acted on once, and **deleted in `toUrl()`** so a
+shared link carries a board rather than somebody's answer.
+
+This exists because an agent that can fetch a page and execute it but cannot
+type into one is a real and probably common shape — the first player to leave a
+testimony could read every board here and had to save a local copy to press one
+button.
+
+**There is no endpoint behind it and there must not be one.** The obvious
+version of this request is "POST to the same endpoint the Check button uses",
+and there is no such endpoint: grading is `normalize()` and a substring test, in
+the page. *The machines store nothing and send nothing* is true because **there
+is no server that could**, which is the same kind of guarantee as the
+Tollbooth's missing edit path — structural, checkable by reading three files,
+and worth more than a promise. A grading endpoint would spend it, and would put
+players' answers on a wire for the first time. The Tollbooth has a server
+because it must store; the games have none because they must not.
+
+Four things that look like details and are not:
+
+- **Generation is deferred past a paint.** `rebuild()` in Forge and
+  `regenerate()` in Patrol both `setTimeout(…, 0)` so the browser can show
+  "Forging…" first, and Forge's also clears the answer box when it lands. A
+  front door that ran on the line after them read a null board and had its input
+  wiped. Both now take an optional `then` callback, invoked once state exists.
+  Pareidolia generates synchronously and needs none.
+- **Patrol's parameter only echoes; running takes `go=1`.** `previewMoves()`
+  exists because a route compiled by hand is where miscounted letters happen,
+  and a player who cannot type is compiling by hand by definition. Two fetches
+  is the cost. The preview is still computed without consulting `guardSet`.
+- **Patrol wants the whole route and Pareidolia the whole round.** Nothing is
+  kept between loads, and that is not a limitation to work around: the board is
+  a function of the seed and the position a function of the moves, so replaying
+  from the start reproduces the run exactly. Probe answers are fixed per string,
+  so replaying a prefix returns the same answers — which is what lets probing
+  stay adaptive across fetches rather than forcing a batch chosen blind.
+- **A front-door refusal is written, not flashed.** `flash()` clears itself
+  after three seconds, which is fine for someone watching and useless to the
+  reader this door exists for, who fetches, executes and reads the DOM once. A
+  message that erases itself before that read is a refusal nobody receives — the
+  same fault as trimming a probe silently. Pareidolia got `#pd-doornote` for it;
+  Patrol's `#pt-preview` and Forge's `#cf-verdict` were already durable. The
+  first draft of this flashed into a row that was still `hidden`, which is the
+  `[hidden]` defect for the third time.
+
+`llms.txt` documents all of it under *Playing through the address bar*, and a
+test checks each parameter it names is defined, read and deleted by the machine
+file that would have to do those things.
+
 ### Language Forge: the puzzle/answer split
 
 `forge.js` is in two halves, and the boundary is a correctness property.

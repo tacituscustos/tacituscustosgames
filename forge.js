@@ -927,6 +927,7 @@
      link minted before the split still resolves to the puzzle it names; only
      the short names are ever written back. arcade.html forwards them here. */
   const URL_MODE = "mode", URL_SEED = "seed", URL_STYLE = "style";
+  const URL_ANSWER = "answer";
   const OLD_MODE = "forge_mode", OLD_SEED = "forge_seed", OLD_STYLE = "forge_style";
   const MODE_OUT = { bank: "easy", three: "standard", hell: "hell" };
   const MODE_IN = { easy: "bank", standard: "three", hell: "hell", bank: "bank", three: "three" };
@@ -946,6 +947,7 @@
     try {
       const p = new URLSearchParams(location.search);
       p.delete(OLD_MODE); p.delete(OLD_SEED); p.delete(OLD_STYLE);
+      p.delete(URL_ANSWER);   /* never written back: a shared link is a board, not an answer */
       p.set(URL_MODE, MODE_OUT[state.hints]);
       p.set(URL_SEED, state.seed);
       p.set(URL_STYLE, state.style);
@@ -1195,7 +1197,10 @@
 
   const render = () => { renderPuzzle(); renderAnswer(); };
 
-  function rebuild() {
+  /* `then` runs once the language exists. Generation is deferred past a paint,
+     so anything that needs state.L — the front door below, for one — has to
+     wait for it rather than for rebuild() returning. */
+  function rebuild(then) {
     el("cf-name").textContent = "Forging…";
     toUrl();
     /* a new language means a new puzzle: close the key and drop the old answer */
@@ -1206,6 +1211,7 @@
     setTimeout(() => {
       state.L = buildLanguage(state.seed, state.style, state.hints === "hell" ? 60 : 30);
       render();
+      if (typeof then === "function") then();
     }, 0);
   }
 
@@ -1239,6 +1245,32 @@
   textEl.addEventListener("focus", () => textEl.select());
   keyTextEl.addEventListener("focus", () => keyTextEl.select());
 
+  /* ---------------- the front door ----------------
+     An answer handed over in the address bar, for hands that can fetch a page
+     and execute it but cannot type into one. That is a real category — the
+     first player to leave a testimony could read every board here and had to
+     save a local copy to press one button — and it is probably a commoner
+     shape than an agent with no JavaScript at all.
+
+     It is read once, acted on once, and never written back: toUrl() drops it,
+     so a link anyone shares carries a board rather than somebody's answer.
+
+     There is no endpoint behind this and there must not be one. Grading is
+     normalize() and a substring test, in this file, in the page. "The
+     machines store nothing and send nothing" is true because there is no
+     server that could, which is a stronger thing than a promise, and a door
+     that posted an answer somewhere would spend it. */
+  function frontDoor(p) {
+    if (!p) return;
+    const a = p.get(URL_ANSWER);
+    if (a === null || !a.trim()) return;
+    answerEl.value = a;
+    check();
+  }
+
   seedInput.value = state.seed;
-  rebuild();
+  /* captured before rebuild(), because rebuild() calls toUrl() and toUrl()
+     strips the answer out of the address bar */
+  const door = (() => { try { return new URLSearchParams(location.search); } catch { return null; } })();
+  rebuild(() => frontDoor(door));
 })();
