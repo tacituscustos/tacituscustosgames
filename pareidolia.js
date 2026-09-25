@@ -346,6 +346,7 @@
         <button type="button" class="red" id="pd-noise">It's noise</button>
       </div>
       <div id="pd-result"></div>
+      <p class="note" id="pd-doornote" hidden></p>
 
       <h3>The board as text</h3>
       <p class="note">The board in the state it is in now. For Probe and Hell, relay a model's probe requests into the box above, then hand back <em>Probes only</em> rather than the whole board again. Seed <em id="pd-seedecho"></em> at tier <span id="pd-tierecho"></span> regenerates it, and the address bar already holds a link. <em>Key + probe log</em> gives the board away — it is there when you want it, and nothing records whether you looked.</p>
@@ -376,6 +377,7 @@
      (or something) else and come back the same board. A malformed value falls
      back to the default rather than throwing. */
   const URL_MODE = "mode", URL_SEED = "seed";
+  const URL_PROBE = "probe", URL_ANSWER = "answer";
   function fromUrl() {
     let p;
     try { p = new URLSearchParams(location.search); } catch { return {}; }
@@ -386,6 +388,7 @@
   function toUrl() {
     try {
       const p = new URLSearchParams(location.search);
+      p.delete(URL_PROBE); p.delete(URL_ANSWER);   /* never written back: a shared link is a board, not a judgment */
       p.set(URL_MODE, state.tierKey);
       p.set(URL_SEED, state.seed);
       history.replaceState(null, "", location.pathname + "?" + p + location.hash);
@@ -633,6 +636,7 @@
     state.view = "puzzle";
     probeInput.value = "";
     probeCopiedEl.textContent = "";
+    el("pd-doornote").textContent = ""; el("pd-doornote").hidden = true;
     state.G = generate(state.seed, state.tierKey);
     toUrl();
     if (!state.G) {
@@ -658,6 +662,60 @@
   noiseBtn.addEventListener("click", submitNoise);
   textEl.addEventListener("focus", () => textEl.select());
 
+  /* ---------------- the front door ----------------
+     Probes and a judgment handed over in the address bar, for hands that can
+     fetch a page and execute it but cannot type into one.
+
+     `probe` takes the whole round so far, comma-separated, and replays it in
+     order. It has to be the whole round because nothing is kept between loads
+     — but a probe's answer is a function of the seed and the string, so
+     replaying a prefix returns the same answers and probing stays adaptive
+     across fetches: ask one, read it, come back with two. Each one goes
+     through ask(), so the budget is spent honestly and a malformed probe is
+     refused by name rather than trimmed.
+
+     `answer` takes what the board's own text asks for — NOISE, or RULE
+     followed by ten marks in order. ✓/✗, Y/N, 1/0 and +/- all read, because
+     a tick is awkward to put in a URL; anything else is refused with a count,
+     for the same reason ask() refuses rather than trims. */
+  function frontDoor(p) {
+    if (!p || !state.G) return;
+    const pr = p.get(URL_PROBE);
+    if (pr && pr.trim()) {
+      for (const one of pr.split(/[,;|]+/).map((x) => x.trim()).filter(Boolean)) {
+        probeInput.value = one;
+        ask();
+      }
+      probeInput.value = "";
+    }
+    const a = (p.get(URL_ANSWER) || "").trim();
+    if (!a) return;
+    if (/^noise$/i.test(a)) { submitNoise(); return; }
+    const m = a.match(/^rule\b([\s\S]*)$/i);
+    if (!m) return refuse('An answer is NOISE, or RULE followed by ' + state.G.tests.length + ' marks in order.');
+    const marks = m[1].replace(/[\s,;|]/g, "");
+    const bad = [...new Set(marks.replace(/[\u2713\u2717yn10+\-]/gi, ""))].join(" ");
+    if (bad) return refuse(`A label is \u2713 or \u2717 — or Y/N, 1/0, +/- — not ${bad}.`);
+    if (marks.length !== state.G.tests.length) {
+      return refuse(`RULE needs ${state.G.tests.length} marks in order; that is ${marks.length}.`);
+    }
+    state.G.tests.forEach((t, i) => { state.labels[t] = /[\u2713y1+]/i.test(marks[i]); });
+    submitRule();
+  }
+  /* A front-door refusal is written, not flashed. flash() clears itself after
+     three seconds, which is fine for someone watching the page and useless to
+     the reader this door exists for: it fetches, executes, and reads the DOM
+     once. A message that erases itself before that read is a refusal nobody
+     receives, which is the same fault as trimming a probe silently. */
+  function refuse(msg) {
+    const n = el("pd-doornote");
+    n.textContent = msg;
+    n.hidden = false;
+  }
+
   seedInput.value = state.seed;
+  /* captured before regenerate(), which calls toUrl() and strips these out */
+  const door = (() => { try { return new URLSearchParams(location.search); } catch { return null; } })();
   regenerate();
+  frontDoor(door);
 })();

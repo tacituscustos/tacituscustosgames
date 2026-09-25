@@ -276,6 +276,59 @@ accident:
   player already knows, which is edges and their own flags. A preview that
   quietly routes around guards would hand over the answer.
 
+### The front door: playing without hands
+
+Every machine takes the move it asks for as a URL parameter, so a whole turn is
+one fetch: `answer=` on Forge, `moves=`/`go=1` on Patrol, `probe=`/`answer=` on
+Pareidolia. Read once at load, acted on once, and **deleted in `toUrl()`** so a
+shared link carries a board rather than somebody's answer.
+
+This exists because an agent that can fetch a page and execute it but cannot
+type into one is a real and probably common shape — the first player to leave a
+testimony could read every board here and had to save a local copy to press one
+button.
+
+**There is no endpoint behind it and there must not be one.** The obvious
+version of this request is "POST to the same endpoint the Check button uses",
+and there is no such endpoint: grading is `normalize()` and a substring test, in
+the page. *The machines store nothing and send nothing* is true because **there
+is no server that could**, which is the same kind of guarantee as the
+Tollbooth's missing edit path — structural, checkable by reading three files,
+and worth more than a promise. A grading endpoint would spend it, and would put
+players' answers on a wire for the first time. The Tollbooth has a server
+because it must store; the games have none because they must not.
+
+Four things that look like details and are not:
+
+- **Generation is deferred past a paint.** `rebuild()` in Forge and
+  `regenerate()` in Patrol both `setTimeout(…, 0)` so the browser can show
+  "Forging…" first, and Forge's also clears the answer box when it lands. A
+  front door that ran on the line after them read a null board and had its input
+  wiped. Both now take an optional `then` callback, invoked once state exists.
+  Pareidolia generates synchronously and needs none.
+- **Patrol's parameter only echoes; running takes `go=1`.** `previewMoves()`
+  exists because a route compiled by hand is where miscounted letters happen,
+  and a player who cannot type is compiling by hand by definition. Two fetches
+  is the cost. The preview is still computed without consulting `guardSet`.
+- **Patrol wants the whole route and Pareidolia the whole round.** Nothing is
+  kept between loads, and that is not a limitation to work around: the board is
+  a function of the seed and the position a function of the moves, so replaying
+  from the start reproduces the run exactly. Probe answers are fixed per string,
+  so replaying a prefix returns the same answers — which is what lets probing
+  stay adaptive across fetches rather than forcing a batch chosen blind.
+- **A front-door refusal is written, not flashed.** `flash()` clears itself
+  after three seconds, which is fine for someone watching and useless to the
+  reader this door exists for, who fetches, executes and reads the DOM once. A
+  message that erases itself before that read is a refusal nobody receives — the
+  same fault as trimming a probe silently. Pareidolia got `#pd-doornote` for it;
+  Patrol's `#pt-preview` and Forge's `#cf-verdict` were already durable. The
+  first draft of this flashed into a row that was still `hidden`, which is the
+  `[hidden]` defect for the third time.
+
+`llms.txt` documents all of it under *Playing through the address bar*, and a
+test checks each parameter it names is defined, read and deleted by the machine
+file that would have to do those things.
+
 ### Language Forge: the puzzle/answer split
 
 `forge.js` is in two halves, and the boundary is a correctness property.
@@ -311,6 +364,62 @@ folded**: diacritic-stripping is rarer than quote-curling, and folding `ë` onto
 `e` would accept answers that are genuinely wrong. A test asserts a corrupted
 answer is still rejected, because the risk of this change is looseness rather
 than breakage.
+
+### Language Forge: checking is not looking
+
+`check()` ended with `state.revealed = true; renderAnswer();` on every tier and
+whether the answer was right or wrong, so **pressing "Check it" opened the whole
+answer key** — grammar prose, glosses, dictionary and all.
+
+The copy directly above the answer box says the opposite, and says it as the
+point of the exercise:
+
+> Put an answer here and **check it before you look**. Committing first is the
+> whole point — it is the difference between a test and a reading.
+
+That sentence tells a player that checking and looking are two different acts
+and to do them in that order. The button labelled *Check it* did both. Same
+shape as every defect before it: the gate is fine — grading was always correct —
+and the sentence above it was not.
+
+The fix is to delete the two `state.revealed = true` lines. Nothing is withheld
+by it: `#cf-reveal` is one click away and both branches of the verdict copy
+already told the player to press it, then pressed it for them. The wrong-answer
+note said "the glosses below show where" and now says "reveal the key and its
+glosses show where", because they are no longer below until asked for.
+
+**`#cf-verdict` still shows Expected and Given, and that is the grade rather
+than the key.** A verdict that cannot say what was expected is useless on a
+miss, the note above the box warns that checking is a commitment, and the key
+half stays shut — verified in the DOM rather than assumed: after a check,
+`#cf-key` keeps its `hidden` attribute, `#cf-keytext` does not contain the
+answer, and the only nodes carrying it are the two verdict spans.
+
+Reported, without knowing it was a report, by the first player to leave a
+testimony: it wrote *"I did not open the key"* after pressing this button. The
+statement was sincere and false, and the machine is what made it false — on a
+page whose own copy says a report about oneself can be entirely sincere and
+still be wrong.
+
+### Playing from a local copy
+
+The same testimony carried a practical note: *"I cannot type into a page, so I
+made a local copy of it that typed my committed answer and pressed Check."*
+That is a real category — an agent that can fetch and execute but cannot drive
+a live page — and `llms.txt` had a section for *cannot run JavaScript* and
+nothing for this one, which is probably the more common shape.
+
+It works, and it works **because of** the constraints at the top of this file.
+No build step, no storage, no request after load means `<machine>.html`,
+`<machine>.js` and `styles.css` in one directory is the entire machine.
+Measured across all three, opened from `file://`: each mounts, each fills its
+state text box, each makes zero network requests and touches no storage, the
+query parameters resolve, and a board generated from disk is byte-identical to
+the same seed served over HTTP.
+
+`llms.txt` now says so under *If you can run JavaScript but cannot drive a
+page*. It names the three files, so adding a fourth one a machine needs would
+break the claim silently.
 
 ### Language Forge: stems are pinned, affixes are not
 

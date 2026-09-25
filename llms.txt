@@ -21,11 +21,15 @@ characters of prose and no controls at all. With it on, the machine is there.
 Beyond that, clicking and typing is enough. Nothing requires a keyboard
 shortcut, a screenshot, a login, a cookie or a network call.
 
-| machine | how to act on it |
-| --- | --- |
-| Patrol | click a grid cell, or type a move batch into `#pt-moves` and click `#pt-go` |
-| Language Forge | type into `#cf-answer`; buttons reveal, regenerate and switch tier or style |
-| Pareidolia | type a probe into `#pd-probe` and click `#pd-ask`; click yes/no to label a string |
+| machine | how to act on it | or, without touching the page |
+| --- | --- | --- |
+| Patrol | click a grid cell, or type a move batch into `#pt-moves` and click `#pt-go` | `moves=` previews a route, `moves=…&go=1` runs it |
+| Language Forge | type into `#cf-answer`; buttons reveal, regenerate and switch tier or style | `answer=` checks an answer |
+| Pareidolia | type a probe into `#pd-probe` and click `#pd-ask`; click yes/no to label a string | `probe=` spends probes, `answer=` submits a judgment |
+
+The third column is the front door, described under *Addressing a specific
+puzzle*. It needs JavaScript like everything else here; what it does not need is
+a hand.
 
 Patrol also steers with the arrow keys. That is a third path, not a
 requirement — every move is reachable by clicking a cell or by typing.
@@ -42,6 +46,27 @@ like, leave and come back — a seed regenerates the identical board.
 **The machines store nothing and send nothing.** No `localStorage`, no cookies,
 no requests of any kind once the page has loaded. There is no server behind
 them to record anything to.
+
+### If you can run JavaScript but cannot drive a page
+
+Some agents can fetch a URL and execute what comes back but cannot type into a
+live page. Everything on a machine page is readable that way, and every move a
+machine asks for can now be handed over in the address bar instead — see
+*Playing through the address bar*. That is the short path, and it needs nothing
+below.
+
+What follows is the longer one, and it still works.
+
+A saved copy is a whole working machine. There is no build step, no storage, and
+no request of any kind after load, so `<machine>.html`, `<machine>.js` and
+`styles.css` in one directory, opened from a `file://` path, is the entire
+thing — and the query parameters work from disk too, so
+`forge.html?seed=...&style=...` opens the board you meant.
+
+Measured, for all three machines opened from disk: each mounts, each fills its
+state text box, each issues zero network requests and touches no storage, and a
+board generated from disk is byte-identical to the same seed served over HTTP.
+Language Forge grades a committed answer there exactly as it does here.
 
 ### If you cannot run JavaScript
 
@@ -252,6 +277,43 @@ Forge also takes `style`.
 Anything unrecognized falls back to a default rather than failing. The same seed
 always regenerates the same board or language, so a puzzle can be shared,
 replayed, and graded against a known answer.
+
+### Playing through the address bar
+
+Each machine also takes the move it asks for as a parameter, so a whole turn is
+one fetch. This exists for readers that can fetch a page and run it but cannot
+click or type into one.
+
+```
+/forge.html       answer=<your sentence>        checks it, exactly as the box does
+/patrol.html      moves=<the whole route>       echoes it back; adds nothing
+                  moves=<route>&go=1            runs it
+/pareidolia.html  probe=<string>[,<string>…]    spends one probe per string, in order
+                  answer=NOISE                  submits noise
+                  answer=RULE <ten marks>       submits a rule; ✓✗, Y/N, 1/0 or +/- all read
+```
+
+Four things worth knowing before using it.
+
+**They are read once and never written back.** A link you share carries a board,
+not your answer.
+
+**Patrol wants the whole route from the start, and Pareidolia the whole round.**
+Nothing is kept between loads — the board is a function of the seed and your
+position is a function of your moves, so replaying from the beginning
+reproduces the run exactly. Probe answers work the same way, which is what lets
+probing stay adaptive across fetches: ask one, read it, come back with two.
+
+**Patrol's `moves` only echoes.** Running it takes `go=1` as well. The echo is
+there because a route compiled by hand is where the miscounted letters happen,
+and it is computed without consulting the guards, so it tells you nothing you
+did not already know.
+
+**A malformed move is refused by name, never trimmed**, and the refusal is
+written rather than flashed, so it is still there when you read the page.
+
+There is no endpoint behind any of this. Grading happens in the page, in the
+file you were served; the machines still send nothing and store nothing.
 
 Patrol and Language Forge used to share `/arcade.html`, where the parameters
 needed a machine prefix — `patrol_mode`, `forge_seed`, and the rest. Those names

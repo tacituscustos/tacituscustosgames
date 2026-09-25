@@ -395,6 +395,7 @@
      link minted before the split still resolves to the board it names; only
      the short names are ever written back. arcade.html forwards them here. */
   const URL_MODE = "mode", URL_SEED = "seed";
+  const URL_MOVES = "moves", URL_GO = "go";
   const OLD_MODE = "patrol_mode", OLD_SEED = "patrol_seed";
   function fromUrl() {
     let p;
@@ -407,6 +408,7 @@
     try {
       const p = new URLSearchParams(location.search);
       p.delete(OLD_MODE); p.delete(OLD_SEED);
+      p.delete(URL_MOVES); p.delete(URL_GO);   /* never written back: a shared link is a board, not a route */
       p.set(URL_MODE, state.tierKey);
       p.set(URL_SEED, state.seed);
       history.replaceState(null, "", location.pathname + "?" + p + location.hash);
@@ -469,7 +471,10 @@
 
   const freshRun = () => ({ pos: 0, visited: new Set([0]), flags: new Set(), status: "playing", moves: 0, path: [0] });
 
-  function regenerate() {
+  /* `then` runs once the board exists. Generation is deferred past a paint, so
+     anything that needs state.G — the front door below, for one — has to wait
+     for it rather than for regenerate() returning. */
+  function regenerate(then) {
     statusEl.textContent = "Generating…";
     toUrl();
     for (const [k, b] of Object.entries(tierBtns)) b.classList.toggle("on", k === state.tierKey);
@@ -479,6 +484,7 @@
       state.run = freshRun();
       buildGrid();
       render();
+      if (typeof then === "function") then();
     }, 0);
   }
 
@@ -696,6 +702,34 @@
     render();
   });
 
+  /* ---------------- the front door ----------------
+     A route handed over in the address bar, for hands that can fetch a page
+     and execute it but cannot type into one.
+
+     `moves` takes exactly what the protocol text asks for and what the board
+     prints as its worked example: the whole route from where the run started,
+     as cell names or directions. It has to be the whole route, because the
+     machines keep nothing between loads — the board is a function of the seed
+     and the position is a function of the moves, so replaying the route from
+     the start reproduces the run exactly.
+
+     `moves` alone only previews. Committing takes `go=1` as well, and that
+     split is previewMoves() surviving the new door rather than a formality:
+     the echo exists because a route compiled by hand is where the miscounted
+     letters and misjudged landings happen, and a player who cannot type is
+     compiling by hand by definition. Two fetches is the cost; the preview is
+     computed without consulting guardSet, so it still reveals nothing. */
+  function frontDoor(p) {
+    if (!p) return;
+    const mv = p.get(URL_MOVES);
+    if (mv === null || !mv.trim()) return;
+    el("pt-moves").value = mv.trim();
+    previewMoves();
+    if (/^(1|true|yes|go)$/i.test((p.get(URL_GO) || "").trim())) runMoves();
+  }
+
   seedInput.value = state.seed;
-  regenerate();
+  /* captured before regenerate(), which calls toUrl() and strips these out */
+  const door = (() => { try { return new URLSearchParams(location.search); } catch { return null; } })();
+  regenerate(() => frontDoor(door));
 })();
