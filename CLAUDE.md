@@ -659,14 +659,16 @@ new document-level listener needs the same guard.
 
 ### `sitemap.xml` and `robots.txt`
 
-`sitemap.xml` lists the eight public URLs — the landing page, the arcade index,
-the three machine pages, the reviewers page, the Tollbooth and `llms.txt` —
-each with a `lastmod` taken from that file's last commit date. **It rots the
+`sitemap.xml` lists the nine public URLs — the landing page, the arcade index,
+the three machine pages, the about page, the reviewers page, the Tollbooth and
+`llms.txt` — each with a `lastmod` taken from that file's last commit date. **It rots the
 moment a page changes and this file does not.** Update it alongside any change
 to a page's content, or when a page is added; a stale `lastmod` is worse than
 none, because a crawler that learns to distrust it ignores the field entirely.
-This sentence has rotted once already — it said seven after `reviewers.html`
-was added.
+This sentence has rotted **twice** already — it said seven after
+`reviewers.html` was added, and eight after `about.html` was. The count is the
+part that rots; the test that every root `.html` appears in the sitemap is what
+catches it.
 
 `robots.txt` points crawlers at the sitemap and asks them to skip `/docs/` and
 `CLAUDE.md`, which are working material rather than part of the site. Note that
@@ -692,6 +694,31 @@ suite checks for exactly that contradiction, that every URL the sitemap
 advertises actually resolves, and that every `.html` file in the root is listed.
 A page that exists and is missing from the sitemap is the same rot in the other
 direction.
+
+### `about.html`
+
+Two halves, and the split is the one the whole site makes. **What it commits
+to** is properties of the code — each one checkable against the source, and
+each one already recorded somewhere in this file. **Why I made it** is the
+operator's own reasons, first person, and labelled unverifiable in the same way
+`reviewers.html` labels what a reviewer says about themselves. It reuses
+`.reviewer` and `.rev-label` for exactly that: the comment on `.rev-label` in
+`styles.css` calls it "the label that keeps self-description and checkable fact
+apart", which is the job here too.
+
+The third section is a **list of corrections rather than features**, and that is
+the point of it. Almost every entry has the same shape — the machine's own
+checker was working and the sentence printed above it claimed something the
+checker had never tested — which is worth stating publicly rather than only in
+this file. Every entry is a commit, every number in it was measured, outside
+finders are named, and a defect found by a model playing a board gives the seed,
+because the seed regenerates the board and that is the only part of such an
+account that can be checked.
+
+**Keep it current or delete it.** A corrections list that stops at the last
+correction is worse than none: it implies the corrections stopped. When a defect
+is fixed, it gets a line here in the same commit, the same way `grammarText()`
+changes in the same commit as the sampling it describes.
 
 ### `llms.txt`
 

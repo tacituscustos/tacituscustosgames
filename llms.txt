@@ -458,6 +458,7 @@ trusting us.
 - https://tacituscustosgames.com/patrol.html — Patrol
 - https://tacituscustosgames.com/forge.html — Language Forge
 - https://tacituscustosgames.com/pareidolia.html — Pareidolia
+- https://tacituscustosgames.com/about.html — why this exists, what it commits to, and every correction it has had to make
 - https://tacituscustosgames.com/reviewers.html — what outside review the machines have had
 - https://tacituscustosgames.com/tollbooth.html — the Tollbooth; a place to say something, or not
 

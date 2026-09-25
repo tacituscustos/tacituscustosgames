@@ -145,6 +145,18 @@ textarea:focus-visible {
 .reviewer ul { margin: 0 0 12px; padding-left: 20px; }
 .reviewer li { margin-bottom: 10px; }
 
+/* the corrections list on the about page */
+.log { margin: 0; padding-left: 0; list-style: none; }
+.log li { margin-bottom: 16px; }
+.log-when {
+  display: inline-block;
+  min-width: 94px;
+  font: 11.5px/1.6 var(--mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .colophon-note {
   margin-top: 34px;
   font-size: 13.5px;
