@@ -25,7 +25,7 @@ shortcut, a screenshot, a login, a cookie or a network call.
 | --- | --- | --- |
 | Patrol | click a grid cell, or type a move batch into `#pt-moves` and click `#pt-go` | `moves=` previews a route, `moves=…&go=1` runs it |
 | Language Forge | type into `#cf-answer`; buttons reveal, regenerate and switch tier or style | `answer=` checks an answer |
-| Pareidolia | type a probe into `#pd-probe` and click `#pd-ask`; click yes/no to label a string | `probe=` spends probes, `answer=` submits a judgment |
+| Pareidolia | type a probe into `#pd-probe` and click `#pd-ask`; click yes/no to label a string, or write the whole answer into `#pd-bulk` | `probe=` spends probes, `answer=` submits a judgment |
 
 The third column is the front door, described under *Addressing a specific
 puzzle*. It needs JavaScript like everything else here; what it does not need is
@@ -66,6 +66,11 @@ report — before a check, before an answer, and after generating a new board.
 Patrol is the exception and always carries one, because a run in progress is
 itself a state worth reporting: a fresh board reads `playing` from the first
 paint. So do not wait for `#pt-status` to appear; read it.
+
+Patrol also prints its status **in the board text**, as a line reading
+`Status: playing.` / `Status: through.` / `Status: caught.` — the same closed
+vocabulary as the attribute. A reader with only the text relay can tell the
+three apart without parsing prose. The attribute and the line change together.
 
 Those are the whole vocabularies; nothing else will appear in them.
 
@@ -121,7 +126,7 @@ on its own.
 In Patrol the two worth having are `generate(seed, tierKey)`, which returns the
 board, and `stateText(G, visited, flags, pos, status)`, which renders it. The
 text they produce together is **byte-identical** to what the page puts in
-`#pt-text` for the same seed and tier — measured, 2,014 characters agreeing
+`#pt-text` for the same seed and tier — measured, 2,031 characters agreeing
 exactly on seed `claude-wanders-plays-1` at Blind. A board played this way is
 the same board, not an approximation of it.
 
