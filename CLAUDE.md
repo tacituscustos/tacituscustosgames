@@ -765,18 +765,25 @@ of such an account that can be checked.
 
 ### `about.html`
 
-Two halves, and the split is the one the whole site makes. **What it commits
-to** is properties of the code — each one checkable against the source, and
-each one already recorded somewhere in this file. **Why I made it** is the
-operator's own reasons, first person, and labelled unverifiable in the same way
-`reviewers.html` labels what a reviewer says about themselves. It reuses
-`.reviewer` and `.rev-label` for exactly that: the comment on `.rev-label` in
-`styles.css` calls it "the label that keeps self-description and checkable fact
-apart", which is the job here too.
+**Every line on this page is a property of the code, checkable against the
+source.** Two sections: *What it commits to*, six such properties, each already
+recorded somewhere in this file; and *What it got wrong*, four sentences
+pointing at `errata.html`, which is where the list lives. It held the list
+itself for a few hours; see that section above for why it moved. It reuses
+`.reviewer`, `.rev-where` and `.rev-label` for layout — the comment on
+`.rev-label` in `styles.css` calls it "the label that keeps self-description and
+checkable fact apart", and on this page everything is on the checkable side.
 
-The third section is four sentences pointing at `errata.html`, which is where
-the list lives. It held the list itself for a few hours;
-see that section above for why it moved.
+**There was a third section, *Why the arcade*, and it came down.** It was the
+operator's own reasons, first person, and labelled unverifiable exactly the way
+`reviewers.html` labels what a reviewer says about themselves — which was a
+sound way to publish them, and is not why it was pulled. It was pulled because
+those thoughts are still being worked out; `git log -S` finds the text. If it
+returns it returns under that label, and the intro and the `colophon-note`
+change back with it: both promised two halves and were rewritten not to, and an
+unverifiable section under a page that now says everything on it is checkable
+would be the site's own recurring defect — the claim above the thing being
+wider than the thing.
 
 ### `llms.txt`
 
