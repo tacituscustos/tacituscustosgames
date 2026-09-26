@@ -913,7 +913,7 @@
   const DIFF = {
     bank: { label: "Easy", note: "The text, the first few sentences translated, the numerals, and a word bank listing the English meaning of every stem. The task is a translation." },
     three: { label: "Standard", note: "The text, the first few sentences translated, and the numerals. No word bank — you have to work out which word is which. The task is a translation." },
-    hell: { label: "Hell", note: "Sixty sentences, no translations, no word list, no numerals. Vocabulary can't be recovered without an anchor, so the task asks for the grammar instead: word order, alignment, and every affix you can find." },
+    hell: { label: "Hell", note: "At least sixty sentences, no translations, no word list, no numerals. Vocabulary can't be recovered without an anchor, so the task asks for the grammar instead: word order, alignment, and every affix you can find." },
   };
 
   /* ---------------- addressable puzzles ----------------
