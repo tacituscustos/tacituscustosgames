@@ -345,6 +345,11 @@
         <button type="button" id="pd-submit">Submit as rule</button>
         <button type="button" class="red" id="pd-noise">It's noise</button>
       </div>
+      <p class="note" style="margin-top:12px">Or write the whole answer the way the board's own text asks for it — <code>NOISE</code>, or <code>RULE</code> and a mark per string in order (✓/✗, Y/N, 1/0 or +/-).</p>
+      <div class="ctl">
+        <input type="text" id="pd-bulk" aria-label="Whole answer" placeholder="RULE ✓✗✓✓✗✗✓✗✓✓">
+        <button type="button" id="pd-bulkgo">Answer</button>
+      </div>
       <div id="pd-result"></div>
       <p class="note" id="pd-doornote" hidden></p>
 
@@ -369,6 +374,7 @@
     probeInput = el("pd-probe"), askBtn = el("pd-ask"), probeCopyRow = el("pd-probecopyrow"),
     probeCopiedEl = el("pd-probecopied"), probeListEl = el("pd-probelist"), probeNoteEl = el("pd-probenote"),
     testsEl = el("pd-tests"), submitBtn = el("pd-submit"), noiseBtn = el("pd-noise"),
+    bulkInput = el("pd-bulk"), bulkBtn = el("pd-bulkgo"),
     resultEl = el("pd-result"), viewsEl = el("pd-views"), textEl = el("pd-text"),
     seedEcho = el("pd-seedecho"), tierEcho = el("pd-tierecho");
 
@@ -530,6 +536,7 @@
     }
     const allLabelled = G.tests.every((t) => state.labels[t] !== undefined);
     submitBtn.disabled = !allLabelled || done;
+    bulkInput.disabled = bulkBtn.disabled = done;
     noiseBtn.disabled = done;
 
     /* verdict */
@@ -664,6 +671,9 @@
   askBtn.addEventListener("click", ask);
   submitBtn.addEventListener("click", submitRule);
   noiseBtn.addEventListener("click", submitNoise);
+  const bulkGo = () => { const v = bulkInput.value; bulkInput.value = ""; applyAnswer(v); };
+  bulkBtn.addEventListener("click", bulkGo);
+  bulkInput.addEventListener("keydown", (e) => { if (e.key === "Enter") bulkGo(); });
   textEl.addEventListener("focus", () => textEl.select());
 
   /* ---------------- the front door ----------------
@@ -692,8 +702,19 @@
       }
       probeInput.value = "";
     }
-    const a = (p.get(URL_ANSWER) || "").trim();
+    applyAnswer(p.get(URL_ANSWER) || "");
+  }
+  /* One parser, reached from two doors. The board prints `RULE ✓✗✓…` and the
+     URL accepted exactly that, while the page offered only ten buttons — so a
+     reader driving the page had to click what a reader driving the URL could
+     say in one line. A second parser for the field would drift from this one
+     and the strict one would be the one nobody exercised, which is the lesson
+     the Tollbooth's readPayload() already records. Refusals are written to
+     #pd-doornote rather than flashed, for the reader who reads the DOM once. */
+  function applyAnswer(raw) {
+    const a = (raw || "").trim();
     if (!a) return;
+    if (!state.G) return;
     if (/^noise$/i.test(a)) { submitNoise(); return; }
     const m = a.match(/^rule\b([\s\S]*)$/i);
     if (!m) return refuse('An answer is NOISE, or RULE followed by ' + state.G.tests.length + ' marks in order.');

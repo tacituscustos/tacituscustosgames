@@ -340,7 +340,14 @@
       }
       lines.push(String(r + 1).padStart(2) + " | " + row.join(" | "));
     }
-    if (tier.reveal !== "all") lines.push("", `You are at ${cellName(n, pos)}. Count here: ${counts[pos]}.`);
+    /* The same closed vocabulary as #pt-status's data-status attribute, and for
+       the same reason: a relay that has only this text should be able to tell
+       playing from through from caught without parsing prose. The DOM carried
+       it and the text did not, which made the text the weaker of the two
+       channels this machine offers. Reported by a playtester driving the board
+       through its text protocol. If the vocabulary grows, it grows in both. */
+    lines.push("", `Status: ${status}.`);
+    if (tier.reveal !== "all") lines.push(`You are at ${cellName(n, pos)}. Count here: ${counts[pos]}.`);
     return lines.join("\n");
   }
 

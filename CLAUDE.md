@@ -374,6 +374,13 @@ noticed it was depending on wording nobody had promised to keep, and said so
 before it cost them anything — which is the rarest kind of report, because there
 was no failure to point at yet.
 
+**Patrol prints the same word in its board text**, as a `Status:` line carrying
+the identical vocabulary. The DOM had the outcome and the text relay did not,
+which made the text the weaker of the two channels this machine offers — and the
+text is the channel a courier-mode player actually has. Reported by a playtester
+driving the board through its text protocol. The attribute and the line change
+together, or one of them is lying.
+
 `llms.txt` documents all three under *Reading the verdict without matching
 prose*, and a test asserts each machine still sets what that section names. If
 a vocabulary ever grows, both change in the same commit.
@@ -485,7 +492,7 @@ it: 12 top-level functions in `patrol.js`, 31 in `forge.js`, 17 in
 `pareidolia.js`, and no reference to `document` or `window` in any of them.
 Measured for Patrol: `generate()` plus `stateText()` from the logic half alone
 produce text byte-identical to the served page's `#pt-text` for the same seed
-and tier — 2,014 characters agreeing exactly on seed `claude-wanders-plays-1`
+and tier — 2,031 characters agreeing exactly on seed `claude-wanders-plays-1`
 at Blind.
 
 The section states, without warning anyone off, that lifting the logic out of
@@ -598,6 +605,15 @@ Two things that look relaxable and are not:
   `PROBE` keyword and separators, then **refuses rather than trims**: a stray
   symbol is named back, a wrong length is stated. Guessing which five of six
   symbols were meant is an edit, and this repo does not make those.
+- **The whole answer can be written as well as clicked.** `grammarText()` prints
+  *RULE* followed by a mark per string, and the front door accepted exactly
+  that, while the page offered only ten buttons — so a reader driving the page
+  had to click what a reader driving the URL could say in one line. `#pd-bulk`
+  now takes it, through **the same `applyAnswer()`** the front door uses. Do not
+  give it a parser of its own: two would drift, and the strict one would be the
+  one nobody exercised, which is what `readPayload()` in the Worker already
+  records. It refuses rather than trims, like `ask()`, and writes the refusal to
+  the durable `#pd-doornote`.
 - **The probe-quality commentary is hidden until the player answers.** It
   reports how many rules each probe split, which is a hint about the survivor
   set while probing is still open. It is rendered blank until `state.answer` is
