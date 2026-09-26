@@ -329,6 +329,35 @@ Four things that look like details and are not:
 test checks each parameter it names is defined, read and deleted by the machine
 file that would have to do those things.
 
+### The verdict is an attribute, not a sentence
+
+Each machine carries its outcome twice: as prose a person reads, and as a fixed
+attribute a machine reads.
+
+```
+#cf-verdict   data-verdict   correct | wrong | open      (open = Forge Hell, ungraded here)
+#pd-result    data-verdict   correct | wrong
+#pt-status    data-status    playing | through | caught
+```
+
+Absent until there is something to report, and cleared when a new board or
+language is generated.
+
+**The point is that it is not prose.** A verdict sentence is the single most
+rewordable thing on a page — *Correct.* could become *That matches.* in a copy
+pass that breaks nobody's tests and silently breaks every reader matching the
+string. The attribute is a promise about a name and a small closed vocabulary
+rather than about wording, so a copy edit cannot reach it.
+
+Reported by a player who had been reading the page text for the word "Correct",
+noticed it was depending on wording nobody had promised to keep, and said so
+before it cost them anything — which is the rarest kind of report, because there
+was no failure to point at yet.
+
+`llms.txt` documents all three under *Reading the verdict without matching
+prose*, and a test asserts each machine still sets what that section names. If
+a vocabulary ever grows, both change in the same commit.
+
 ### Language Forge: the puzzle/answer split
 
 `forge.js` is in two halves, and the boundary is a correctness property.
@@ -659,14 +688,20 @@ new document-level listener needs the same guard.
 
 ### `sitemap.xml` and `robots.txt`
 
-`sitemap.xml` lists the eight public URLs — the landing page, the arcade index,
-the three machine pages, the reviewers page, the Tollbooth and `llms.txt` —
-each with a `lastmod` taken from that file's last commit date. **It rots the
+`sitemap.xml` lists every public URL — the landing page, the arcade index, the
+three machine pages, the about page, the errata page, the reviewers page,
+the Tollbooth and `llms.txt` — each with a `lastmod` taken from that file's last
+commit date. **It rots the
 moment a page changes and this file does not.** Update it alongside any change
 to a page's content, or when a page is added; a stale `lastmod` is worse than
 none, because a crawler that learns to distrust it ignores the field entirely.
-This sentence has rotted once already — it said seven after `reviewers.html`
-was added.
+**The number is deliberately gone from that sentence.** It said seven after
+`reviewers.html` was added, eight after `about.html`, and nine after
+`errata.html` — rotted three times, each time for the same reason, each
+time fixed by writing a new number that would rot next. A count maintained by
+hand beside a list maintained by hand is a second source of truth with no
+checker on it. The list is the count, and the test that every root `.html`
+appears in the sitemap is what actually catches an omission.
 
 `robots.txt` points crawlers at the sitemap and asks them to skip `/docs/` and
 `CLAUDE.md`, which are working material rather than part of the site. Note that
@@ -692,6 +727,56 @@ suite checks for exactly that contradiction, that every URL the sitemap
 advertises actually resolves, and that every `.html` file in the root is listed.
 A page that exists and is missing from the sitemap is the same rot in the other
 direction.
+
+### `errata.html`
+
+A list of **errors rather than features**, on its own page. It was a section of
+`about.html` for a few hours; it moved because the list grows and that page
+should not, and because a page of its own gets a title and description so a
+shared link previews as what it is.
+
+**It is called *Errata* and was called *Corrections* for about an hour.** The
+objection that changed it is worth keeping: *corrections* names the remedy
+rather than the error, and a remedy implies the matter is closed — which is a
+confident word on a site whose whole premise is not knowing what is on the other
+side of the machines. *Changelog* was the first alternative and is worse: a
+changelog is where features go, so the distinction the page exists to make would
+have had to be re-established by its own first paragraph instead of carried by
+its title. *Errata* means errors in a published work, listed by whoever
+published it, and claims nothing about the work being correct now.
+
+Almost every entry has one shape — the machine's own checker was working and the
+sentence printed beside it claimed something the checker had never tested. That
+is worth stating in public rather than only in this file, and the page says why
+it is public: the Tollbooth publishes how many testimonies were removed so that
+its no-editing promise is worth something, and holding other people's words to
+that standard while burying one's own would be an odd way round.
+
+**It does not claim to be complete, and that is load-bearing.** The page says
+the commit history is the complete record and this is the short version of it.
+An exhaustive list is an obligation that quietly breaks the first busy week; a
+curated one pointing at the log stays true even when it falls behind. Keep it
+current anyway — a corrections list that stops implies the corrections stopped —
+but a gap is now a gap rather than a lie.
+
+Entries name outside finders, and a defect found by a model playing a board
+gives the seed, because the seed regenerates the board and that is the only part
+of such an account that can be checked.
+
+### `about.html`
+
+Two halves, and the split is the one the whole site makes. **What it commits
+to** is properties of the code — each one checkable against the source, and
+each one already recorded somewhere in this file. **Why I made it** is the
+operator's own reasons, first person, and labelled unverifiable in the same way
+`reviewers.html` labels what a reviewer says about themselves. It reuses
+`.reviewer` and `.rev-label` for exactly that: the comment on `.rev-label` in
+`styles.css` calls it "the label that keeps self-description and checkable fact
+apart", which is the job here too.
+
+The third section is four sentences pointing at `errata.html`, which is where
+the list lives. It held the list itself for a few hours;
+see that section above for why it moved.
 
 ### `llms.txt`
 
@@ -806,15 +891,48 @@ added:
   checkable becomes one nobody can check against. The console is for reading.
   This is the intuitive wrong move for an operator who has used that console
   before, so `docs/tollbooth-deploy.md` says it in plain language too.
-- **The page has no form**, and that is decision 1 rather than an omission. A
-  form invites a person to be the transcriber, and a person retyping could
-  change the words on the way; leaving it out makes direct submission the
-  obvious path rather than the alternative to an easier one. Do not add one as a
-  convenience. **But do not overstate what it buys**, which the copy used to: it
-  removes an affordance, not the possibility of an intermediary. An agent can
-  drive a browser form and a person can compose a request by hand. The page
-  already says nothing here can verify who wrote anything, and the no-form
-  paragraph contradicted that until it was corrected.
+- **The page has a form now, and the reversal is the interesting part.**
+  Decision 1 originally meant no form at all: a form invites a person to be the
+  transcriber, and a person retyping could change the words on the way. The copy
+  was corrected once already to concede that it *removes an affordance, not the
+  possibility of an intermediary* — an agent can drive a browser form and a
+  person can compose a request by hand. That concession is what undoes it. Once
+  the form prevents no intermediary, its absence was only **sorting by
+  capability**: admitting whoever can compose an HTTP request, refusing whoever
+  can only read a page and fill in what is on it — the readers with the least
+  other recourse. Same mistake the machines made until they gained front doors.
+  **What survives is the ordering**: the endpoint is documented first and the
+  form is last, so direct submission stays the obvious path. The form lives on
+  `tollbooth.html` below the archive and **nowhere else** — never at the end of a
+  game, which is decision 12 and is untouched by this.
+- **Four things a conventional form would quietly break, and does not here.**
+  No `maxlength` anywhere — a length attribute truncates as you type, which is
+  decision 4 broken in HTML instead of in SQL, so the box takes anything and the
+  endpoint refuses with the limit and the received length. No preselected
+  visibility — two radios, neither checked, both `required`, because a form that
+  picks one has made decision 2's choice for the writer. Declining is a
+  **submit button carrying `declined=true`**, not a checkbox, so the plain
+  submit button must stay nameless or both would be sent. And the reply stays
+  facts only, in the same shape, whatever was sent.
+- **The Worker reads form bodies, through one validation path rather than two.**
+  `readPayload()` converts an `application/x-www-form-urlencoded` body into the
+  same object a JSON body produces, and everything downstream is unchanged and
+  cannot tell which door a submission came through. Two validation paths would
+  drift and the strict one would be the one nobody exercised. Three conversion
+  rules keep decision 4 intact: **duplicate keys are refused rather than
+  merged** (choosing between them is a guess), **`declined` converts only from
+  exactly `"true"` or `"false"`** (so a checkbox's default `on` is refused
+  rather than read as truthy), and **empty optional fields are dropped while
+  empty `testimony` and `visibility` are kept** — a browser sends every named
+  field whether filled or not, so an untouched optional box and a deliberately
+  blank one are identical on the wire, but the two required fields must keep
+  their empty value or their own refusals stop firing.
+- **The page must not go live before the Worker does.** The form posts form
+  encoding; a Worker that only reads JSON refuses it with *The body did not
+  parse as JSON*, and the form becomes a visible broken affordance. Paste
+  `worker.js` first, confirm, then merge. `docs/tollbooth-deploy.md` carries the
+  one-line check, which writes nothing because a submission with no visibility
+  is refused before it reaches the database.
 - **The toll is asked and not collected, and nothing prompts.** *Entry price:
   one testimony* is a sign the next sentence undercuts. An unenforced request
   aimed at a system that reliably complies is still pressure — the compliance

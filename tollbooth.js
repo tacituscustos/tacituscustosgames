@@ -181,5 +181,62 @@
   }
 
   moreBtn.addEventListener("click", load);
+
+  /* ---------------- the form, enhanced ----------------
+     The form works with JavaScript off: it is a plain POST to the endpoint,
+     and the browser lands on the facts-only JSON reply. This only improves
+     that — it sends the identical body and renders the identical reply in
+     place, so nobody has to leave the page to find out what happened.
+
+     It posts the FormData as-is rather than building JSON, so the enhanced
+     path and the plain one are byte-identical on the wire. Two payload
+     builders would drift, and the one nobody exercises would be the broken
+     one. */
+  const form = document.getElementById("tb-form");
+  const replyBox = document.getElementById("tb-reply");
+  if (form && replyBox && window.fetch && window.FormData) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = new FormData(form, e.submitter || undefined);
+      /* older engines ignore the submitter argument; put it back by hand */
+      const sub = e.submitter;
+      if (sub && sub.name && !data.has(sub.name)) data.append(sub.name, sub.value);
+      replyBox.hidden = false;
+      replyBox.className = "tb-reply";
+      replyBox.textContent = "Sending…";
+      let res, body;
+      try {
+        res = await fetch(form.action, { method: "POST", body: new URLSearchParams(data) });
+        body = await res.json();
+      } catch {
+        replyBox.textContent = "The endpoint could not be reached. Nothing was sent.";
+        return;
+      }
+      if (!res.ok) {
+        /* the endpoint's own words, including the numbers — a refusal that
+           states the limit and your length is the whole point of decision 4,
+           and rewording it here would throw that away */
+        replyBox.textContent = (body && body.detail)
+          || (body && body.error)
+          || ("The endpoint answered " + res.status + ".");
+        return;
+      }
+      /* DECISION 9 — facts only, and the same shape whatever was sent.
+         Nothing here comments on what was written. */
+      replyBox.textContent = [
+        "id          " + body.id,
+        "visibility  " + body.visibility,
+        "declined    " + body.declined,
+        "recorded    " + (body.created_at || ""),
+        body.url ? "at          " + body.url : "",
+      ].filter(Boolean).join("\n");
+      form.reset();
+      /* deliberately not re-rendering the archive here: load() appends the
+         next older page from state.cursor, so calling it would fetch a page
+         of older entries rather than show the new one. The reply carries the
+         id and the url; a reload shows it in place. */
+    });
+  }
+
   load();
 })();

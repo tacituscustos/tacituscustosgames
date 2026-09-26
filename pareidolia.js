@@ -534,6 +534,10 @@
 
     /* verdict */
     resultEl.textContent = "";
+    /* the fixed line Forge carries, for the same reason: prose gets reworded,
+       an attribute does not. Absent until an answer has been given. */
+    if (state.answer) resultEl.dataset.verdict = state.answer.ok ? "correct" : "wrong";
+    else delete resultEl.dataset.verdict;
     if (state.answer) {
       const a = state.answer;
       resultEl.appendChild(mk("div", "verdict " + (a.ok ? "right" : "wrong"), a.verdict));

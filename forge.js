@@ -1097,6 +1097,7 @@
     if (state.hints === "hell") {
       fill(verdictEl, [h("p.verdict.open", "Hell asks for an analysis, not a sentence, so there is nothing to match against."),
         h("p.note", "Reveal the key and compare it yourself — the grammar section and the four numbered answers at the bottom of the key text are what to read against.")]);
+      verdictEl.dataset.verdict = "open";
       renderAnswer();
       return;
     }
@@ -1112,7 +1113,18 @@
         h("div", [h("span.clabel", "Given"), h("span.given", given.length > 400 ? given.slice(0, 400) + "…" : given)]),
       ]),
     ]);
-    /* Checking is not looking. The note above the answer box says "check it
+    /* A fixed line for a reader that cannot rely on prose.
+
+       A verdict is a sentence, and a sentence is the thing that gets reworded —
+       a reader searching the page for "Correct" depends on a string nobody
+       promised to keep. `data-verdict` is that promise: three values,
+       "correct", "wrong" and "open", on an element with a fixed id, and not
+       prose, so rewriting the copy cannot silently break it. Reported by a
+       player who noticed they were matching wording and said so before it cost
+       them anything. llms.txt names the attribute, the id and the values, and
+       a test checks the machine still sets them.
+
+       Checking is not looking. The note above the answer box says "check it
        before you look" and calls committing first the difference between a
        test and a reading — so a button labelled "Check it" must not open the
        key. It used to, on every tier and whether the answer was right or
@@ -1120,6 +1132,7 @@
        it had just taught them. The key is one click away and `#cf-reveal`
        is that click. Reported by a player who wrote "I did not open the key"
        after pressing this button. */
+    verdictEl.dataset.verdict = hit ? "correct" : "wrong";
     renderAnswer();
   }
 
@@ -1207,6 +1220,7 @@
     state.revealed = false;
     answerEl.value = "";
     verdictEl.textContent = "";
+    delete verdictEl.dataset.verdict;   /* a new language has no verdict yet */
     /* let the browser paint before the synchronous generate */
     setTimeout(() => {
       state.L = buildLanguage(state.seed, state.style, state.hints === "hell" ? 60 : 30);
