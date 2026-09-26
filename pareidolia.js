@@ -85,11 +85,11 @@
   /* ---------------- tiers ---------------- */
   const TIERS = {
     open: { label: "Open", level: 1, examples: 14, maxExamples: 22, probes: 0, tests: 10, decoy: false,
-      blurb: "Fourteen labelled strings, no probing. A rule is a single statement from the list. Decide, then prove it by labelling ten more." },
+      blurb: "At least fourteen labelled strings, no probing. A rule is a single statement from the list. Decide, then prove it by labelling ten more." },
     probe: { label: "Probe", level: 2, examples: 6, maxExamples: 12, probes: 6, tests: 10, decoy: false, maxSurvivors: 24,
-      blurb: "Six labelled strings and six probes. Rules may be a statement or its negation. Rule boards can be pinned down within the budget; noise boards may leave a rule standing, and the last call can be a judgment." },
+      blurb: "At least six labelled strings, and six probes. Rules may be a statement or its negation. Rule boards can be pinned down within the budget; noise boards may leave a rule standing, and the last call can be a judgment." },
     hell: { label: "Hell", level: 3, examples: 8, maxExamples: 16, probes: 4, tests: 10, decoy: true, maxSurvivors: 6,
-      blurb: "Eight strings, four probes, and rules may combine two statements with and/or. Noise boards are built to almost fit a simple rule, and a false rule can survive every probe." },
+      blurb: "At least eight strings, four probes, and rules may combine two statements with and/or. Noise boards are built to almost fit a simple rule, and a false rule can survive every probe." },
   };
 
   /* ---------------- generation ---------------- */

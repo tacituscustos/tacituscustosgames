@@ -115,7 +115,7 @@ on its own.
 | file | logic half | top-level functions |
 | --- | --- | --- |
 | `patrol.js` | opening to the `UI` banner | 12 |
-| `forge.js` | opening to the `UI` banner | 30 |
+| `forge.js` | opening to the `UI` banner | 31 |
 | `pareidolia.js` | opening to the `UI` banner | 17 |
 
 In Patrol the two worth having are `generate(seed, tierKey)`, which returns the
@@ -291,7 +291,7 @@ translation covered and which were left to elimination.
 
 - `easy` — the text, the first sentences translated, the numerals, and a word bank. Task: translate a sentence.
 - `standard` — the same, without the word bank.
-- `hell` — sixty sentences, no translations, no numerals, no word bank. Task: state the word order, the alignment, and every affix you can identify.
+- `hell` — at least sixty sentences, no translations, no numerals, no word bank. Task: state the word order, the alignment, and every affix you can identify.
 
 Sentence style is `plausible` (semantically sensible — you may reason from that)
 or `surreal` (grammatical but not sensible — you may not). The grammar and the
@@ -313,10 +313,12 @@ stated language, or at random. Work out which, and if you say rule, prove it by
 labelling ten new strings — all ten have to be right. The only correct answer
 on a random board is to call it noise.
 
-- `open` — fourteen labelled strings, no probing. A rule is one statement from the list, and the labelled strings alone always settle the question.
-- `probe` — six labelled strings and six probes of your own choosing. A rule may also be the negation of a statement.
-- `hell` — eight strings, four probes, and a rule may join two statements with and or or. Noise boards are drawn to agree with some simple statement on every string but one.
+- `open` — at least fourteen labelled strings, no probing. A rule is one statement from the list, and the labelled strings alone always settle the question.
+- `probe` — at least six labelled strings, and six probes of your own choosing. A rule may also be the negation of a statement.
+- `hell` — at least eight strings, four probes, and a rule may join two statements with and or or. Noise boards are drawn to agree with some simple statement on every string but one.
 
+
+Every count above is a floor rather than a fixed number. Each generator starts at the stated size and appends further examples until its own checks pass, so a board may carry more. Measured over 200 boards a side: Pareidolia Open is 14 to 18, Probe is always 6, Hell is 8 to 14 and is exactly eight on 16% of boards; Language Forge's Hell corpus is 60 to 63. Counting the examples and comparing with a number on the page proves nothing about the board.
 What is guaranteed here is narrower than on the other two machines, and every
 board states it in its own text rather than making you infer it. On a rule
 board a strategy exists that pins the rule down inside the probe budget

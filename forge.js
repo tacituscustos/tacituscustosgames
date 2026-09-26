@@ -421,9 +421,19 @@
   const TOOLS = ["knife", "stone", "hand", "fire", "boat", "feather", "horn", "bone", "tooth", "foot"];
   const PLACES = ["house", "river", "mountain", "road", "forest", "path", "boat", "hearth", "quarry", "fishing ground", "door", "tree"];
 
+  /* A plausibility pool this language cannot satisfy must not be dropped
+     silently: Plausible mode's whole promise is that the sentences could
+     happen, and a solver is invited to use that as evidence. The old line was
+     `if (p.length) c = p;` — when the pool matched nothing it was discarded and
+     any noun was picked, so the mode quietly became Surreal. It now returns
+     null, and every verb choice below is made among verbs whose pools this
+     language can actually fill, so the null is a bug rather than a fallback. */
+  function poolFits(L, pool, filter) {
+    return !pool || L.nouns.some((n) => n.w && pool.includes(n.en) && (!filter || filter(n)));
+  }
   function pickNoun(rng, L, pool, filter) {
     let c = L.nouns.filter((n) => n.w && (!filter || filter(n)));
-    if (pool) { const p = c.filter((n) => pool.includes(n.en)); if (p.length) c = p; }
+    if (pool) { const p = c.filter((n) => pool.includes(n.en)); if (!p.length) return null; c = p; }
     const rare = c.filter((n) => !(n.derivedAgent || n.place));
     if (rare.length && rng.chance(0.8)) c = rare;
     return rng.pick(c);
@@ -435,7 +445,12 @@
   function designedSpecs(rng, L, mode) {
     const canPl = L.plural.type !== "none";
     const present = L.tense.set.includes("PRS") ? "PRS" : "NPST";
-    const vt = rng.pick(L.verbs.filter((v) => v.tr && !v.merge));
+    const frameOK = (v) => { const t = mode === "surreal" ? {} : PLAUS[v.en] || {};
+      return poolFits(L, t.s, (n) => n.anim && !n.derivedAgent)
+          && poolFits(L, t.o, (n) => !n.anim && !n.mass && !n.place); };
+    const trAll = L.verbs.filter((v) => v.tr && !v.merge);
+    const trFit = trAll.filter(frameOK);
+    const vt = rng.pick(trFit.length ? trFit : trAll);
     const ft = frameFor(L, mode, vt);
     const nA = pickNoun(rng, L, ft.sPool, (n) => n.anim && !n.derivedAgent);
     const nB = pickNoun(rng, L, ft.oPool, (n) => !n.anim && !n.mass && !n.place && n.en !== nA.en);
@@ -458,7 +473,17 @@
     if (L.cases.INS) specs.push(T({ adjunct: "INS" })); else if (L.cases.LOC) specs.push(T({ adjunct: "LOC" }));
     specs.push(T({ obj: O({ adj }) }));
     specs.push(T({ subj: S({ adj }) }));
-    const agent = pickNoun(rng, L, null, (n) => n.derivedAgent);
+    /* The verb in an agent-noun sentence is fixed by the agent itself
+       ("hunter" must be built on "hunt"), so when that verb's plausible objects
+       cannot fill the slot the verb cannot be swapped — the agent has to be.
+       Without this, `hunt` and `kill` reached the corpus with any object at all:
+       "The woman hunts a stone." */
+    const agentOK = (n) => { const bv = L.verbs.find((v) => n.dict.includes(`(${v.en}-agt)`));
+      if (!bv || !bv.tr) return true;
+      const t = mode === "surreal" ? {} : PLAUS[bv.en] || {};
+      return poolFits(L, t.o, (x) => !x.anim && !x.place); };
+    const agent = pickNoun(rng, L, null, (n) => n.derivedAgent && agentOK(n))
+      || pickNoun(rng, L, null, (n) => n.derivedAgent);
     if (agent) specs.push(T({ subj: S({ n: agent }) }));
     /* Translated, and that is load-bearing. The task always asks for INFR, and
        INFR is never shown — identifying it by elimination is the reasoning step
@@ -472,14 +497,16 @@
        every one. */
     if (L.evid) specs.push(T({ evid: "REP", known: true }));
     specs.push({ ...base, transitive: false, verb: vi, subj: S({ num: 3, plural: canPl, def: false }), tense: present });
-    const agent2 = pickNoun(rng, L, null, (n) => n.derivedAgent && n !== agent);
+    const agent2 = pickNoun(rng, L, null, (n) => n.derivedAgent && n !== agent && agentOK(n))
+      || pickNoun(rng, L, null, (n) => n.derivedAgent && n !== agent);
     if (agent2) specs.push(T({ obj: O({ n: agent2 }), known: true }));
     /* the verbs the two agent nouns are built on, in translated sentences, so the
        agent suffix can be learned from agent2 and then applied to agent1 */
     for (const ag of [agent, agent2]) {
       const bv = L.verbs.find((v) => ag.dict.includes(`(${v.en}-agt)`));
       if (!bv) continue;
-      if (bv.tr) specs.push(T({ verb: bv, obj: O({ n: pickNoun(rng, L, frameFor(L, mode, bv).oPool, (x) => !x.anim && !x.place && x !== nB) }), known: true }));
+      if (bv.tr) specs.push(T({ verb: bv, obj: O({ n: pickNoun(rng, L, frameFor(L, mode, bv).oPool, (x) => !x.anim && !x.place && x !== nB)
+        || (L.poolMiss = (L.poolMiss || 0) + 1, pickNoun(rng, L, null, (x) => !x.anim && !x.place && x !== nB)) }), known: true }));
       else specs.push({ ...base, transitive: false, verb: bv, subj: S(), tense: present, known: true });
     }
     /* translated core: pins the animate noun, the intransitive verb, the transitive verb, the inanimate noun, the adjective */
@@ -564,7 +591,10 @@
   function genSentence(rng, L, mode, spec) {
     const canPl = L.plural.type !== "none";
     const transitive = spec.transitive ?? rng.chance(0.65);
-    const verb = spec.verb || rng.pick(L.verbs.filter((v) => !!v.tr === transitive));
+    const vCand = L.verbs.filter((v) => !!v.tr === transitive);
+    const vFit = vCand.filter((v) => { const t = mode === "surreal" ? {} : PLAUS[v.en] || {};
+      return poolFits(L, t.s) && poolFits(L, t.o); });
+    const verb = spec.verb || rng.pick(vFit.length ? vFit : vCand);
     const fr = frameFor(L, mode, verb);
     const info = [{ en: verb.en, pos: "v" }];
     const stems = { add: (en, pos) => { if (!info.some((x) => x.en === en)) info.push({ en, pos }); } };
@@ -572,7 +602,7 @@
     const mkNP = (role, sp, pool) => {
       if (sp && sp.pr) { stems.add(sp.pr.en, "pron"); return { pr: sp.pr, role }; }
       if (!sp && fr.pronOK && rng.chance(0.2)) { const pr = rng.pick(L.prons); stems.add(pr.en, "pron"); return { pr, role }; }
-      const n = sp && sp.n ? sp.n : pickNoun(rng, L, pool);
+      const n = sp && sp.n ? sp.n : (pickNoun(rng, L, pool) || (L.poolMiss = (L.poolMiss || 0) + 1, pickNoun(rng, L, null)));
       const plural = canPl && !n.mass && (sp && sp.plural !== undefined ? sp.plural : rng.chance(0.3));
       const adj = sp && sp.adj !== undefined ? sp.adj : rng.chance(0.3) ? rng.pick(L.adjs) : null;
       const def = sp && sp.def !== undefined ? sp.def : L.def ? rng.chance(role === "O" ? 0.5 : 0.7) : role !== "O";
@@ -589,7 +619,8 @@
     if (adjCase === undefined) adjCase = rng.chance(0.18) ? (L.cases.INS && (!L.cases.LOC || rng.chance(0.5)) ? "INS" : L.cases.LOC ? "LOC" : null) : null;
     let adjunct = null;
     if (adjCase) {
-      const n = spec.adjunctN || pickNoun(rng, L, mode === "surreal" ? null : adjCase === "INS" ? TOOLS : PLACES, (n) => !n.anim);
+      const n = spec.adjunctN || pickNoun(rng, L, mode === "surreal" ? null : adjCase === "INS" ? TOOLS : PLACES, (n) => !n.anim)
+        || (L.poolMiss = (L.poolMiss || 0) + 1, pickNoun(rng, L, null, (n) => !n.anim));
       stems.add(n.en, "n");
       const m = [{ syls: n.w.syls, gloss: n.en }];
       if (L.def) m.push({ syls: L.def.syls, gloss: "DEF" });
@@ -913,7 +944,7 @@
   const DIFF = {
     bank: { label: "Easy", note: "The text, the first few sentences translated, the numerals, and a word bank listing the English meaning of every stem. The task is a translation." },
     three: { label: "Standard", note: "The text, the first few sentences translated, and the numerals. No word bank — you have to work out which word is which. The task is a translation." },
-    hell: { label: "Hell", note: "Sixty sentences, no translations, no word list, no numerals. Vocabulary can't be recovered without an anchor, so the task asks for the grammar instead: word order, alignment, and every affix you can find." },
+    hell: { label: "Hell", note: "At least sixty sentences, no translations, no word list, no numerals. Vocabulary can't be recovered without an anchor, so the task asks for the grammar instead: word order, alignment, and every affix you can find." },
   };
 
   /* ---------------- addressable puzzles ----------------
