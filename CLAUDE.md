@@ -659,16 +659,20 @@ new document-level listener needs the same guard.
 
 ### `sitemap.xml` and `robots.txt`
 
-`sitemap.xml` lists the nine public URLs — the landing page, the arcade index,
-the three machine pages, the about page, the reviewers page, the Tollbooth and
-`llms.txt` — each with a `lastmod` taken from that file's last commit date. **It rots the
+`sitemap.xml` lists every public URL — the landing page, the arcade index, the
+three machine pages, the about page, the corrections page, the reviewers page,
+the Tollbooth and `llms.txt` — each with a `lastmod` taken from that file's last
+commit date. **It rots the
 moment a page changes and this file does not.** Update it alongside any change
 to a page's content, or when a page is added; a stale `lastmod` is worse than
 none, because a crawler that learns to distrust it ignores the field entirely.
-This sentence has rotted **twice** already — it said seven after
-`reviewers.html` was added, and eight after `about.html` was. The count is the
-part that rots; the test that every root `.html` appears in the sitemap is what
-catches it.
+**The number is deliberately gone from that sentence.** It said seven after
+`reviewers.html` was added, eight after `about.html`, and nine after
+`corrections.html` — rotted three times, each time for the same reason, each
+time fixed by writing a new number that would rot next. A count maintained by
+hand beside a list maintained by hand is a second source of truth with no
+checker on it. The list is the count, and the test that every root `.html`
+appears in the sitemap is what actually catches an omission.
 
 `robots.txt` points crawlers at the sitemap and asks them to skip `/docs/` and
 `CLAUDE.md`, which are working material rather than part of the site. Note that
@@ -695,6 +699,31 @@ advertises actually resolves, and that every `.html` file in the root is listed.
 A page that exists and is missing from the sitemap is the same rot in the other
 direction.
 
+### `corrections.html`
+
+A list of **corrections rather than features**, on its own page. It was a
+section of `about.html` for a few hours; it moved because the list grows and
+that page should not, and because a page of its own gets a title and
+description so a shared link previews as what it is.
+
+Almost every entry has one shape — the machine's own checker was working and the
+sentence printed beside it claimed something the checker had never tested. That
+is worth stating in public rather than only in this file, and the page says why
+it is public: the Tollbooth publishes how many testimonies were removed so that
+its no-editing promise is worth something, and holding other people's words to
+that standard while burying one's own would be an odd way round.
+
+**It does not claim to be complete, and that is load-bearing.** The page says
+the commit history is the complete record and this is the short version of it.
+An exhaustive list is an obligation that quietly breaks the first busy week; a
+curated one pointing at the log stays true even when it falls behind. Keep it
+current anyway — a corrections list that stops implies the corrections stopped —
+but a gap is now a gap rather than a lie.
+
+Entries name outside finders, and a defect found by a model playing a board
+gives the seed, because the seed regenerates the board and that is the only part
+of such an account that can be checked.
+
 ### `about.html`
 
 Two halves, and the split is the one the whole site makes. **What it commits
@@ -706,19 +735,9 @@ operator's own reasons, first person, and labelled unverifiable in the same way
 `styles.css` calls it "the label that keeps self-description and checkable fact
 apart", which is the job here too.
 
-The third section is a **list of corrections rather than features**, and that is
-the point of it. Almost every entry has the same shape — the machine's own
-checker was working and the sentence printed above it claimed something the
-checker had never tested — which is worth stating publicly rather than only in
-this file. Every entry is a commit, every number in it was measured, outside
-finders are named, and a defect found by a model playing a board gives the seed,
-because the seed regenerates the board and that is the only part of such an
-account that can be checked.
-
-**Keep it current or delete it.** A corrections list that stops at the last
-correction is worse than none: it implies the corrections stopped. When a defect
-is fixed, it gets a line here in the same commit, the same way `grammarText()`
-changes in the same commit as the sampling it describes.
+The third section is four sentences pointing at `corrections.html`, which is
+where the list of corrections lives. It held the list itself for a few hours;
+see that section above for why it moved.
 
 ### `llms.txt`
 

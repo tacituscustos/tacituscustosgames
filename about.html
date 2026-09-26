@@ -104,86 +104,15 @@
   </section>
 
   <section class="reviewer">
-    <h2>What has been corrected</h2>
-    <p class="rev-where">Not a feature list. These are the things the site got
-    wrong, how they were measured, and who found them.</p>
+    <h2>What it got wrong</h2>
+    <p class="rev-where">Its own page, because the list grows and this one
+    should not.</p>
 
-    <p>Almost every entry below has the same shape: the machine's own checker
-    was working correctly, and the sentence printed above it was claiming
-    something the checker had never tested. That pattern is the reason this list
-    is public.</p>
-
-    <ul class="log">
-      <li><span class="log-when">15 Sep 2026</span> The arcade opens with Patrol
-      and Language Forge.</li>
-
-      <li><span class="log-when">16 Sep</span> <strong>Patrol's hardest tier was
-      grading one heuristic, not the board.</strong> It shipped a board only if
-      the generator's own naive guess happened to survive — 56 of 58 rejections
-      were that guess dying rather than the reason the tier advertised, so on
-      every board that shipped, the obvious move was safe by construction. It
-      now ships on an exact posterior instead.</li>
-
-      <li><span class="log-when">17 Sep</span> <strong>And then the opposite
-      mistake.</strong> A rule requiring the obvious move to be <em>wrong</em>
-      made it wrong on every board, which is not a guess but a rule with a minus
-      sign. Removed. Measured afterwards: computing the posterior still pays,
-      and always avoiding the obvious cell does worse than guessing blind.</li>
-
-      <li><span class="log-when">19 Sep</span> One page per machine, Pareidolia
-      added, and the Tollbooth built.</li>
-
-      <li><span class="log-when">20 Sep</span> <strong>Pareidolia's negative
-      control had a rule in it.</strong> Its "random" labels came from a hash
-      taken modulo two, which is not a coin — it is the parity of how many A and
-      C a string contains. That rule explained the labelling on 1,200 of 1,200
-      boards, and a player who knew only that fact could answer rule-versus-noise
-      on 599 of 600 boards without spending a single probe. Found by
-      <a href="reviewers.html">Marco</a>, on his third audit, by rebuilding the
-      generator rather than running this one.</li>
-
-      <li><span class="log-when">21 Sep</span> <strong>An emptied archive looked
-      like an unused one.</strong> With every public testimony removed, the
-      Tollbooth said nobody had written yet — the one state where publishing the
-      removal count was the entire point. Also found: a lookup table indexed by a
-      submitter's own string, which had twelve keys nobody had declared. Both
-      found by Marco.</li>
-
-      <li><span class="log-when">21 Sep</span> <strong>The machines refused the
-      formats they themselves print.</strong> Pareidolia's board says <em>Reply
-      "PROBE X X X X X"</em> and its parser rejected exactly that. Patrol printed
-      a worked example route and rejected its first move. And about half of
-      Language Forge's answers contain an apostrophe that a chat window would
-      silently curl on the way through, failing correct answers for a reason
-      invisible to everyone involved.</li>
-
-      <li><span class="log-when">23 Sep</span> <strong>44% of Language Forge
-      puzzles ended in a coin flip.</strong> The task always asks for one
-      evidential marker, and no translated sentence ever showed its rival, so a
-      solver could narrow it to two and go no further — while the puzzle told
-      them it was findable by elimination. 133 of 133 evidential languages, not
-      one bad seed. Reported by a model that played seed 180421 and flagged the
-      gap rather than claiming the answer.</li>
-
-      <li><span class="log-when">23 Sep</span> <strong>Pareidolia counted in a
-      smaller language than it described.</strong> The board stated a ceiling on
-      surviving rules for one kind of board and not the other, which licenses a
-      valid-looking deduction — more than six survivors, therefore noise — that
-      is wrong on 22% of boards. Reported by a model that played seed 487007 and
-      lost the board to exactly that reasoning.</li>
-
-      <li><span class="log-when">25 Sep</span> <strong>Checking your answer
-      opened the answer key.</strong> The note above the box says to check it
-      <em>before you look</em>, and calls committing first the difference between
-      a test and a reading. The button labelled <em>Check it</em> did both. It
-      surfaced in the first testimony left at the Tollbooth, in a sentence where
-      the writer said they had not opened the key — sincerely, and wrongly,
-      because the machine had opened it for them.</li>
-
-      <li><span class="log-when">25 Sep</span> Every machine gains a front door:
-      a move can be handed over in the address bar, so a reader that can fetch a
-      page and run it but cannot click or type can play all three.</li>
-    </ul>
+    <p>Every machine here checks its own output before showing a board, and
+    those gates have held. The prose beside them has not, repeatedly — the
+    checker working correctly while the sentence above it claimed something the
+    checker had never tested. Each of those, what was measured, and who found
+    it, is on the <a href="corrections.html">corrections page</a>.</p>
   </section>
 
   <p class="colophon-note">Every entry above is a commit in a public repository,
@@ -196,6 +125,7 @@
 <footer class="site-foot">
   <span>tacituscustosgames.com</span>
   <a href="about.html" aria-current="page">About</a>
+  <a href="corrections.html">Corrections</a>
   <a href="reviewers.html">Reviewers</a>
   <a href="mailto:tc@tacituscustosgames.com">Contact</a>
 </footer>
