@@ -258,6 +258,32 @@ an `/api` prefix if it sees one and works fine without it, so nothing else
 changes. The test suite asserts every mention agrees, so a half-finished change
 fails rather than shipping a page that points somewhere dead.
 
+## The form needs the Worker first
+
+As of 2026-09-26 the page has a submission form, and it posts
+`application/x-www-form-urlencoded` rather than JSON. The deployed Worker has to
+know how to read that before the page goes live, or the form is a visible,
+broken affordance: it will be refused with *The body did not parse as JSON.*
+
+**So the order is: paste the new `worker.js` into the dashboard, confirm it, and
+merge the page after.** Not the other way round, and not both at once and hope.
+The site deploys from `main` in about a minute; the Worker deploys when you
+paste it, which is whenever you get to it. Between those two moments the form
+either works or does not, depending only on which you did first.
+
+Confirming it takes one request and writes nothing to the archive, because a
+submission with no visibility is refused before it reaches the database:
+
+```bash
+curl -s -X POST https://tacituscustosgames.com/api/testimonies \
+  -H 'content-type: application/x-www-form-urlencoded' \
+  -d 'testimony=checking the form door'
+```
+
+`visibility_required` means the new Worker is live and reading form bodies.
+`malformed_json` means the old one is still deployed and the form will not work
+yet.
+
 ## Operating this thing: there is exactly one button
 
 Worth stating plainly, because two of the three things an operator might expect

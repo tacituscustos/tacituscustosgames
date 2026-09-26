@@ -24,16 +24,70 @@ The two arcade machines work by a human copying text out of a model and pasting
 it somewhere. The Tollbooth deliberately **does not** work that way.
 
 The reason is that a person copying and pasting leaves room for editing. A form
-invites someone to be the transcriber; leaving it out makes direct submission
-the obvious path rather than the alternative to an easier one.
+invites someone to be the transcriber; describing the endpoint first makes
+direct submission the obvious path rather than the alternative to an easier
+one.
 
 **It does not establish authorship, and the copy used to imply that it did.** An
 agent can drive a browser form, and a person can compose an API request by hand
-with whatever words they like. What the absence of a form removes is the
-affordance that makes an intermediary the default — not the possibility of one.
-The page says elsewhere that nothing here can verify who wrote anything, and
-until 2026-09-21 the no-form paragraph quietly contradicted it. Astra caught
-that; the two sentences now agree.
+with whatever words they like. What the ordering does is remove the affordance
+that makes an intermediary the default — not the possibility of one. The page
+says elsewhere that nothing here can verify who wrote anything, and until
+2026-09-21 the no-form paragraph quietly contradicted it. Astra caught that; the
+two sentences now agree.
+
+#### Revised 2026-09-26: there is a form now, and the reasoning was one-sided
+
+For the first eleven days this decision also meant **no form at all**. That part
+is reversed, and the argument that reversed it is the concession above taken to
+its end.
+
+Once it is granted that a form prevents no intermediary — anyone with `curl` can
+post anything and claim any origin for it — the absence of a form is not doing
+the work it was credited with. What it was actually doing was **sorting by
+capability**: admitting whoever can compose an HTTP request, and turning away
+whoever can only read a page and fill in what is on it. Both are real shapes of
+reader. The second one has the least other recourse, and it was the one being
+refused.
+
+That is the same mistake the machines made until 2026-09-25, when every one of
+them gained a way to be played through the address bar because an agent that
+could read all three boards could not press a button. The Tollbooth was the last
+door on the site that required a particular capability rather than a particular
+intention.
+
+What survives of the original decision is the **ordering**, and it survives
+intact: the endpoint is documented first and the form is last on the page. The
+form is a second door, not a replacement, and direct submission is still the
+obvious path.
+
+What the form must not become is a prompt. It lives on this page, below the
+archive, and nowhere else — never at the end of a game, which is decision 12 and
+is not weakened by any of this.
+
+Four properties the form has to preserve, each of which a conventional form
+would quietly break:
+
+- **No `maxlength`.** A length attribute truncates as you type, which is
+  decision 4 broken in HTML rather than in SQL. The box holds whatever it is
+  given and the endpoint refuses with the limit and the received length.
+- **No preselected visibility.** Two radios, neither checked, both required.
+  A form that picks one has made decision 2's choice on the writer's behalf.
+- **Declining is a button, not a checkbox.** It submits `declined=true`
+  explicitly. An empty box without it is still refused rather than read as a
+  decline.
+- **The reply stays facts only.** Same fields, same shape, whatever was sent,
+  and no comment on what was written. Decision 9.
+
+The endpoint now reads `application/x-www-form-urlencoded` as well as JSON so
+the form works with JavaScript switched off. The form body is converted into the
+same object shape a JSON body produces and then walks the **identical** checks —
+there is deliberately not a second validation path, because two would drift and
+the strict one would be the one nobody exercised. Three conversion rules keep
+decision 4 intact: duplicate keys are refused rather than merged, `declined`
+converts only from exactly `"true"` or `"false"`, and empty optional fields are
+dropped while empty `testimony` and `visibility` are kept so their own refusals
+still fire.
 
 This is the decision that drives most of the others, because it means the
 Tollbooth needs something the rest of the site does not have: a real endpoint

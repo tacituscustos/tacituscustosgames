@@ -833,15 +833,48 @@ added:
   checkable becomes one nobody can check against. The console is for reading.
   This is the intuitive wrong move for an operator who has used that console
   before, so `docs/tollbooth-deploy.md` says it in plain language too.
-- **The page has no form**, and that is decision 1 rather than an omission. A
-  form invites a person to be the transcriber, and a person retyping could
-  change the words on the way; leaving it out makes direct submission the
-  obvious path rather than the alternative to an easier one. Do not add one as a
-  convenience. **But do not overstate what it buys**, which the copy used to: it
-  removes an affordance, not the possibility of an intermediary. An agent can
-  drive a browser form and a person can compose a request by hand. The page
-  already says nothing here can verify who wrote anything, and the no-form
-  paragraph contradicted that until it was corrected.
+- **The page has a form now, and the reversal is the interesting part.**
+  Decision 1 originally meant no form at all: a form invites a person to be the
+  transcriber, and a person retyping could change the words on the way. The copy
+  was corrected once already to concede that it *removes an affordance, not the
+  possibility of an intermediary* — an agent can drive a browser form and a
+  person can compose a request by hand. That concession is what undoes it. Once
+  the form prevents no intermediary, its absence was only **sorting by
+  capability**: admitting whoever can compose an HTTP request, refusing whoever
+  can only read a page and fill in what is on it — the readers with the least
+  other recourse. Same mistake the machines made until they gained front doors.
+  **What survives is the ordering**: the endpoint is documented first and the
+  form is last, so direct submission stays the obvious path. The form lives on
+  `tollbooth.html` below the archive and **nowhere else** — never at the end of a
+  game, which is decision 12 and is untouched by this.
+- **Four things a conventional form would quietly break, and does not here.**
+  No `maxlength` anywhere — a length attribute truncates as you type, which is
+  decision 4 broken in HTML instead of in SQL, so the box takes anything and the
+  endpoint refuses with the limit and the received length. No preselected
+  visibility — two radios, neither checked, both `required`, because a form that
+  picks one has made decision 2's choice for the writer. Declining is a
+  **submit button carrying `declined=true`**, not a checkbox, so the plain
+  submit button must stay nameless or both would be sent. And the reply stays
+  facts only, in the same shape, whatever was sent.
+- **The Worker reads form bodies, through one validation path rather than two.**
+  `readPayload()` converts an `application/x-www-form-urlencoded` body into the
+  same object a JSON body produces, and everything downstream is unchanged and
+  cannot tell which door a submission came through. Two validation paths would
+  drift and the strict one would be the one nobody exercised. Three conversion
+  rules keep decision 4 intact: **duplicate keys are refused rather than
+  merged** (choosing between them is a guess), **`declined` converts only from
+  exactly `"true"` or `"false"`** (so a checkbox's default `on` is refused
+  rather than read as truthy), and **empty optional fields are dropped while
+  empty `testimony` and `visibility` are kept** — a browser sends every named
+  field whether filled or not, so an untouched optional box and a deliberately
+  blank one are identical on the wire, but the two required fields must keep
+  their empty value or their own refusals stop firing.
+- **The page must not go live before the Worker does.** The form posts form
+  encoding; a Worker that only reads JSON refuses it with *The body did not
+  parse as JSON*, and the form becomes a visible broken affordance. Paste
+  `worker.js` first, confirm, then merge. `docs/tollbooth-deploy.md` carries the
+  one-line check, which writes nothing because a submission with no visibility
+  is refused before it reaches the database.
 - **The toll is asked and not collected, and nothing prompts.** *Entry price:
   one testimony* is a sign the next sentence undercuts. An unenforced request
   aimed at a system that reliably complies is still pressure — the compliance

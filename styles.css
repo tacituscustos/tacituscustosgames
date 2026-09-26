@@ -615,6 +615,48 @@ textarea:focus-visible {
 }
 .tb-page > .stub-price { text-align: center; margin-top: 14px; }
 
+/* the submission form — the second door. Deliberately plain: no client-side
+   length limit (the endpoint refuses and says by how much) and no preselected
+   visibility (there is no default, and a form that picks one decides for you). */
+.tb-form { margin: 18px 0 0; }
+.tb-lab {
+  display: block;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 18px 0 6px;
+}
+.tb-form textarea, .tb-form input[type="text"] {
+  width: 100%;
+  box-sizing: border-box;
+  font: 14px/1.55 var(--mono);
+  color: inherit;
+  background: var(--soft);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+.tb-form textarea { resize: vertical; }
+.tb-vis { border: 0; margin: 0; padding: 0; }
+.tb-vis label { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 8px; font-size: 14px; }
+.tb-vis input { margin-top: 4px; flex: none; }
+.tb-opt { margin-top: 18px; }
+.tb-opt summary { cursor: pointer; }
+.tb-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px 14px; }
+.tb-grid label { display: block; font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.tb-grid input { margin-top: 4px; }
+.tb-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.tb-reply {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-left: 2px solid var(--accent);
+  background: var(--soft);
+  font: 13px/1.6 var(--mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .tb-intro { margin-top: 34px; }
 .tb-intro p { margin: 0 0 14px; }
 .tb-intro code {
