@@ -116,6 +116,20 @@ longer a copy.
   whether or not the invented language marks number, which it often does not:
   otherwise *three wolves sleeps*.
 - `forge.js`, `enNP()` — the noun pluralizes on `num > 1`, not on any `num`.
+- `forge.js`, `pickNoun()`, `designedSpecs()` and `genSentence()` — an
+  unsatisfiable plausibility pool is no longer discarded in silence. The
+  original read `if (p.length) c = p;`, so when a verb's plausible objects were
+  absent from the language, or could not meet the slot's structural filter, the
+  pool was dropped and any noun was picked: **Plausible mode quietly became
+  Surreal on 52% of languages.** `pickNoun()` now returns `null` instead, and
+  every verb choice is made among verbs this language can actually fill —
+  including the agent nouns, whose verb is fixed by the agent itself
+  ("hunter" must be built on "hunt") and so cannot be swapped later.
+  Measured over 300 languages a side: unfillable pools reached the corpus 0
+  times, against 156 before. **Surreal is byte-identical on 200 of 200 seeds**,
+  since it sets no pools; Plausible changes on 184 of 200, which is the cost.
+  Corpus size, pinned stems and the solvability rate are unchanged to three
+  digits across both styles and both hint budgets, 200/200 solvable throughout.
 
 These are all English-surface fixes. They change the prose a solver reads and
 leave the invented language, the expected answer and every seed untouched.
@@ -467,7 +481,7 @@ banner and call the logic half directly.
 That makes the **`UI` banner comment in all three machine files load-bearing**.
 `llms.txt` names it as the boundary under *If you can run JavaScript but have no
 browser*, so renaming or deleting one breaks a documented path silently. Above
-it: 12 top-level functions in `patrol.js`, 30 in `forge.js`, 17 in
+it: 12 top-level functions in `patrol.js`, 31 in `forge.js`, 17 in
 `pareidolia.js`, and no reference to `document` or `window` in any of them.
 Measured for Patrol: `generate()` plus `stateText()` from the logic half alone
 produce text byte-identical to the served page's `#pt-text` for the same seed

@@ -115,7 +115,7 @@ on its own.
 | file | logic half | top-level functions |
 | --- | --- | --- |
 | `patrol.js` | opening to the `UI` banner | 12 |
-| `forge.js` | opening to the `UI` banner | 30 |
+| `forge.js` | opening to the `UI` banner | 31 |
 | `pareidolia.js` | opening to the `UI` banner | 17 |
 
 In Patrol the two worth having are `generate(seed, tierKey)`, which returns the
