@@ -67,8 +67,26 @@ readily as *no obfuscation*, and the reading that requires no action is the one
 a reader will take. Same shape as every defect in `CLAUDE.md`: the check was
 fine and the sentence describing what its output meant was wider than the check.
 
-**Found on, 26 September 2026.** The toggle was on, so the `mailto:` in the
-footer of all nine pages was being served as `/cdn-cgi/l/email-protection`.
+**Found on 26 September 2026, and turned off the same day.** It had been
+rewriting the `mailto:` in the footer of all nine pages into
+`/cdn-cgi/l/email-protection`, which is the one thing on those pages a reader
+that fetches without executing cannot resolve. Re-check with the command above
+rather than the dashboard: the toggle reports intent, the served bytes report
+fact.
+
+**If spam becomes a problem, this toggle is the wrong lever to reach for
+first.** It only ever rewrote one copy of an address that `llms.txt` publishes
+in the clear — Cloudflare rewrites `text/html` only, so `llms.txt` is served as
+`text/plain` and was never touched. Anything harvesting this site already had
+the address from a file the feature does not cover, which is why turning it off
+changes the exposure very little and the reachability quite a lot.
+
+The larger surface is the **catch-all** in Email Routing. With it on, every
+address at the domain accepts mail, so a spammer guessing `info@`, `sales@` or
+anything else gets through without having harvested anything at all. Turning
+the catch-all off and keeping the named addresses rejects those at the edge,
+and costs only mail sent to an address that was never published. That is the
+first lever; the obfuscation toggle is the last.
 
 **It is a zone-wide rewrite, not a list of protected addresses.** It applies to
 whatever email-shaped text appears in the `text/html` this zone serves, and its

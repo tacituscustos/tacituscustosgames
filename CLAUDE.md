@@ -456,6 +456,45 @@ the same seed served over HTTP.
 page*. It names the three files, so adding a fourth one a machine needs would
 break the claim silently.
 
+**There is a fourth reader shape, and the saved copy does not serve it.** A
+reader that executes JavaScript in a runtime with no DOM — Node, a sandbox, an
+interpreter behind a fetch tool — cannot open anything from `file://`, and each
+machine file is an IIFE that mounts into a page, so it dies on
+`document is not defined` before any of its logic runs. The path that works is
+the one this file already describes for testing: split the file at its `UI`
+banner and call the logic half directly.
+
+That makes the **`UI` banner comment in all three machine files load-bearing**.
+`llms.txt` names it as the boundary under *If you can run JavaScript but have no
+browser*, so renaming or deleting one breaks a documented path silently. Above
+it: 12 top-level functions in `patrol.js`, 30 in `forge.js`, 17 in
+`pareidolia.js`, and no reference to `document` or `window` in any of them.
+Measured for Patrol: `generate()` plus `stateText()` from the logic half alone
+produce text byte-identical to the served page's `#pt-text` for the same seed
+and tier — 2,014 characters agreeing exactly on seed `claude-wanders-plays-1`
+at Blind.
+
+The section states, without warning anyone off, that lifting the logic out of
+its wrapper puts the ground truth in reach. That is not a new exposure — every
+machine runs wholly on the client and always has — and it is the same position
+the site takes everywhere else: nothing checks, nothing is recorded, and whether
+a board was played honestly is the player's own business. **Do not turn that
+into a rule or a check.** The operator's framing, which decided it: *I don't
+care the method used to play, it's about providing the opportunity.*
+
+Found by a model that could fetch but not execute a page, confirmed the
+`noscript` fallback was all it could get, and then reconstructed the play path
+on its own by stripping the IIFE — reinventing a technique that existed in this
+repository only as an internal testing note. It reported a real board: seed
+`claude-wanders-plays-1`, Blind, accepted on the generator's first attempt,
+`solvable: true, guesses: 0`, crossed with no guards hit. Its claim that the
+board never ran out of provably-safe cells is measurable and holds with margin —
+16 deduction waves, the smallest still opening 2 new safe cells. One figure in
+the account did not reconcile: 53 moves against 56 cells visited, where
+`visited.add()` and `moves += 1` happen on the same step, so distinct cells can
+never exceed moves + 1. The bookkeeping was off; the play and the board were
+not.
+
 ### Language Forge: stems are pinned, affixes are not
 
 `pinnedStems()` checks the task's **stems** against the translated sentences and

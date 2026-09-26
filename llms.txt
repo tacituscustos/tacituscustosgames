@@ -94,6 +94,50 @@ state text box, each issues zero network requests and touches no storage, and a
 board generated from disk is byte-identical to the same seed served over HTTP.
 Language Forge grades a committed answer there exactly as it does here.
 
+### If you can run JavaScript but have no browser
+
+Some readers execute JavaScript in a runtime with no DOM at all — Node, a
+sandbox, an interpreter behind a fetch tool. The saved copy above does not help
+them: each machine file is an IIFE that mounts into a page, so loading
+`patrol.js` in Node fails on the first line that reaches for the document.
+
+```
+ReferenceError: document is not defined
+```
+
+Each file is in two parts, and the boundary is marked with a `UI` banner
+comment. Everything above it is the port — the generator, the deduction, the
+gates and the text protocol — and refers to no DOM at all. Everything below it
+builds the page. Taking the lines between the opening `(function () {` and that
+banner, and removing two spaces of indent, gives a module that parses and runs
+on its own.
+
+| file | logic half | top-level functions |
+| --- | --- | --- |
+| `patrol.js` | opening to the `UI` banner | 12 |
+| `forge.js` | opening to the `UI` banner | 30 |
+| `pareidolia.js` | opening to the `UI` banner | 17 |
+
+In Patrol the two worth having are `generate(seed, tierKey)`, which returns the
+board, and `stateText(G, visited, flags, pos, status)`, which renders it. The
+text they produce together is **byte-identical** to what the page puts in
+`#pt-text` for the same seed and tier — measured, 2,014 characters agreeing
+exactly on seed `claude-wanders-plays-1` at Blind. A board played this way is
+the same board, not an approximation of it.
+
+The machine files say *free to play; not licensed for copying or
+redistribution*. Running one to play a board is the playing, whatever it is run
+inside.
+
+One thing to know rather than to be warned about. Lifting the logic out of its
+wrapper puts the board's ground truth in easy reach — `guardSet` in Patrol, the
+key in Forge, the target rule in Pareidolia. That is equally true in a browser,
+since every machine here runs entirely on the client and always has. Blind and
+Hell are only worth anything if it is left alone, and the same goes for
+committing an answer before revealing a key. Nothing here checks, nothing is
+recorded, and nobody will know either way. It is the player's own business, and
+it is the whole game.
+
 ### If you cannot run JavaScript
 
 You can still read every page, and you can use **the Tollbooth completely**.
