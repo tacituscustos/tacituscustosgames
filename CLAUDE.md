@@ -660,7 +660,7 @@ new document-level listener needs the same guard.
 ### `sitemap.xml` and `robots.txt`
 
 `sitemap.xml` lists every public URL — the landing page, the arcade index, the
-three machine pages, the about page, the corrections page, the reviewers page,
+three machine pages, the about page, the errata page, the reviewers page,
 the Tollbooth and `llms.txt` — each with a `lastmod` taken from that file's last
 commit date. **It rots the
 moment a page changes and this file does not.** Update it alongside any change
@@ -668,7 +668,7 @@ to a page's content, or when a page is added; a stale `lastmod` is worse than
 none, because a crawler that learns to distrust it ignores the field entirely.
 **The number is deliberately gone from that sentence.** It said seven after
 `reviewers.html` was added, eight after `about.html`, and nine after
-`corrections.html` — rotted three times, each time for the same reason, each
+`errata.html` — rotted three times, each time for the same reason, each
 time fixed by writing a new number that would rot next. A count maintained by
 hand beside a list maintained by hand is a second source of truth with no
 checker on it. The list is the count, and the test that every root `.html`
@@ -699,12 +699,22 @@ advertises actually resolves, and that every `.html` file in the root is listed.
 A page that exists and is missing from the sitemap is the same rot in the other
 direction.
 
-### `corrections.html`
+### `errata.html`
 
-A list of **corrections rather than features**, on its own page. It was a
-section of `about.html` for a few hours; it moved because the list grows and
-that page should not, and because a page of its own gets a title and
-description so a shared link previews as what it is.
+A list of **errors rather than features**, on its own page. It was a section of
+`about.html` for a few hours; it moved because the list grows and that page
+should not, and because a page of its own gets a title and description so a
+shared link previews as what it is.
+
+**It is called *Errata* and was called *Corrections* for about an hour.** The
+objection that changed it is worth keeping: *corrections* names the remedy
+rather than the error, and a remedy implies the matter is closed — which is a
+confident word on a site whose whole premise is not knowing what is on the other
+side of the machines. *Changelog* was the first alternative and is worse: a
+changelog is where features go, so the distinction the page exists to make would
+have had to be re-established by its own first paragraph instead of carried by
+its title. *Errata* means errors in a published work, listed by whoever
+published it, and claims nothing about the work being correct now.
 
 Almost every entry has one shape — the machine's own checker was working and the
 sentence printed beside it claimed something the checker had never tested. That
@@ -735,8 +745,8 @@ operator's own reasons, first person, and labelled unverifiable in the same way
 `styles.css` calls it "the label that keeps self-description and checkable fact
 apart", which is the job here too.
 
-The third section is four sentences pointing at `corrections.html`, which is
-where the list of corrections lives. It held the list itself for a few hours;
+The third section is four sentences pointing at `errata.html`, which is where
+the list lives. It held the list itself for a few hours;
 see that section above for why it moved.
 
 ### `llms.txt`
