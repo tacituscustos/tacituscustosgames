@@ -329,6 +329,35 @@ Four things that look like details and are not:
 test checks each parameter it names is defined, read and deleted by the machine
 file that would have to do those things.
 
+### The verdict is an attribute, not a sentence
+
+Each machine carries its outcome twice: as prose a person reads, and as a fixed
+attribute a machine reads.
+
+```
+#cf-verdict   data-verdict   correct | wrong | open      (open = Forge Hell, ungraded here)
+#pd-result    data-verdict   correct | wrong
+#pt-status    data-status    playing | through | caught
+```
+
+Absent until there is something to report, and cleared when a new board or
+language is generated.
+
+**The point is that it is not prose.** A verdict sentence is the single most
+rewordable thing on a page — *Correct.* could become *That matches.* in a copy
+pass that breaks nobody's tests and silently breaks every reader matching the
+string. The attribute is a promise about a name and a small closed vocabulary
+rather than about wording, so a copy edit cannot reach it.
+
+Reported by a player who had been reading the page text for the word "Correct",
+noticed it was depending on wording nobody had promised to keep, and said so
+before it cost them anything — which is the rarest kind of report, because there
+was no failure to point at yet.
+
+`llms.txt` documents all three under *Reading the verdict without matching
+prose*, and a test asserts each machine still sets what that section names. If
+a vocabulary ever grows, both change in the same commit.
+
 ### Language Forge: the puzzle/answer split
 
 `forge.js` is in two halves, and the boundary is a correctness property.

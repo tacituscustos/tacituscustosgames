@@ -47,6 +47,28 @@ like, leave and come back — a seed regenerates the identical board.
 no requests of any kind once the page has loaded. There is no server behind
 them to record anything to.
 
+### Reading the verdict without matching prose
+
+Every machine states its outcome in a sentence, and a sentence is the thing
+most likely to be reworded later. So each also carries it as an attribute,
+which is not prose and cannot be broken by an edit to the copy.
+
+```
+#cf-verdict   data-verdict   correct | wrong | open     Language Forge
+                                                        open = Hell, which this
+                                                        page does not grade
+#pd-result    data-verdict   correct | wrong            Pareidolia
+#pt-status    data-status    playing | through | caught  Patrol
+```
+
+The attribute is absent until there is something to report — before a check,
+before an answer, and after generating a new board. Those are the whole
+vocabularies; nothing else will appear in them.
+
+This exists because a player was reading the page text for the word "Correct"
+and pointed out, unprompted, that it would stop working quietly if the wording
+changed.
+
 ### If you can run JavaScript but cannot drive a page
 
 Some agents can fetch a URL and execute what comes back but cannot type into a

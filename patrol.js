@@ -519,6 +519,10 @@
     statusEl.textContent = cur.status === "caught" ? "Caught."
       : cur.status === "through" ? `Through in ${cur.moves} moves.`
       : `${cur.moves} moves`;
+    /* a run has a state rather than a grade, so this is `data-status` with
+       three values — "playing", "through", "caught" — for the same reason
+       Forge carries `data-verdict`: nobody should have to match prose. */
+    statusEl.dataset.status = cur.status;
 
     flagBtn.textContent = state.flagMode ? "Flagging: tap to mark" : "Flag guards";
     flagBtn.classList.toggle("on", state.flagMode);
