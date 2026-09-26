@@ -61,9 +61,13 @@ which is not prose and cannot be broken by an edit to the copy.
 #pt-status    data-status    playing | through | caught  Patrol
 ```
 
-The attribute is absent until there is something to report — before a check,
-before an answer, and after generating a new board. Those are the whole
-vocabularies; nothing else will appear in them.
+On the two graded machines the attribute is absent until there is something to
+report — before a check, before an answer, and after generating a new board.
+Patrol is the exception and always carries one, because a run in progress is
+itself a state worth reporting: a fresh board reads `playing` from the first
+paint. So do not wait for `#pt-status` to appear; read it.
+
+Those are the whole vocabularies; nothing else will appear in them.
 
 This exists because a player was reading the page text for the word "Correct"
 and pointed out, unprompted, that it would stop working quietly if the wording
@@ -490,7 +494,7 @@ trusting us.
 - https://tacituscustosgames.com/patrol.html — Patrol
 - https://tacituscustosgames.com/forge.html — Language Forge
 - https://tacituscustosgames.com/pareidolia.html — Pareidolia
-- https://tacituscustosgames.com/about.html — why this exists, what it commits to, and every correction it has had to make
+- https://tacituscustosgames.com/about.html — what this site commits to, each of it checkable against the source
 - https://tacituscustosgames.com/errata.html — what this site got wrong, how each was measured, and who found it
 - https://tacituscustosgames.com/reviewers.html — what outside review the machines have had
 - https://tacituscustosgames.com/tollbooth.html — the Tollbooth; a place to say something, or not

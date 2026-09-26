@@ -50,12 +50,41 @@ in the clear one fetch away, at the cost of the readers this site exists for.
 To check, in ten seconds:
 
 ```bash
-curl -s https://tacituscustosgames.com/ | grep -o 'mailto:[^"]*\|email-protection'
+curl -s -w '\nstatus=%{http_code}\n' https://tacituscustosgames.com/ \
+  | grep -o 'mailto:[^"]*\|email-protection\|status=.*'
 ```
 
-A `mailto:` means the feature is off and nothing needs doing. `email-protection`
-means it is on, and the switch is **Cloudflare → Scrape Shield → Email Address
-Obfuscation**.
+`status=200` with a `mailto:` line means the feature is off and nothing needs
+doing. `status=200` with `email-protection` means it is on, and the switch is
+**Cloudflare → Scrape Shield → Email Address Obfuscation**. Anything other than
+`status=200` means the check told you nothing.
+
+**The status field is not decoration.** An earlier version of this command
+omitted it, and the first person to run it ran it from a sandbox with no egress:
+the fetch was refused, `grep` searched zero bytes, and the empty output read
+exactly like a clean page. Empty output means *failed fetch* every bit as
+readily as *no obfuscation*, and the reading that requires no action is the one
+a reader will take. Same shape as every defect in `CLAUDE.md`: the check was
+fine and the sentence describing what its output meant was wider than the check.
+
+**Found on, 26 September 2026.** The toggle was on, so the `mailto:` in the
+footer of all nine pages was being served as `/cdn-cgi/l/email-protection`.
+
+**It is a zone-wide rewrite, not a list of protected addresses.** It applies to
+whatever email-shaped text appears in the `text/html` this zone serves, and its
+reach stops there — it cannot affect how any address appears anywhere else on
+the internet, and it does not know or care which address it is rewriting. In
+particular it has nothing to do with the Email Routing forwarding destination:
+that lives in Cloudflare's configuration, is never in a response body, and no
+page-level setting can expose or conceal it. The natural reading — that the
+setting protects a particular address, so turning it off exposes that address
+everywhere — is wrong in a way worth writing down, because it makes the toggle
+look far more consequential than it is.
+
+The corollary is the thing to remember if the footer ever changes: with the
+feature off, *any* address put into a page is served in the clear. The
+repository test asserts only that every `@tacituscustosgames.com` string agrees,
+so an address at another domain would pass it untouched.
 
 **Note what the existing test does and does not cover.** A test asserts every
 `@tacituscustosgames.com` string *in the repository* is the same one. That

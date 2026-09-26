@@ -340,8 +340,14 @@ attribute a machine reads.
 #pt-status    data-status    playing | through | caught
 ```
 
-Absent until there is something to report, and cleared when a new board or
-language is generated.
+On Forge and Pareidolia, absent until there is something to report and cleared
+when a new board or language is generated. **Patrol always carries one**, and
+that is right rather than an oversight — `playing` is a real state, so a reader
+polling `#pt-status` gets an answer from the first paint instead of having to
+tell "not started" from "no attribute". `llms.txt` said all three were absent
+until reported, which was false for Patrol from the day the attribute shipped;
+it now states the exception. If a fourth machine is added, decide which of the
+two shapes it has and say so in the same commit.
 
 **The point is that it is not prose.** A verdict sentence is the single most
 rewordable thing on a page — *Correct.* could become *That matches.* in a copy
