@@ -803,6 +803,46 @@ advertises actually resolves, and that every `.html` file in the root is listed.
 A page that exists and is missing from the sitemap is the same rot in the other
 direction.
 
+### `lab/`, and why it is published rather than hidden
+
+`lab/spectator.html` is a prototype: the real `pareidolia.js` loaded unmodified,
+plus a narrator that writes one plain sentence per move for someone watching.
+
+**The narrator is given no source but the player's own view.** It observes the
+rendered probe list and reads the probe string, the board's yes or no, and the
+budget line — all already drawn. It cannot report how many rules still fit
+because it has no way to find out. That is a guarantee by construction rather
+than by care, and it is the whole design: **if it ever reaches into
+`pareidolia.js` for state, the guarantee is gone.** The file says so at the top
+of the script.
+
+This was asked for by the first human spectator to give feedback, whose example
+sentence — *"Two rules still fit; this test distinguishes them"* — is exactly
+the survivor count the board withholds until the round is over. So the literal
+request could not be built, and the useful rule fell out of trying: **restate
+what is on the page; never compute anything the player would have to work out.**
+The same rule as `previewMoves()` in Patrol, which may use only what the player
+already knows.
+
+**A password would not have helped, and this is worth keeping.** Access control
+decides who gets into a page; a model reading that page is already inside it.
+Nothing rendered can be shown to one reader and hidden from another when both
+are reading the same DOM.
+
+**`lab` was on `_config.yml`'s exclude list for about an hour.** The reasoning
+was that a served prototype can be found and played before anyone decided it was
+ready. It lost to a better one: a prototype nobody outside can reach cannot be
+tested by the person who asked for it. So it is served, and carries its own
+warning instead — a stated limit over a hidden one, which is this site's trade
+everywhere else. It is absent from the sitemap, disallowed in `robots.txt`,
+`noindex`, and nothing links to it; a test asserts all four and that the banner
+still renders.
+
+**The banner claimed it was "not served from tacituscustosgames.com" right up
+until it was.** Publishing it made that sentence false, and it was corrected in
+the same commit rather than the next one. It is the repository's own recurring
+defect in miniature: the claim above the thing being wider than the thing.
+
 ### `errata.html`
 
 A list of **errors rather than features**, on its own page. It was a section of

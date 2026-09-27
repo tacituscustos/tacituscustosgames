@@ -8,11 +8,17 @@
 # _config.yml excludes them from the build — so the rules below are belt and
 # braces in case that is ever undone. Nothing in them is secret either way: the
 # repository is public and they are readable there.
+#
+# /lab/ is different from those three: it IS served, because a prototype nobody
+# can reach cannot be tested. It is asked away from crawlers because it is
+# unfinished rather than because it is private, and it carries a warning on the
+# page saying so. It is deliberately absent from the sitemap.
 
 User-agent: *
 Allow: /
 Disallow: /docs/
 Disallow: /CLAUDE.md
 Disallow: /worker/
+Disallow: /lab/
 
 Sitemap: https://tacituscustosgames.com/sitemap.xml
