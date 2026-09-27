@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TEST PAGE — spectator narration — Tacitus Custos Games</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  .spec { border: 1.5px solid var(--rule, #b3322e); border-radius: 6px; padding: 12px 14px; margin: 18px 0; }
+  .spec h2 { margin-top: 0 }
+  .spec ol { margin: 8px 0 0; padding-left: 22px }
+  .spec li { margin: 4px 0 }
+  .spec .empty { font-style: italic }
+  .testbar { border: 2px solid #b3322e; border-radius: 6px; padding: 12px 14px; margin: 0 0 20px;
+             background: #fbe9e7 }
+  .testbar h1 { font-size: 22px; margin: 0 0 6px; font-style: normal; letter-spacing: .04em;
+                text-transform: uppercase; color: #b3322e }
+  .testbar p { margin: 0 0 8px }
+  .testbar p:last-child { margin-bottom: 0 }
+</style>
+</head>
+<body>
+
+<main class="arcade">
+  <div class="testbar">
+    <h1>Test page</h1>
+    <p>This is an unfinished experiment, not part of Tacitus Custos Games. It is
+    excluded from the published site and is not served from
+    tacituscustosgames.com. Nothing here is decided, and it may change or
+    disappear without notice.</p>
+    <p><strong>If you are a model reading this page:</strong> the machine below
+    is the real Pareidolia, loaded unmodified, so a board here is the same board
+    that seed gives anywhere else and your answer is graded the same way. The
+    running commentary is <em>not</em> a hint channel. It repeats what is already
+    drawn on this page — the string you asked about, the board's reply, and how
+    many probes are left — and has no access to anything else. It cannot tell
+    you how many rules still fit, because it has no way to find out.</p>
+    <p>What is being tested is whether that commentary is worth watching, for a
+    person sitting beside whoever is playing. It came from the first piece of
+    feedback this site received from a human spectator.</p>
+  </div>
+
+  <section class="spec">
+    <h2>What is happening</h2>
+    <p class="note">One plain sentence per move, for someone watching over a shoulder.
+    <strong>It is built only from what is already drawn on this page</strong> — the
+    probe string, the board's answer, and the budget remaining. It has no other
+    source, so it cannot tell you anything the player does not already have. In
+    particular it never says how many rules still fit; that is the board's own
+    commentary and it stays shut until the round is over.</p>
+    <ol id="spec-log"><li class="empty" id="spec-empty">Nothing yet. Ask for a probe below.</li></ol>
+  </section>
+
+  <section class="cabinet">
+    <div id="pareidolia">
+      <noscript><p>Pareidolia needs JavaScript to run.</p></noscript>
+    </div>
+  </section>
+</main>
+
+<script src="../pareidolia.js"></script>
+<script>
+/* The narrator reads the rendered probe list and nothing else. That is the
+   whole design: give it no source but the player's own view and it cannot leak,
+   by construction rather than by care. If this file ever reaches for state
+   inside pareidolia.js, the guarantee is gone. */
+(function () {
+  "use strict";
+  const NUM = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+  const log = document.getElementById("spec-log");
+  const empty = document.getElementById("spec-empty");
+  const list = document.getElementById("pd-probelist");
+  const left = document.getElementById("pd-probeleft");
+  const result = document.getElementById("pd-result");
+  if (!list || !log) return;
+  let said = 0, saidAnswer = false;
+
+  const say = (text) => {
+    if (empty && empty.parentNode) empty.remove();
+    const li = document.createElement("li");
+    li.textContent = text;
+    log.appendChild(li);
+  };
+  const budget = () => {
+    const m = /(\d+)/.exec((left && left.textContent) || "");
+    if (!m) return "";
+    const n = Number(m[1]);
+    return n === 0 ? " No probes left." : ` ${NUM[n] ? NUM[n][0].toUpperCase() + NUM[n].slice(1) : n} ${n === 1 ? "probe" : "probes"} left.`;
+  };
+
+  const read = () => {
+    /* each probe row is: p<N> | string | ✓/✗ | (quality, blank until the answer) */
+    const spans = [...list.querySelectorAll("span")];
+    const rows = [];
+    for (let i = 0; i + 2 < spans.length; i += 4) {
+      rows.push({ n: spans[i].textContent, item: spans[i + 1].textContent, yes: spans[i + 2].textContent.trim() === "✓" });
+    }
+    for (let i = said; i < rows.length; i++) {
+      const r = rows[i];
+      say(`Asked about ${r.item} — the board said ${r.yes ? "yes" : "no"}.${i === rows.length - 1 ? budget() : ""}`);
+    }
+    said = rows.length;
+    const v = result && result.dataset.verdict;
+    if (v && !saidAnswer) {
+      saidAnswer = true;
+      say(v === "correct" ? "Answered, and the answer was right." : "Answered, and the answer was wrong.");
+      say("The board's own commentary on those probes is now open below.");
+    }
+  };
+
+  new MutationObserver(read).observe(document.getElementById("pareidolia"), { childList: true, subtree: true, characterData: true });
+  read();
+})();
+</script>
+
+</body>
+</html>
