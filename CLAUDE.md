@@ -829,6 +829,15 @@ decides who gets into a page; a model reading that page is already inside it.
 Nothing rendered can be shown to one reader and hidden from another when both
 are reading the same DOM.
 
+**The narration sits with the probe readout, not at the top of the page.** It is
+authored above the cabinet so it exists whatever happens, then moved next to
+`#pd-probelist` once the machine has mounted. A spectator is watching one thing
+— the probe going out and the answer coming back — and a panel at the top makes
+them scroll between the two halves of the same moment. This is safe because
+`pareidolia.js` writes its template into `#pareidolia` once, at mount, and never
+again: a node moved in there survives new boards, and a test checks it still
+does. Measured at 234px from the Ask button.
+
 **`lab` was on `_config.yml`'s exclude list for about an hour.** The reasoning
 was that a served prototype can be found and played before anyone decided it was
 ready. It lost to a better one: a prototype nobody outside can reach cannot be

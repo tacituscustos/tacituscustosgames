@@ -73,6 +73,14 @@
   const log = document.getElementById("spec-log");
   const empty = document.getElementById("spec-empty");
   const list = document.getElementById("pd-probelist");
+  /* Authored above the cabinet so it exists whatever happens, then moved to sit
+     directly under the probe readout. A spectator is watching one thing — the
+     probe going out and the answer coming back — and a panel at the top of the
+     page makes them scroll between the two halves of the same moment.
+     pareidolia.js writes its template into #pareidolia once, at mount, and
+     never again, so a node moved in here stays put across new boards. */
+  const panel = document.querySelector(".spec");
+  if (panel && list && list.parentNode) list.parentNode.insertBefore(panel, list.nextSibling);
   const left = document.getElementById("pd-probeleft");
   const result = document.getElementById("pd-result");
   if (!list || !log) return;
