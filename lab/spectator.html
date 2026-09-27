@@ -46,7 +46,8 @@
   <section class="spec">
     <h2>What is happening</h2>
     <p class="note" id="spec-lead">One plain sentence per move, for someone watching
-    over a shoulder. It is deliberately thin — the rule it follows is below.</p>
+    over a shoulder. It stays thin while the round is on, and explains the whole
+    board once it is over. The rule it follows is below.</p>
     <ol id="spec-log"><li class="empty" id="spec-empty">Nothing yet. Ask for a probe below.</li></ol>
     <p class="note" id="spec-rule"><strong>It is built only from what is already
     drawn on this page</strong> — the probe string, the board's answer, and the
@@ -118,9 +119,47 @@
     if (v && !saidAnswer) {
       saidAnswer = true;
       say(v === "correct" ? "Answered, and the answer was right." : "Answered, and the answer was wrong.");
-      say("The board's own commentary on those probes is now open below.");
+      explain();
     }
   };
+
+  /* The round is over, so nothing here can spoil it: the board has already put
+     the rule, the verdict and the probe commentary on the page. Everything
+     below is still restatement — it parses what is rendered and computes
+     nothing — but it parses PROSE, which this site's own rule calls the most
+     rewordable thing on a page. So it fails closed: if the marker it looks for
+     is not found, it says less rather than guessing. A test asserts the marker
+     still exists in pareidolia.js, so a reword breaks the test instead of
+     quietly emptying this panel. */
+  const RULE_MARK = "The rule was:";
+  function explain() {
+    const said = (result && result.textContent) || "";
+    const m = said.match(/The rule was:\s*([^.]+)\./);
+    if (m) {
+      say(`There was a pattern, and it was this: ${m[1].trim()}. Every tick and cross on the board follows from it.`);
+    } else if (/labels were random|No rule in the language fits/i.test(said)) {
+      say("There was no pattern. The ticks and crosses were decided by a coin toss, so there was nothing to find \u2014 and saying so was the right answer.");
+    }
+    /* how the probes actually did, from the column the board just filled in */
+    /* the board's own words for what a question was worth, put into plain ones */
+    const PLAIN = new Map([
+      ["splits survivors", "narrowed the field"],
+      ["tests all survivors at once", "tested every idea still standing, all at once"],
+      ["tests the last hypothesis", "checked the one idea left"],
+    ]);
+    const spans = [...list.querySelectorAll("span.quality")].map((x) => x.textContent.trim()).filter(Boolean);
+    if (spans.length) {
+      const kinds = new Map();
+      for (const t of spans) {
+        const k = t.split(":")[0].trim();
+        const plain = PLAIN.get(k) || k;
+        kinds.set(plain, (kinds.get(plain) || 0) + 1);
+      }
+      const parts = [...kinds].map(([k, n]) => `${n} ${k}`);
+      say(`Of the questions asked, ${parts.join("; ")}.`);
+    }
+    say("Half these boards have a pattern and half do not, decided by a coin. When there is one, the game has already checked that the right questions can always find it. When there is not, no promise like that is possible \u2014 a wrong idea can survive every question you are allowed to ask. That is why calling a board patternless is a judgement rather than a certainty, and why getting it wrong is not the same as playing badly.");
+  }
 
   new MutationObserver(read).observe(document.getElementById("pareidolia"), { childList: true, subtree: true, characterData: true });
   read();

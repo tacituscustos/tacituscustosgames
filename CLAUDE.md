@@ -838,6 +838,26 @@ them scroll between the two halves of the same moment. This is safe because
 again: a node moved in there survives new boards, and a test checks it still
 does. Measured at 234px from the Ask button.
 
+**Once the round is over it explains the board in plain English**, because the
+first human spectator's point was that knowing *what* is being done helped even
+without following *how*. It names whether there was a pattern and what it was,
+says what each question turned out to be worth, and says why calling a board
+patternless is a judgement rather than a certainty — so a wrong answer reads as
+a real call rather than bad play.
+
+Nothing here can spoil anything: it runs only after `state.answer` is set, by
+which point the board has already put the rule, the verdict and the probe
+commentary on the page. It is still restatement, and it still computes nothing.
+
+**But it parses prose, and prose is the most rewordable thing on a page** — this
+repository's own rule, from the `data-verdict` work. So it fails closed: no
+marker found, less said, never a guess. The marker is `"The rule was: "` in
+`pareidolia.js`, and **a test asserts that string still exists there**, so a
+reword breaks a test instead of quietly emptying the panel. It also translates
+the board's vocabulary rather than repeating it — *splits survivors* becomes
+*narrowed the field* — through a `Map`, and a test greps the whole explanation
+for jargon.
+
 **The rule is stated after the log, not before it.** The panel opens with one
 orienting line — the narration is deliberately thin, the rule it follows is
 below — then the sentences, then the rule itself. Putting the whole explanation
