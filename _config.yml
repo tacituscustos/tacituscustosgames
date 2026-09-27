@@ -8,6 +8,14 @@
 # It does not make them private. The repository is public and anything
 # committed to it is readable on GitHub.
 #
+# `lab` is prototypes. It is excluded for a different reason from the others:
+# not because it is working material, but because a prototype that is served is
+# a prototype that can be found, linked and played before anyone decided it was
+# ready. Excluding it means a half-built machine cannot reach a player by
+# accident, while still being committed, versioned and reviewable here. Note
+# what this does NOT solve: a page cannot hide anything from a model that is
+# reading it, whoever else is or is not allowed in. See lab/spectator.html.
+#
 # Setting `exclude` replaces Jekyll's default exclude list rather than adding to
 # it. That is harmless here: the defaults name Gemfile, node_modules/ and vendor
 # paths, none of which this repository has, and none of which it will have while
@@ -15,5 +23,6 @@
 
 exclude:
   - docs
+  - lab
   - CLAUDE.md
   - worker
