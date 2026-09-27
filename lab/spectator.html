@@ -45,13 +45,16 @@
 
   <section class="spec">
     <h2>What is happening</h2>
-    <p class="note">One plain sentence per move, for someone watching over a shoulder.
-    <strong>It is built only from what is already drawn on this page</strong> — the
-    probe string, the board's answer, and the budget remaining. It has no other
-    source, so it cannot tell you anything the player does not already have. In
-    particular it never says how many rules still fit; that is the board's own
-    commentary and it stays shut until the round is over.</p>
+    <p class="note" id="spec-lead">One plain sentence per move, for someone watching
+    over a shoulder. It is deliberately thin — the rule it follows is below.</p>
     <ol id="spec-log"><li class="empty" id="spec-empty">Nothing yet. Ask for a probe below.</li></ol>
+    <p class="note" id="spec-rule"><strong>It is built only from what is already
+    drawn on this page</strong> — the probe string, the board's answer, and the
+    budget remaining. It has no other source, so it cannot tell you anything the
+    player does not already have. In particular it never says how many rules still
+    fit: that is the board's own commentary, and it stays shut until the round is
+    over. Anything cleverer would be handing the player the answer, since a model
+    reading this page reads the narration too.</p>
   </section>
 
   <section class="cabinet">

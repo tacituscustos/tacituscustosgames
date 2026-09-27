@@ -838,6 +838,15 @@ them scroll between the two halves of the same moment. This is safe because
 again: a node moved in there survives new boards, and a test checks it still
 does. Measured at 234px from the Ask button.
 
+**The rule is stated after the log, not before it.** The panel opens with one
+orienting line — the narration is deliberately thin, the rule it follows is
+below — then the sentences, then the rule itself. Putting the whole explanation
+first made a spectator read a paragraph before reaching the thing they came to
+watch; putting it last with nothing at the top would let three sparse lines read
+as a broken feature. The lead exists to stop that reading, and the rule stays
+because a thin narration that never says why it is thin looks like a limitation
+rather than a choice.
+
 **`lab` was on `_config.yml`'s exclude list for about an hour.** The reasoning
 was that a served prototype can be found and played before anyone decided it was
 ready. It lost to a better one: a prototype nobody outside can reach cannot be
