@@ -250,3 +250,35 @@ And one that is genuinely broken rather than merely alarming:
 - **Repo visibility.** Pages on a private repo needs a paid plan, and even then
   the published *site* stays public — access-controlled Pages is Enterprise
   only. Keeping this repo public is what keeps the site free and online.
+
+## A change that appears not to have landed
+
+Every machine file is served under a fixed name forever — `forge.js` is always
+`forge.js`. There is no build step, so there is no content hash, and **nothing
+tells a cache that the file is different from the one it already has.** A merge
+can go green, Pages can rebuild, the HTML can update, and the browser can still
+run yesterday's script inside today's page. The symptom is the worst kind: the
+site looks *almost* right, so it reads as a bug in the change rather than a
+stale asset.
+
+This cost a confused half hour on 17 October 2026. The Language Forge control
+reorder was correct on `main`, correct in the served file, and correct in a
+private tab — and wrong in the tab that had been open all morning.
+
+**Check it in this order, because each step rules out the one below:**
+
+1. Open the page in a private window. Right there means only your own browser
+   was behind, and nothing else needs doing.
+2. Fetch the script itself — `tacituscustosgames.com/forge.js` — and look for
+   the change. Right there, wrong in a normal tab, same conclusion.
+3. Wrong in the script too: the edge is holding it. Cloudflare → Caching →
+   Configuration → **Purge Everything**. The site is small; re-warming costs
+   nothing.
+
+A Cache Rule giving `/*.js` a short edge TTL makes step 3 unnecessary and is
+worth setting once.
+
+**Do not version the script tag** (`forge.js?v=7`). It works, and it is a number
+maintained by hand beside the file it describes — a second source of truth with
+no checker on it, which is the rot this repository keeps deleting. The same
+objection that removed the page count from the `sitemap.xml` note.
