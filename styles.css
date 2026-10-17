@@ -405,6 +405,22 @@ textarea:focus-visible {
   letter-spacing: 0.03em;
 }
 
+/* The one link to lab/. Red because it leaves the finished site for something
+   unfinished, and the colour is the warning rather than decoration — the same
+   accent the Tollbooth's decline button and the test page's own banner use. It
+   is deliberately not styled like the .also nav beside it: those go to
+   machines that are done. */
+.labnote {
+  margin: 22px 0 0;
+  padding: 10px 12px;
+  border: 1.5px solid var(--accent);
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.labnote a { color: var(--accent); }
+.labnote a:hover { border-bottom-color: var(--accent); }
+
 .cf-head { margin-top: 18px; }
 .cf .langname {
   font-size: 40px;

@@ -913,14 +913,33 @@ was that a served prototype can be found and played before anyone decided it was
 ready. It lost to a better one: a prototype nobody outside can reach cannot be
 tested by the person who asked for it. So it is served, and carries its own
 warning instead — a stated limit over a hidden one, which is this site's trade
-everywhere else. It is absent from the sitemap, disallowed in `robots.txt`,
-`noindex`, and nothing links to it; a test asserts all four and that the banner
-still renders.
+everywhere else. It is absent from the sitemap, disallowed in `robots.txt`, and
+`noindex`.
 
-**The banner claimed it was "not served from tacituscustosgames.com" right up
-until it was.** Publishing it made that sentence false, and it was corrected in
-the same commit rather than the next one. It is the repository's own recurring
-defect in miniature: the claim above the thing being wider than the thing.
+**It is reachable now, from exactly one place.** `pareidolia.html` carries a
+`.labnote` below the cabinet: red, outlined in the accent, opening *Test
+feature* and saying the thing may change or disappear. Red is the warning rather
+than decoration — the same accent the Tollbooth's decline button uses — and it
+is deliberately **not** styled like the `.also` nav beside it, because those
+links go to machines that are finished. A test asserts the colour matches
+`--accent` rather than merely being some red.
+
+**One link, and the count is asserted rather than assumed.** A test greps every
+root `.html` for `lab/spectator` and requires the list to be exactly
+`pareidolia.html` — so a second link added later fails rather than quietly
+widening the door. `llms.txt` still does not mention it: the prototype is for
+someone watching a model play, not for a model arriving alone, and pointing
+agents at an unfinished page is a different decision from pointing a person at
+one.
+
+**This page's own label has had to catch up with its status twice.** It said
+*"not served from tacituscustosgames.com"* right up until it was published, and
+*"nothing links to it"* right up until `pareidolia.html` linked to it. Both
+times the change made the sentence false, and both times it was corrected in
+the same commit rather than the next one. It is the repository's recurring
+defect in miniature — the claim above the thing being wider than the thing —
+and the only reason it has not shipped from here is that the status change and
+the sentence were treated as one edit rather than two.
 
 ### `errata.html`
 
