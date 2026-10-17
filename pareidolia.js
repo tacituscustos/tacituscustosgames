@@ -339,13 +339,22 @@
       </section>
 
       <h3>Answer</h3>
-      <p class="note">Either call it noise, or label all ten and submit as a rule. A rule answer counts only if all ten are right.</p>
+      <!-- All three ways to answer are named here, before the ten rows, because
+           the fast one used to go unmentioned until after you had clicked them.
+           The controls themselves are NOT reordered: #pd-tests is the question
+           rather than merely an input, and "Submit as rule" acts on the labels
+           clicked in it, so the two belong next to each other. What was wrong
+           was the sentence, not the layout. -->
+      <p class="note">Three ways to answer. Call it noise; or label all ten below
+      and submit as a rule; or, fastest, write the whole answer in one line in the
+      box underneath — the same form the board's own text prints. A rule answer
+      counts only if all ten are right.</p>
       <div id="pd-tests"></div>
       <div class="ctl" style="margin-top:12px">
         <button type="button" id="pd-submit">Submit as rule</button>
         <button type="button" class="red" id="pd-noise">It's noise</button>
       </div>
-      <p class="note" style="margin-top:12px">Or write the whole answer the way the board's own text asks for it — <code>NOISE</code>, or <code>RULE</code> and a mark per string in order (✓/✗, Y/N, 1/0 or +/-).</p>
+      <p class="note" style="margin-top:12px">The whole answer in one line, the way the board's own text asks for it — <code>NOISE</code>, or <code>RULE</code> and a mark per string in order (✓/✗, Y/N, 1/0 or +/-). This fills in the ten above for you.</p>
       <div class="ctl">
         <input type="text" id="pd-bulk" aria-label="Whole answer" placeholder="RULE ✓✗✓✓✗✗✓✗✓✓">
         <button type="button" id="pd-bulkgo">Answer</button>
