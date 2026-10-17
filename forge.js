@@ -793,14 +793,11 @@
     <h2>Language Forge</h2>
     <p class="note" style="margin-top:6px">A whole language out of a seed — sounds, grammar, words — and a puzzle in it. Every stem the task needs is checked to be recoverable from the translated sentences before the puzzle is shown; its affixes you work out yourself. Every language on this page has never existed before.</p>
 
-    <div class="cf-head">
-      <div class="langname" id="cf-name"></div>
-      <div class="ipa" id="cf-nameipa"></div>
-      <p class="note" id="cf-tally"></p>
-      <div class="spec" id="cf-spec"></div>
-    </div>
-
-    <h3>The puzzle</h3>
+    <!-- Choosing a board comes first and in one block, the way Patrol and
+         Pareidolia already open: seed, then difficulty, then style. These five
+         buttons all regenerate, so they belong with "which puzzle am I getting"
+         rather than inside the puzzle being read. They sat below <h3>The
+         puzzle</h3> until the flow was looked at across all three machines. -->
     <div class="ctl" style="margin-bottom:12px" role="group" aria-label="Difficulty">
       <span class="note">Difficulty</span>
       <button type="button" id="cf-bank">Easy</button>
@@ -815,6 +812,14 @@
     </div>
     <p class="note" id="cf-stylenote"></p>
 
+    <div class="cf-head">
+      <div class="langname" id="cf-name"></div>
+      <div class="ipa" id="cf-nameipa"></div>
+      <p class="note" id="cf-tally"></p>
+      <div class="spec" id="cf-spec"></div>
+    </div>
+
+    <h3>The puzzle</h3>
     <div id="cf-puzzleview"></div>
 
     <p class="note" style="margin-top:18px">The same thing as plain text, to carry somewhere else. Nothing below the fold is in it.</p>

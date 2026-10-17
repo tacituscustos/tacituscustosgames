@@ -385,6 +385,32 @@ together, or one of them is lying.
 prose*, and a test asserts each machine still sets what that section names. If
 a vocabulary ever grows, both change in the same commit.
 
+### Every machine opens the same way: choose, then read
+
+All three now lead with one block that answers *which puzzle am I getting* —
+seed, then tier, then (in Forge) sentence style — followed by what the seed
+produced, and only then the thing to be read. Patrol and Pareidolia were
+already like this. Forge was not: its Difficulty and Sentences rows sat **below
+the `<h3>The puzzle</h3>` heading**, so five buttons that all regenerate the
+board lived inside the puzzle a solver was reading, and the page asked you to
+scroll back up to change your mind.
+
+Measured after the move, as y-offsets on a 360px viewport: seed 869, difficulty
+1058, style 1179, language name 1287, puzzle 1483 — monotonic, and a test
+asserts that ordering rather than the pixel values, since the numbers move with
+any copy edit and the order should not.
+
+**Nothing was renamed.** `llms.txt` treats element ids as a contract, so a
+reorder is safe where a rename is not; the suite checks every id that file names
+still resolves on the page that owns it.
+
+The remaining two, not yet done and noted so they are not rediscovered:
+Pareidolia's **Answer** section puts the whole-answer field *below* the Submit
+and noise buttons, so the fast path reads as an afterthought to the slow one;
+and Patrol has *New board* and *Restart* adjacent in the top bar — two
+different kinds of discarding, side by side — with the flag toggle, which is
+used during play, sitting above the grid rather than beside it.
+
 ### Language Forge: the puzzle/answer split
 
 `forge.js` is in two halves, and the boundary is a correctness property.
