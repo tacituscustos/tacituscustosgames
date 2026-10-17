@@ -404,12 +404,27 @@ any copy edit and the order should not.
 reorder is safe where a rename is not; the suite checks every id that file names
 still resolves on the page that owns it.
 
-The remaining two, not yet done and noted so they are not rediscovered:
-Pareidolia's **Answer** section puts the whole-answer field *below* the Submit
-and noise buttons, so the fast path reads as an afterthought to the slow one;
-and Patrol has *New board* and *Restart* adjacent in the top bar — two
-different kinds of discarding, side by side — with the flag toggle, which is
-used during play, sitting above the grid rather than beside it.
+**Pareidolia's Answer section was the second of these, and the fix was not the
+one it looked like.** The complaint was that the whole-answer field sits below
+the Submit and noise buttons, so a reader clicks ten rows before discovering
+they could have typed one line. The obvious remedy is to move the field up, and
+it is wrong: `#pd-tests` is **the question** — the ten strings being asked
+about — rather than merely an input, and *Submit as rule* acts on the labels
+clicked in it, so putting an input above the strings it answers, or separating
+the button from the list it submits, both read worse.
+
+What was actually wrong was the sentence. The section opened *"Either call it
+noise, or label all ten and submit as a rule"* — naming **two** ways to answer
+when there are three. The fast path was not badly placed, it was unannounced.
+All three are now named before the ten rows, with the written one marked
+fastest, and no control moved. **Reordering would have been a plausible change
+that fixed nothing**, which is worth remembering the next time a layout
+complaint has an obvious remedy.
+
+The last one is still open: Patrol has *New board* and *Restart* adjacent in the
+top bar — two different kinds of discarding, side by side — with the flag
+toggle, which is used during play, sitting above the grid rather than beside
+it.
 
 ### Language Forge: the puzzle/answer split
 
