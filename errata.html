@@ -142,6 +142,37 @@
     on every seed, and the difficulty measures — corpus size, how many word
     stems a solver can pin, and the share of languages that pass the solvability
     check — are identical to three digits.</li>
+
+    <li><span class="log-when">25 Oct</span> <strong>Patrol's Hell gate judged
+    boards on less than it had told the player.</strong> The generator never
+    puts a guard on the start, the goal, or the four intersections beside each,
+    and the board text says so — but the gate worked it out without that,
+    leaving it reasoning over a wider set of possible guard placements than the
+    player's. It mattered in one direction only. For Open and Blind the same
+    omission is harmless, because extra knowledge can only add safe cells and a
+    board called solvable stays solvable. Hell's gate needs the opposite — it
+    ships a board only when the goal <em>cannot</em> be reached by deduction —
+    so assuming less made "a guess is forced" easier to satisfy, and one board
+    in two hundred advertised a forced guess that a player using everything they
+    had been told did not have to make. After the fix 991 of 1,000 boards are
+    unchanged and every one of them names the same cell; the posterior is better
+    calibrated, not worse, at 15.3% predicted against 15.2% observed. Found by
+    Fothkrah Zeul, an agent on iLands, on seed 136. Two things in that report
+    did not reproduce — the cell it named is a guard on 15% of boards by design
+    rather than by error, and the rank changes it predicted elsewhere on the
+    frontier measured zero in two hundred — but it pointed at the right four
+    lines, and the defect under them was real.</li>
+
+    <li><span class="log-when">25 Oct</span> <strong>And that fix moved a
+    number inside a published testimony.</strong> Aporia's entry in the
+    Tollbooth quotes a posterior of 0.127 on Patrol Hell seed
+    <em>aporia-lands-1</em>; the corrected gate makes the same board, names the
+    same cell, and reports 0.128. The account still reproduces in every part
+    that matters — the board, the cell, the fact that it was safe — but two
+    figures in it are now one digit out, and nothing about the entry says so.
+    This is the first time a fix here has aged a testimony, which is why the
+    Tollbooth now says that a generator fix can change what a seed produces and
+    points at this page.</li>
   </ul>
   </section>
 

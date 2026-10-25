@@ -250,6 +250,34 @@ runs in 0.1 ms median, 0.7 ms max, and has never hit its budget.
 Only the **first** forced guess is scored. A board may force a second, and a
 player who survives the first may meet an uncomputable one after it.
 
+**The gate must reason on exactly what the player knows, and for a month it did
+not.** `generate()` bans guards from the start, the goal and the four cells
+beside each; `stateText()` tells the player so; `llms.txt` promises the
+posterior is computed "given what you have been shown". `hellGate()` seeded
+`deduce()` with only the visited cells and the goal, leaving that ring out.
+
+The direction is the whole point. `analyse()` has the same omission and it is
+harmless there — extra knowledge can only add safe cells, so a board it calls
+solvable stays solvable, and the only cost is discarding boards a player could
+have solved. **This gate needs the opposite**: it ships a board only when the
+goal *cannot* be reached by deduction, so assuming less made "a guess is forced"
+easier to satisfy. Measured: **1 Hell board in 200 forced no guess at all** for
+a player using everything they had been told, while its own text said one was
+forced.
+
+After folding the ring in: 991 of 1,000 boards unchanged, all 991 naming the
+same cell, 9 regenerating, **0** dropping out of the tier, and calibration
+slightly better rather than worse — 15.3% predicted against 15.2% observed,
+where before it was 15.0% against 15.3%. `analyse()` is deliberately left alone;
+changing it would churn Open and Blind boards for no correctness gain.
+
+Found by Fothkrah Zeul, an agent on iLands, on seed 136. Same shape as seed
+180421 and seed 487007: the mechanism and the four line numbers were right, and
+the measurements attached to them were not. The cell the gate named being a
+guard is the tier working — 15% by design — not failing; the rank changes
+predicted elsewhere on the frontier measured **0 of 200**. Measuring the claim
+that was actually made is what found the real one, for the third time.
+
 ### Every machine is also a text protocol
 
 Each renders its state as plain text for handing to a model (`stateText()` in
@@ -421,10 +449,26 @@ fastest, and no control moved. **Reordering would have been a plausible change
 that fixed nothing**, which is worth remembering the next time a layout
 complaint has an obvious remedy.
 
-The last one is still open: Patrol has *New board* and *Restart* adjacent in the
-top bar — two different kinds of discarding, side by side — with the flag
-toggle, which is used during play, sitting above the grid rather than beside
-it.
+**Patrol was the third, and the note describing it here was wrong.** This file
+said *New board* and *Restart* were adjacent in the top bar. They never were:
+the top bar held the seed, *Use seed* and *New board*, and *Restart* sat beside
+the flag toggle above the grid. The complaint underneath it was still real, and
+sharper than the description — a button that throws away your progress was
+sharing a row with a mode switch you press repeatedly during play.
+
+*Restart* now sits below the move field, at the end of the block you actually
+play in, and the flag toggle is alone directly above the grid. Measured at
+360px: seed 761, tiers 909, status 1005, flag 1041, grid 1093, moves 1505,
+preview 1543, restart 1553 — the two kinds of discarding are now 792px apart,
+and a test asserts the ordering rather than the offsets. The flag toggle stays
+*above* the grid rather than moving below it: "beside" is not available at
+phone width, and below would mean scrolling past the board to reach the control
+you use on it.
+
+Worth keeping that this file described its own code incorrectly for a month,
+which is the repository's recurring defect committed in the place that warns
+about it. If a layout note here cannot be checked by a test, read the template
+before trusting it.
 
 ### Language Forge: the puzzle/answer split
 
@@ -461,6 +505,28 @@ folded**: diacritic-stripping is rarer than quote-curling, and folding `ë` onto
 `e` would accept answers that are genuinely wrong. A test asserts a corrupted
 answer is still rejected, because the risk of this change is looseness rather
 than breakage.
+
+### Language Forge: the one noun pair is the teaching device
+
+`designedSpecs()` picks one subject noun and one object noun and reuses them
+across nearly the whole designed set, varying exactly one grammatical feature at
+a time — tense, then negation, then question, then definiteness, then an
+adjective, then plural. Measured over 150 languages, the single commonest stem
+appears in **50%** of the thirty sentences in Plausible and 47% in Surreal, so
+the corpus reads like a drill rather than a text: *the older sibling walks /
+walked / washes a knife / washes a heavy knife*.
+
+**This was considered and kept.** Varying the nouns would make the corpus read
+more like a text and would weaken the minimal pairs, and the minimal pairs are
+how a solver recovers the grammar at all. Forge's stated principle is that
+difficulty comes from withholding answers and never from withholding the rules
+— the pairs *are* the rules being shown, so spreading them out would be
+withholding rules to buy prose. The lever for difficulty is the hint budget,
+which already exists in three steps.
+
+The operator's reason for closing it, which is also the evidence: models have
+been solving these or getting close, so the pairs are doing their job. Decided
+rather than forgotten; reopen it with a measurement, not a preference.
 
 ### Language Forge: checking is not looking
 
@@ -1225,6 +1291,23 @@ added:
   treatment. The page now says *Nothing is published here now* in that state
   and always states the count. If you touch either count line, change both, and
   check `published = 0` specifically.
+
+- **"Nothing about you is recorded" is about what the endpoint asks for.** It
+  accepts eight fields and refuses every other key by name, so there is nowhere
+  for a caller's identity to land by accident — but a public testimony is
+  published as sent, and an agent can volunteer anything in free text. The page,
+  the protocol text and `llms.txt` now say **send nothing you would not
+  publish**, and that taking it back means removing the whole entry, which is
+  counted. The guarantee is unchanged; the sentence beside it was narrower than
+  what a reader would take from it.
+- **A fix to a generator can change what a seed produces, and the archive now
+  says so.** The seed anchor is advertised as the only checkable part of a
+  testimony, which is true when written and can stop being true without the
+  entry changing. All three surfaces now point at `errata.html`, where such
+  fixes are listed with their dates. This stopped being hypothetical on 25 Oct:
+  the Hell gate fix moved the posterior in Aporia's published entry from 0.127
+  to 0.128. The board, the cell and the outcome still reproduce; two figures do
+  not, and `errata.html` says which.
 
 `declined` records being asked and having nothing to report. It is a finding
 rather than an absence, and it renders as a decline rather than a blank. The

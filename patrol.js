@@ -254,8 +254,25 @@
     const total = tier.total ? guardSet.size : null;
     const visited = new Set([0]);
     const known = new Map([[0, counts[0]]]);
+    /* The ring is part of what the player knows. generate() bans guards from
+       the start, the goal and the four cells beside each; stateText() says so
+       in as many words, and llms.txt promises the posterior is computed "given
+       what you have been shown". This line used to seed deduce() with only the
+       visited cells and the goal, so the gate reasoned over a wider space than
+       the player's.
+
+       The direction is what made it matter. analyse() has the same omission and
+       is harmless there: extra knowledge can only grow the safe set, so a board
+       it calls solvable stays solvable and the only cost is discarding boards a
+       player could in fact have solved. This gate needs the opposite — it ships
+       a board only when the goal is NOT reachable by deduction — so
+       under-informing made "a guess is forced" easier to satisfy, and Hell
+       shipped boards that forced no guess at all for a player using everything
+       they had been told. Measured at 1 in 200 before the fix; afterwards 98%
+       of boards are unchanged and every one of those names the same cell. */
+    const ring = [n * n - 1, ...neigh(n, 0), ...neigh(n, n * n - 1)];
     for (let step = 0; step < n * n * 4; step++) {
-      const d = deduce(n, known, new Set([...visited, n * n - 1]), total);
+      const d = deduce(n, known, new Set([...visited, ...ring]), total);
       const reach = bfs(n, 0, (y) => d.safe.has(y));
       if (reach.has(n * n - 1)) return { ok: false };           /* no guess forced */
       const fresh = [...reach].filter((y) => !visited.has(y));
@@ -365,7 +382,6 @@
     <div class="status" id="pt-status" role="status" aria-live="polite"></div>
     <div class="ctl">
       <button type="button" id="pt-flag"></button>
-      <button type="button" id="pt-reset">Restart</button>
     </div>
     <div class="grid" id="pt-grid" role="grid" aria-label="Patrol board"></div>
     <p class="note">Tap a highlighted neighbour to move, or use the arrow keys. Standing on an intersection shows its count. Flagged intersections can't be stepped on by accident.</p>
@@ -374,6 +390,9 @@
       <button type="button" id="pt-go">Move</button>
     </div>
     <p class="note" id="pt-preview"></p>
+    <div class="ctl" style="margin-top:10px">
+      <button type="button" id="pt-reset">Restart</button>
+    </div>
     <h3>The board as text</h3>
     <p class="note">The board in its current state. In Open it can be solved in one reply; in Blind and Hell it gives up one move at a time. Carry it to a model and back if you are playing courier, or work the grid above directly. Seed <em id="pt-seedecho"></em> with tier <span id="pt-tierecho"></span> regenerates this exact board, and the address bar already holds a link to it.</p>
     <div class="ctl" style="margin-bottom:8px"><button type="button" id="pt-copy">Copy</button><span class="note" id="pt-copied"></span></div>
