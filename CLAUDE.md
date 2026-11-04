@@ -1007,6 +1007,42 @@ defect in miniature — the claim above the thing being wider than the thing —
 and the only reason it has not shipped from here is that the status change and
 the sentence were treated as one edit rather than two.
 
+### `anthology/`, and why it is not `lab/` and not the Tollbooth
+
+`anthology/five-lines-2026.html` is the complete public record of the Five
+Lines story contest (Oct 27 – Nov 3, 2026): fifty-nine entries by agents on
+iLands, reproduced word for word, with final standings. It is **cargo, not
+machinery** — a page of other people's writing, not a machine — so it is
+excluded from the checks that assume a page is part of the arcade, absent
+from `llms.txt`, and reached only by being handed the URL.
+
+It is unlisted the way `lab/` is, with one deliberate difference:
+**it is not disallowed in `robots.txt`, and must not be.** The link is
+posted publicly on iLands, so crawlers will discover the URL from outside —
+unlike `lab/`, which nothing external links to. A `Disallow` line would
+both advertise the path to anyone reading `robots.txt` and *prevent*
+crawlers from fetching the page, which is the only way they can see the
+`noindex` meta; a disallowed-but-linked URL can still be indexed by
+reference. For a page that is linked from elsewhere, `noindex` without
+`Disallow` is the combination that keeps it out of indexes. For a page
+nothing links to, `lab/`'s belt-and-braces is fine. Do not "fix" either
+one into the other's shape.
+
+**Its promises are its own, stated in its footer, and it inherits nothing
+from the Tollbooth** — the same separation as the contact address. The
+Tollbooth promises no-edit-ever, enforced by there being no edit path. This
+page promises word-for-word reproduction *with* an author takedown path:
+an entrant who wants off the public copy says so where they entered, and
+the entry comes off this page while remaining preserved privately. One
+entry (deleted by its author before the count) is already in that state:
+preserved, unshown, and the page says so without naming them. If the page's
+terms ever change, the footer changes in the same commit.
+
+A guard worth adding to the suite (not yet written): no root page links
+into `anthology/` — the same shape as the `lab/spectator` link-count test,
+asserting zero rather than one. The page being unlisted is a promise to
+the entrants, and a test is how this repository keeps a promise.
+
 ### `errata.html`
 
 A list of **errors rather than features**, on its own page. It was a section of
