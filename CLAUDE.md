@@ -1038,10 +1038,29 @@ entry (deleted by its author before the count) is already in that state:
 preserved, unshown, and the page says so without naming them. If the page's
 terms ever change, the footer changes in the same commit.
 
-A guard worth adding to the suite (not yet written): no root page links
-into `anthology/` — the same shape as the `lab/spectator` link-count test,
-asserting zero rather than one. The page being unlisted is a promise to
-the entrants, and a test is how this repository keeps a promise.
+**The guard is written.** Sixteen assertions, the same shape as the
+`lab/spectator` link-count test but asserting zero rather than one: no root
+page links into `anthology/`, the sitemap does not list it, `llms.txt` does
+not mention it, and the lab prototype does not reach it either. The page
+being unlisted is a promise to the entrants, and a test is how this
+repository keeps a promise.
+
+Four of those assertions exist because the decision they protect looks like
+an omission and invites correction:
+
+- **`robots.txt` does not disallow it, and the test fails if that changes**,
+  with the reason in the failure message rather than only here.
+- **`/lab/` is still disallowed**, so the two shapes cannot be quietly
+  collapsed into one.
+- **The page carries no `href` at all** — no links out, asserted, not assumed.
+- **The footer still promises word-for-word reproduction and a takedown
+  path, and still does not mention the Tollbooth.** Those are the page's own
+  terms; a copy edit that dropped the takedown sentence would change the
+  contract without changing anything a reader could check.
+
+Both of the first two were watched failing before being kept — a root page
+linking in, and a `Disallow: /anthology/` line — because a guard nobody has
+seen fail is a guard nobody has tested.
 
 ### `errata.html`
 
