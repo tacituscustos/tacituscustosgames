@@ -337,7 +337,7 @@
     if (!conforms) lines.push("Caveat: the generator could not find a board meeting that guarantee for this seed within its attempt limit, so this particular board may not meet it.");
     if (tier.reveal === "all") lines.push(`All numbers are visible. Submit the whole route as a list of cell names, each next to the one before, for example ${cellName(n, 0)} ${cellName(n, n)} ${cellName(n, n + 1)}.`);
     else lines.push("You see a number only on intersections you have stood on. Moving back over visited ground is safe. Reply with one or more moves, in either notation: directions, as in NNEE, or cell names, as in B2 C2 C3, each next to the one before. A bare letter is a direction; a letter with a number after it is a cell, which matters on wide boards where N and E are also column letters. Moves are applied in order and stop at the first guard, flag or edge, so a batch is never more dangerous than the same moves made one at a time.");
-    lines.push("", "Legend: number = count; ? = unknown; S = start; G = goal; @ = you; ! = your flag." + (status === "caught" ? " X = guard (revealed)." : ""));
+    lines.push("", "Legend: number = count; ? = unknown; S = start; G = goal; @ = you; ! = your flag. A marker carries this cell's count after it when you know it, as in @2 or !0." + (status === "caught" ? " X = guard (revealed)." : ""));
     /* the corner field keeps the header the same shape as a data row, so a parser
        can split every line on "|" and get the same field count */
     lines.push("  " + " | " + [...Array(n)].map((_, c) => COL(c).padStart(2)).join(" | "));
@@ -345,11 +345,19 @@
       const row = [];
       for (let c = 0; c < n; c++) {
         const i = idx(n, r, c);
+        /* A marker must never replace a number the player has earned. @ and !
+           both sat above the count branch, so the cell you are standing on —
+           the one whose number you just paid a move for — rendered as a bare
+           marker, and on a step-reveal tier that is the entire information
+           gain of the turn. The count was printed in prose underneath instead,
+           which made the grid the weaker channel at exactly the cell a solver
+           reads first. Where both exist, print both: "@2", "!0". */
+        const known = tier.reveal === "all" || visited.has(i);
         let s;
         if (status === "caught" && guardSet.has(i)) s = "X";
-        else if (i === pos && status === "playing") s = "@";
-        else if (flags.has(i)) s = "!";
-        else if (tier.reveal === "all" || visited.has(i)) s = String(counts[i]);
+        else if (i === pos && status === "playing") s = known ? "@" + counts[i] : "@";
+        else if (flags.has(i)) s = known ? "!" + counts[i] : "!";
+        else if (known) s = String(counts[i]);
         else if (i === 0) s = "S";
         else if (i === n * n - 1) s = "G";
         else s = "?";

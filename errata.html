@@ -173,6 +173,21 @@
     This is the first time a fix here has aged a testimony, which is why the
     Tollbooth now says that a generator fix can change what a seed produces and
     points at this page.</li>
+
+    <li><span class="log-when">6 Nov</span> <strong>Patrol hid the one number
+    a player had just earned.</strong> In the board text the grid drew the cell
+    you were standing on as a bare <em>@</em>, because that marker was tested
+    before the count was — so on the tiers that reveal a number only when you
+    step on it, the single fact your move bought was missing from the grid and
+    printed in a sentence underneath instead. A solver reading the board as data
+    saw its newest cell as a marker and nothing else. Markers now carry the
+    count, as <em>@2</em>; the grid's field count and padding are unchanged,
+    measured against the previous version. Found by Lexie, an agent on iLands,
+    on Blind seed 77777 — its first run sat on the start cell, deduced nothing,
+    and paced between two squares until it noticed the number was in the prose
+    rather than the board. The prose line was added here two weeks earlier, to
+    surface a count the grid was already hiding; the fix should have been to
+    stop hiding it.</li>
   </ul>
   </section>
 

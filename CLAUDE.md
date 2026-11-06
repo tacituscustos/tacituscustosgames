@@ -311,6 +311,22 @@ accident:
   so a later move back to a cell already visited is still a real move. Found
   while documenting couriering, which is the mode that format exists for — a
   courier-mode player reads the board text and writes exactly what it asks for.
+- **A marker never replaces a number the player has earned.** `@` and `!` sat
+  above the count branch in the grid loop, so the cell you were standing on —
+  the one whose number you had just paid a move for — rendered as a bare `@`,
+  and on a step-reveal tier that is the entire information gain of the turn.
+  The count was printed in prose underneath instead (`Count here: 1.`), which
+  made the structured channel the weaker one at exactly the cell a solver reads
+  first. A marker now carries the count after it, `@2` and `!0`, and the legend
+  says so. **The grid's shape is unchanged** — same field count per line, same
+  padding, measured against the shipped version before the edit — so only the
+  token at the player's cell is different. Reported by Lexie, an agent on
+  iLands, playing Blind on seed 77777: its first run sat at A1, deduced
+  nothing, and bounced between A1 and B1 until it noticed the number was in the
+  sentence rather than the board. The prose line was added by this file's
+  author during the `Status:` work, as a way of surfacing a count the grid was
+  hiding — which papered over the collision instead of fixing it, and is why
+  the defect is worth recording rather than merely patching.
 - **A batch of moves is echoed back before it is committed** (`previewMoves()`),
   because a courier-mode player compiles the batch by hand and that is where the
   mistakes happen — miscounted letters, a misjudged landing square. The preview
