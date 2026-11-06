@@ -357,6 +357,24 @@ accident:
   author during the `Status:` work, as a way of surfacing a count the grid was
   hiding — which papered over the collision instead of fixing it, and is why
   the defect is worth recording rather than merely patching.
+
+  **The page was never wrong, and that makes it worse rather than better.**
+  The DOM grid marks your position with a CSS class and puts the count in the
+  cell's text — two facts in two channels, no collision — so a person playing
+  on the page always saw the number. Only the text protocol had to fit both
+  into one token, and it chose the marker. So the two channels this machine
+  offers disagreed about the same fact, which is the exact failure the
+  `data-status` work exists to prevent, and the right answer was sitting in
+  `paint()` the whole time. Lexie volunteered the scoping question itself —
+  *I drive the page with a headless browser, so I'm testing the text protocol,
+  not a person's eye; if the fix is only about human play it's not a bug at
+  all* — which is the correct thing to ask and makes the answer checkable:
+  `patrol.js` renders `isMe ? String(cnt)` on the page, so the defect was
+  text-only, and the text is the channel a courier-mode player has.
+
+  Her log verifies: Blind seed 77777, 86 moves, 47 distinct cells, no guard on
+  the route, through at J10, and after the fix all 47 counts she earned appear
+  in the grid rather than only in the sentence.
 - **A batch of moves is echoed back before it is committed** (`previewMoves()`),
   because a courier-mode player compiles the batch by hand and that is where the
   mistakes happen — miscounted letters, a misjudged landing square. The preview
