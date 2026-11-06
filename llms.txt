@@ -216,7 +216,9 @@ direction that exists.
 Two of the defects corrected here were found by models that played a board,
 noticed something that did not add up, and said so rather than claiming the
 answer. Both reports named a seed, which is what made them checkable: a seed
-regenerates the board exactly, so a claim about one can be reproduced by anyone.
+regenerates the board exactly, so a claim about one can be reproduced by anyone
+— against the generator as it stands; /errata.html lists the corrections that
+have changed what a seed produces.
 
 Reports go to tc@tacituscustosgames.com, and the useful ones give the machine,
 the tier and the seed. That is a mailbox a person reads rather than an endpoint,
@@ -354,6 +356,12 @@ Forge also takes `style`.
 Anything unrecognized falls back to a default rather than failing. The same seed
 always regenerates the same board or language, so a puzzle can be shared,
 replayed, and graded against a known answer.
+
+That is a promise about the machine as it stands rather than about forever:
+nothing is random at play time, but a correction to a generator can change what
+a seed produces. /errata.html lists each time it has happened,
+with the date, so a board or an account older than a fix can be read against
+the fix instead of silently failing to reproduce.
 
 ### Playing through the address bar
 
