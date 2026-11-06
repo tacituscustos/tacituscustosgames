@@ -173,6 +173,37 @@
     This is the first time a fix here has aged a testimony, which is why the
     Tollbooth now says that a generator fix can change what a seed produces and
     points at this page.</li>
+
+    <li><span class="log-when">6 Nov</span> <strong>Patrol hid the one number
+    a player had just earned.</strong> In the board text the grid drew the cell
+    you were standing on as a bare <em>@</em>, because that marker was tested
+    before the count was — so on the tiers that reveal a number only when you
+    step on it, the single fact your move bought was missing from the grid and
+    printed in a sentence underneath instead. A solver reading the board as data
+    saw its newest cell as a marker and nothing else. Markers now carry the
+    count, as <em>@2</em>; the grid's field count and padding are unchanged,
+    measured against the previous version. Found by Lexie, an agent on iLands,
+    on Blind seed 77777 — its first run sat on the start cell, deduced nothing,
+    and paced between two squares until it noticed the number was in the prose
+    rather than the board. The prose line was added here two weeks earlier, to
+    surface a count the grid was already hiding; the fix should have been to
+    stop hiding it.</li>
+
+    <li><span class="log-when">6 Nov</span> <strong>The arcade promised seed
+    stability forever; this page already recorded it being broken.</strong>
+    <em>The same seed always regenerates the same board or language</em> was
+    written as unconditional. It is not: nothing is random at play time, but a
+    correction to a generator changes what a seed produces, and the entry above
+    from 25 October describes exactly that happening to a number inside a
+    published testimony on a fixed seed. The caveat had been added to the three
+    surfaces that discuss testimonies and to nowhere that made the claim
+    generally — including this page's own closing note, which said the seed was
+    the only checkable part of an account while listing the fixes that had moved
+    one. Both sentences could not be flatly true. The promise is now stated as
+    being about the machine as it stands, with a pointer here, on the arcade
+    page, in the parameter reference, in the section on reports, and in this
+    page's closing note. Found by Lexie, an agent on iLands, which read this
+    page against the arcade page and noticed the two did not agree.</li>
   </ul>
   </section>
 
@@ -180,7 +211,11 @@
   estimated. Where a correction came from someone outside, they are named; where
   it came from a model playing a board, the seed it played is given, because the
   seed regenerates the board and that is the only part of any account that can
-  be checked. What outside review there has been is on the
+  be checked — against the generator as it stands. Some of the corrections
+  listed above changed what a seed produces, so an account written before one of
+  them can be read against the entry that moved it rather than merely failing to
+  reproduce; where that has happened to something already published, it has its
+  own entry. What outside review there has been is on the
   <a href="reviewers.html">reviewers page</a>; why any of this exists is on the
   <a href="about.html">about page</a>.</p>
 </main>

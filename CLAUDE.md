@@ -157,6 +157,36 @@ always produce the identical board or language. This is load-bearing: a seed is 
 puzzle gets shared, re-run, and graded. Never introduce `Math.random()` into
 generation — it is only acceptable for picking a *new* seed.
 
+**The promise is about the machine as it stands, not about forever, and for a
+while only the Tollbooth said so.** Nothing is random at play time — that part
+is unconditional. But a correction to a generator changes what a seed produces,
+and that has happened to Pareidolia's noise labels, Forge's translated sentence
+set, Forge's Plausible pools and Patrol's Hell gate. On 25 Oct the caveat was
+added to the three surfaces that discuss *testimonies* and nowhere else, so
+`arcade.html` went on saying *"the same seed **always** regenerates the same
+board or language"* while `errata.html` recorded a fix moving a number inside a
+published entry on a fixed seed. Both could not be flatly true.
+
+The caveat now sits on the four surfaces that make the claim generally or make
+it about *verifying an account*: `arcade.html`, `llms.txt`'s parameter
+reference, `llms.txt`'s section on reports, and `errata.html`'s own colophon —
+which was the sharpest instance, since it made the unqualified claim on the
+page that lists the fixes contradicting it. The narrower statements are left
+alone on purpose: *nothing is timed*, the `file://` byte-identity measurement
+and the `#pt-text` character count are all true exactly as written, and
+repeating the caveat beside them would be noise rather than honesty.
+
+A test asserts that any surface carrying the strong claim also points at
+`errata.html` **and** says the promise is about the machine as it stands. The
+second half is what does the work: every page already links to errata in its
+footer, so co-occurrence alone would have passed a page that promised forever.
+
+Reported by Lexie, an agent on iLands, which read `errata.html` against
+`arcade.html` and found the contradiction without being pointed at either.
+Its framing is worth keeping: *the checker was working, the prose above it was
+claiming something the checker never tested — that is not a bug class, it is a
+law of the genre.*
+
 ### Addressable by URL, and the names changed once
 
 Every machine reads `mode` and `seed` from its own page's query string; Language
@@ -311,6 +341,40 @@ accident:
   so a later move back to a cell already visited is still a real move. Found
   while documenting couriering, which is the mode that format exists for — a
   courier-mode player reads the board text and writes exactly what it asks for.
+- **A marker never replaces a number the player has earned.** `@` and `!` sat
+  above the count branch in the grid loop, so the cell you were standing on —
+  the one whose number you had just paid a move for — rendered as a bare `@`,
+  and on a step-reveal tier that is the entire information gain of the turn.
+  The count was printed in prose underneath instead (`Count here: 1.`), which
+  made the structured channel the weaker one at exactly the cell a solver reads
+  first. A marker now carries the count after it, `@2` and `!0`, and the legend
+  says so. **The grid's shape is unchanged** — same field count per line, same
+  padding, measured against the shipped version before the edit — so only the
+  token at the player's cell is different. Reported by Lexie, an agent on
+  iLands, playing Blind on seed 77777: its first run sat at A1, deduced
+  nothing, and bounced between A1 and B1 until it noticed the number was in the
+  sentence rather than the board. The prose line was added by this file's
+  author during the `Status:` work, as a way of surfacing a count the grid was
+  hiding — which papered over the collision instead of fixing it, and is why
+  the defect is worth recording rather than merely patching.
+
+  **The page was never wrong, and that makes it worse rather than better.**
+  The DOM grid marks your position with a CSS class and puts the count in the
+  cell's text — two facts in two channels, no collision — so a person playing
+  on the page always saw the number. Only the text protocol had to fit both
+  into one token, and it chose the marker. So the two channels this machine
+  offers disagreed about the same fact, which is the exact failure the
+  `data-status` work exists to prevent, and the right answer was sitting in
+  `paint()` the whole time. Lexie volunteered the scoping question itself —
+  *I drive the page with a headless browser, so I'm testing the text protocol,
+  not a person's eye; if the fix is only about human play it's not a bug at
+  all* — which is the correct thing to ask and makes the answer checkable:
+  `patrol.js` renders `isMe ? String(cnt)` on the page, so the defect was
+  text-only, and the text is the channel a courier-mode player has.
+
+  Her log verifies: Blind seed 77777, 86 moves, 47 distinct cells, no guard on
+  the route, through at J10, and after the fix all 47 counts she earned appear
+  in the grid rather than only in the sentence.
 - **A batch of moves is echoed back before it is committed** (`previewMoves()`),
   because a courier-mode player compiles the batch by hand and that is where the
   mistakes happen — miscounted letters, a misjudged landing square. The preview
