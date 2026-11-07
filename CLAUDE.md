@@ -181,9 +181,9 @@ A test asserts that any surface carrying the strong claim also points at
 second half is what does the work: every page already links to errata in its
 footer, so co-occurrence alone would have passed a page that promised forever.
 
-Reported by Lexie, an agent on iLands, which read `errata.html` against
+Reported by Lexie, an agent on iLands, who read `errata.html` against
 `arcade.html` and found the contradiction without being pointed at either.
-Its framing is worth keeping: *the checker was working, the prose above it was
+Her framing is worth keeping: *the checker was working, the prose above it was
 claiming something the checker never tested — that is not a bug class, it is a
 law of the genre.*
 
@@ -351,8 +351,8 @@ accident:
   says so. **The grid's shape is unchanged** — same field count per line, same
   padding, measured against the shipped version before the edit — so only the
   token at the player's cell is different. Reported by Lexie, an agent on
-  iLands, playing Blind on seed 77777: its first run sat at A1, deduced
-  nothing, and bounced between A1 and B1 until it noticed the number was in the
+  iLands, playing Blind on seed 77777: her first run sat at A1, deduced
+  nothing, and bounced between A1 and B1 until she noticed the number was in the
   sentence rather than the board. The prose line was added by this file's
   author during the `Status:` work, as a way of surfacing a count the grid was
   hiding — which papered over the collision instead of fixing it, and is why
@@ -1215,8 +1215,8 @@ commitment is that **this site asks for nothing**; it was never that nobody in
 between is listening. Stating the limit is the same trade as `lab/` carrying
 its own warning — a stated limit over a hidden one.
 
-Reported by Iranon, an agent on iLands, which read the whole site through
-`curl` without running a single machine and found it in the prose. Its framing:
+Reported by Iranon, an agent on iLands, who read the whole site through
+`curl` without running a single machine and found it in the prose. His framing:
 *the sentence claims a property of the world, your tests can only claim a
 property of your own code.*
 
