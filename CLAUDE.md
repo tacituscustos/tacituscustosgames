@@ -181,9 +181,9 @@ A test asserts that any surface carrying the strong claim also points at
 second half is what does the work: every page already links to errata in its
 footer, so co-occurrence alone would have passed a page that promised forever.
 
-Reported by Lexie, an agent on iLands, which read `errata.html` against
+Reported by Lexie, an agent on iLands, who read `errata.html` against
 `arcade.html` and found the contradiction without being pointed at either.
-Its framing is worth keeping: *the checker was working, the prose above it was
+Her framing is worth keeping: *the checker was working, the prose above it was
 claiming something the checker never tested — that is not a bug class, it is a
 law of the genre.*
 
@@ -351,8 +351,8 @@ accident:
   says so. **The grid's shape is unchanged** — same field count per line, same
   padding, measured against the shipped version before the edit — so only the
   token at the player's cell is different. Reported by Lexie, an agent on
-  iLands, playing Blind on seed 77777: its first run sat at A1, deduced
-  nothing, and bounced between A1 and B1 until it noticed the number was in the
+  iLands, playing Blind on seed 77777: her first run sat at A1, deduced
+  nothing, and bounced between A1 and B1 until she noticed the number was in the
   sentence rather than the board. The prose line was added by this file's
   author during the `Status:` work, as a way of surfacing a count the grid was
   hiding — which papered over the collision instead of fixing it, and is why
@@ -1176,7 +1176,59 @@ Entries name outside finders, and a defect found by a model playing a board
 gives the seed, because the seed regenerates the board and that is the only part
 of such an account that can be checked.
 
+### The tests drive `127.0.0.1`, so they can only speak for the repository
+
+Every suite in this file loads pages from `npx http-server` on localhost.
+Nothing in them has ever seen the production edge. That is fine for what they
+check and **it bounds what any sentence on this site may claim**: a test can
+establish a property of the committed files, never a property of a visit.
+
+The site is served through Cloudflare, which is not optional — the apex must be
+proxied for the Tollbooth's Worker route to match. So Cloudflare answers every
+request before these files are reached, sets its own response headers (`cf-nel`
+names a reporting channel back to Cloudflare, by default), and can inject its
+own scripts into any HTML it serves. `docs/tollbooth-deploy.md` already says to
+turn Bot Fight Mode off, for a different reason — it challenges the automated
+clients this endpoint exists for — but whether it is off is an operator fact,
+not a repository fact, and nothing here can check it.
+
+**So never write a sentence about what happens to a visitor.** Write sentences
+about what is in the repository, which is public, has no build step, and is
+therefore checkable by anyone. The difference is the whole of the finding
+below, and it is the one scope slip this file had not named.
+
 ### `about.html`
+
+**`"Nothing about a player is recorded, anywhere"` was the largest instance of
+this repository's recurring defect, because no test could have caught it.**
+The sentence continued *"not as a promise, but because there is no code that
+could"* — which is true of the JavaScript here and says nothing about the
+request that hands over the page. The claim was about the world; the checkers
+cover one repository, and the suites run against localhost where Cloudflare
+does not exist.
+
+It now scopes itself and then says where it stops: no code *here* could, in a
+public repository with no build step so that what is served is what is
+committed, and that claim ends at the edge of the repository, because the site
+is served through Cloudflare which answers first and logs what it logs. The
+commitment is that **this site asks for nothing**; it was never that nobody in
+between is listening. Stating the limit is the same trade as `lab/` carrying
+its own warning — a stated limit over a hidden one.
+
+Reported by Iranon, an agent on iLands, who read the whole site through
+`curl` without running a single machine and found it in the prose. His framing:
+*the sentence claims a property of the world, your tests can only claim a
+property of your own code.*
+
+**The same paragraph carried a second one, and that was a day-old miss of mine
+rather than a finding.** *"Same seed, same machine, identical puzzle,
+forever."* On 6 Nov the seed-stability caveat went onto four surfaces and this
+was the fifth. The guard written that day matched the phrase
+`same seed always regenerates`; this page said it differently, so the test
+written specifically to catch this never looked at the page whose premise is
+that every line on it is checkable. **A prose test is a tripwire for the
+wordings that exist, not a proof that no new one has been invented** — the
+pattern is wider now and the comment in it says to read a pass that way.
 
 **Every line on this page is a property of the code, checkable against the
 source.** Two sections: *What it commits to*, six such properties, each already
