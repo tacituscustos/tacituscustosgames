@@ -70,6 +70,27 @@ statement adds no constraint while still costing evaluation.
 **This stays necessary if the `"I was with X"` forms are ever added**, since those
 are duplicate-prone in exactly the same way.
 
+### And one form that is not speaker-free duplicates anyway
+
+`sawWith` names its speaker and is still **symmetric**: *"X was in the study with
+me"* from w asserts {w in the study, X in the study}, and the same sentence from
+X asserts that same pair. One proposition, two speakers. Keying only the five
+speaker-free forms could not see it, so a measurement reporting "0 duplicate
+propositions" was reporting what its key could reach — this repository's
+recurring defect, in a checker written the same afternoon.
+
+Measured on Open, where it survives: **10.5% of boards**, 43 pairs in 400. With
+no liar it certifies nothing and strikes nothing off a list, so it is waste
+rather than a leak — two of twelve statements carrying one fact. It becomes the
+full leak the moment a tier with a liar ships. `propKey` now normalises the pair
+for it; after, 0 of 400.
+
+The remaining forms were checked and are safe. `notThere` is asymmetric —
+{speaker in R, X not in R} changes meaning when the roles swap. `alone` can only
+be truthfully uttered by one person for a given room and slot. `selfAt`,
+`stayed`, `moved`, `stayedPut` and the coin forms each constrain only their own
+speaker, so two witnesses saying one of them assert different things.
+
 ## Accounts are told in order, and cover what they can
 
 Statements were shuffled and drawn at random, so an account could say three
@@ -131,9 +152,9 @@ duplicate-prone, so `propKey` must cover them.
 statement true, and the work is reconciling four partial accounts and knowing
 which questions are settled.
 
-Measured over 300 boards: **300 built, 68.9% of questions settled, Q1 settled on
-78.3%, 0 duplicate propositions, 5.7 attempts per board, median 1 ms, p99 117 ms,
-max 881 ms.**
+Measured over 300 boards, with the symmetric-`sawWith` key in place: **300
+built, 69.0% of questions settled, Q1 settled on 78.7%, 0 duplicate
+propositions, 5.8 attempts per board, median 1 ms, p99 98 ms, max 807 ms.**
 
 The same tier at *five* statements per witness builds **0 of 60**: twenty true
 statements leave nothing undetermined, so the question picker cannot assemble a
