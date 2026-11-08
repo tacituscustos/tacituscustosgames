@@ -938,8 +938,10 @@ questions — who took it, in which slot, and where certain people were.
 the other three do not. Asserting something the accounts do not settle counts
 against you, and so does calling a settled thing undetermined. The other
 machines ask what is true; this one also asks what is *knowable*. Measured over
-300 records: about a third of the questions are genuinely open, and the taker is
-settled on roughly four in five.
+3000 records: about a third of the questions are genuinely open, and the taker is
+settled on three in four. (The first figure here said four in five, from 300
+records; an independent re-port over 3000 put it at 75.4%, and 73.7% on the same
+300 — within noise for that sample, and wrong as a published claim.)
 
 **Only the `open` tier is built, and the lie machinery is deliberately absent
 from the shipped file.** Every statement in an Open record is true, so the work
@@ -997,6 +999,36 @@ Decisions worth not re-litigating:
   feature. The taker came back uniform and room occupancy leaned to the study by
   construction, both boring; the slot did not. **Ask that question of the next
   machine before shipping it, not after.**
+
+**Marco reviewed it before merge, and two things it says are not settled.** He
+re-typed the generator and wrote a solver from the legend and premise alone, so
+the grading could be compared rather than confirmed: 3000 of 3000 records, **0
+disagreements across 16,263 questions**, identical world counts throughout. That
+is the one property no test here could reach, and it holds.
+
+What it found is in `docs/witness-design.md` in full. Two items block nothing
+and are fixed — a record carries five questions or six and every page said six,
+and the taker settles on 75.4% where `llms.txt` published "roughly four in five".
+Two are open and are design calls rather than bugs:
+
+- **The question count tells you which answers are settled.** `pickDet` caps
+  settled locations at two, so the gate's "more than half" forces Q1 and Q2 to be
+  settled whenever there are six questions. Measured without exception over 3000
+  records: every record has exactly two settled locations, every six-question
+  record has Q1 and Q2 settled, and the taker is open only on five-question
+  records. A reader who counts the questions knows what is settled before
+  reading any testimony — the Patrol naive-rule shape, on the axis this machine
+  calls its own.
+- **The machine rewards lookup more than reconciliation.** A reader who never
+  combines two statements gets 99.8% of location questions and 92.7% of all
+  questions right. Only 0.5% of settled cells need two accounts, in 189 records
+  of 3000. The page promises reconciling four partial accounts; that happens in
+  Q1 and close to nowhere else. **The comment above the narrow forms in
+  `witness.js` already said so** — written to justify adding those forms, and
+  left describing what ships once `MIX.narrow` went to 0.
+
+Do not merge on the assumption these are cosmetic. They are the difference
+between what this machine claims to be and what it is.
 
 ### Styling
 

@@ -487,7 +487,7 @@
       <button type="button" id="wt-roll">New morning</button>
     </div>
     <h2>Witness</h2>
-    <p class="note" style="margin-top:6px">Four people were in a house for forty minutes. A coin went missing. Each of them tells you what they saw. Work out what the accounts settle &mdash; and what they leave open, because <em>undetermined</em> is a real answer here and claiming more than the record carries counts against you.</p>
+    <p class="note" style="margin-top:6px">Four people were in a house across four ten-minute slots of one morning. A coin went missing. Each of them tells you what they saw. Work out what the accounts settle &mdash; and what they leave open, because <em>undetermined</em> is a real answer here and claiming more than the record carries counts against you.</p>
     <p class="note" id="wt-tier"></p>
     <p class="note" id="wt-fail" hidden></p>
 

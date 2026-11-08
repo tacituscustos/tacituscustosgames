@@ -64,8 +64,8 @@ which is not prose and cannot be broken by an edit to the copy.
                                                          the record has them
 ```
 
-Witness grades six questions rather than one, so it carries three values instead
-of two and states the tally in its own attribute beside them. `partial` means
+Witness grades several questions at once rather than one, so it carries three
+values instead of two and states the tally in its own attribute beside them. `partial` means
 some questions matched the record and some did not; the per-question outcomes are
 listed in the element as text.
 
@@ -362,12 +362,14 @@ Each person gives a short account of their own morning: three statements, told i
 order. **Every statement is true.** There is no liar to catch here — the work is
 reconciling four partial accounts, none of which saw the whole morning.
 
-Then six questions: who took the coin, in which slot, and where certain people
-were at certain slots. **`undetermined` is a real answer, and it is graded.**
+Then the questions: who took the coin, in which slot, and where certain people
+were at certain slots. **A record carries five or six of them, and the count
+varies** — read it off the record rather than assuming, because sending the
+wrong number is refused. **`undetermined` is a real answer, and it is graded.**
 Asserting something the accounts do not settle counts against you, and so does
-calling a settled thing undetermined. Measured over 300 records, about a third of
-the questions are genuinely open, and the taker is settled on roughly four in
-five.
+calling a settled thing undetermined. Measured over 3000 records, about a third
+of the questions are genuinely open, and the taker is settled on three in
+four.
 
 Each form asserts exactly what the board's own legend says it does and nothing
 more. The one most easily misread is `"X was not in the kitchen at 9:10; I was
@@ -423,7 +425,7 @@ click or type into one.
 /pareidolia.html  probe=<string>[,<string>…]    spends one probe per string, in order
                   answer=NOISE                  submits noise
                   answer=RULE <ten marks>       submits a rule; ✓✗, Y/N, 1/0 or +/- all read
-/witness.html     answers=<one per question>    answers all six and grades them
+/witness.html     answers=<one per question>    answers every question, grades them
                   reveal=1                      opens what actually happened
 ```
 

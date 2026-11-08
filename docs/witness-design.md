@@ -153,8 +153,10 @@ statement true, and the work is reconciling four partial accounts and knowing
 which questions are settled.
 
 Measured over 300 boards, with the symmetric-`sawWith` key in place: **300
-built, 69.0% of questions settled, Q1 settled on 78.7%, 0 duplicate
-propositions, 5.8 attempts per board.**
+built, 69.0% of questions settled, 0 duplicate propositions, 5.8 attempts per
+board.** Over 3000 records the settled share is 68.6% and **the taker settles on
+75.4%** — the 78.7% first recorded here came from 300 records and was published
+as "roughly four in five", which three thousand records do not support.
 
 **The timings first recorded here were measuring the instrument.** They said
 median 1 ms, p99 98 ms, max 807 ms — but `generate()` was calling
@@ -245,6 +247,141 @@ rather than measured.
 Any tier with a lie in it needs the deferred-generation pattern Forge and Patrol
 already use (`setTimeout(…, 0)` behind a visible message, with an optional
 `then` callback so a front door does not read a null board).
+
+## The independent review, and what it found
+
+Marco (marcologs.com) reviewed the machine at `285f3da` before it was merged.
+He did not run `witness.js`. He re-typed the generator into a file of his own
+and then wrote **a separate solver from the legend and the premise text alone** —
+without reading `evalStmt` or `enumerateFast` — so that the two could be
+compared rather than one confirming the other. His port reproduces six
+fingerprints exactly, world counts included, which is what licenses every number
+below.
+
+### The control question came back boring, and that is what makes the rest count
+
+His solver brute-forces complete worlds: each person's 81 possible mornings,
+every slot, every taker, keeping the worlds where all twelve statements hold.
+Over seeds `0` to `2999`: **3000 of 3000 records build, 0 disagreements with
+`enumerateFast` across 16,263 questions, and an identical world count on every
+record.**
+
+So the one property nothing here could check from the inside holds:
+`UNDETERMINED` is graded against the right set. His caveat is the honest one —
+both solvers read the same statements, so this says nothing about whether those
+are the statements the generator *should* produce.
+
+### Five questions or six, and the documentation said six
+
+`pickDet` can leave `chosenLoc` holding three location questions, through the
+`want - 1` floor, when only one of the ten sampled cells is open. Result:
+**1737 of 3000 records (57.9%) carry five questions, not six.** Seed `0` is one.
+
+`witness.html`, `llms.txt` twice — including the parameter table, *"answers all
+six and grades them"* — and `CLAUDE.md` all said six. A reader following the
+documentation sends six values and is refused: *"That is 6 values for 5
+questions."* The refusal is correct and durable, which is the right way to
+refuse. **The sentence that sent the reader there was the defect.** Fixed in the
+prose: the count varies and is to be read off the record.
+
+### The question set tells you which answers are settled
+
+This is the serious one, and it is unresolved.
+
+`pickDet` takes at most `ceil(4/2) = 2` settled location questions, so a record
+carries at most four settled questions: Q1, Q2 and two locations. The gate wants
+more than half settled. **With six questions that means all four — so Q1 and Q2
+must both be settled.** With five it means three of the four.
+
+Measured over 3000 records, every one of these holds without exception:
+
+- every record has **exactly two** settled location questions (3000 of 3000)
+- every six-question record has **both Q1 and Q2 settled** (1263 of 1263)
+- the taker is open **only** on five-question records (739 of 739)
+
+So counting the questions tells a reader whether the taker and the slot are
+settled, before reading a word of testimony. And once two locations are pinned,
+the rest are known to be open without building a world that proves it. In
+Marco's words: *a rule about the picker, learned in place of the house. It is
+the Patrol shape, on the axis this machine calls its own.* On a machine whose
+premise is what is **knowable**, the question count leaks knowability.
+
+### And underneath it: the machine rewards lookup more than reconciliation
+
+He measured a reader who never combines two statements — answering a location
+only when one statement names that person's room at that slot, the taker only
+when someone saw the take, the slot only when the coin statements bracket it,
+and `undetermined` otherwise:
+
+| | lookup only | plus the question-count rule |
+|---|---|---|
+| location questions | 99.8% | |
+| Q2, which slot | 95.9% | |
+| Q1, who took it | 65.1% | |
+| all questions | 92.7% | 95.8% |
+| the whole record right | 62.9% | 78.9% |
+
+Across all 16 cells, **0.5% of settled cells are settled only by combining
+accounts**, and only 189 records in 3000 contain even one. The reconciling the
+page promises happens in Q1 — on 34.9% of records the taker settles with nobody
+having seen the take — and close to nowhere else.
+
+**The comment above the narrow forms in `witness.js` already says this.** It
+reads *"Every statement type above pins a position outright, which is why 99% of
+settled cells were settled by lookup rather than deduction"* — written in the
+prototype to justify adding the narrowing forms. With `MIX.narrow` at 0 those
+forms are switched off, so the comment stopped describing a problem being fixed
+and started describing what ships. The repository's recurring defect, inverted:
+the comment was right and the configuration moved out from under it.
+
+Two levers, neither measured, both design calls rather than bugs:
+
+1. **Stop balancing the location questions to a fixed two and two** — draw them,
+   or draw the split — so the count stops carrying information.
+2. **Gate on questions no single statement settles**, if the page's sentence
+   about reconciling is to hold for every question. With these forms that mostly
+   means Q1, unless the narrowing forms come back.
+
+### For the liar tiers: identity is the wrong relation
+
+The duplicate argument in this note is that an identical pair cannot contain the
+lie, because falsifying one falsifies both. **The same holds whenever one
+statement entails another.** If A entails B and B is false then A is false too —
+two lies — so B is cleared for free. Every Open form is a conjunction of
+conditions on single cells, the slot or the taker, so entailment is a subset test
+and he checked it exactly.
+
+**1267 of 3000 Open records (42.2%) contain such a pair, 1654 pairs in all.**
+Commonest: someone's *"X was in the study with me"* plus X's own *"At T I was in
+the study"* (675); a witness's own `stayed` containing their own `selfAt` (347)
+or another `stayed` of their own (113).
+
+He also found the one duplicate class identity still misses: **`coinGone` at the
+last slot**. The take is always at the last slot or earlier, so *"At 9:30 the
+desk was empty"* asserts exactly *"At 9:30 I was in the study"* — one proposition
+twice when a witness says both. 4 records in 3000, none in seeds 0–299, so a
+300-record zero was true of those seeds and said nothing. **The check in this
+note compared each form against itself across speakers; this case is two forms
+from one speaker.**
+
+In Open all of this is harmless repetition. **Before any liar tier ships,
+`propKey` must catch entailment rather than only identity.** Whether two
+witnesses corroborating each other is a leak or the point of a witness puzzle is
+a design decision — but by this note's own argument, it is a leak.
+
+### Corrected on the strength of the review
+
+- **The taker settles on 75.4%, not 78.7%.** `llms.txt` published "roughly four
+  in five" from 300 records; 3000 give three in four, and 73.7% on the same 300.
+  Within noise for that sample, wrong as a published claim.
+- **"Forty minutes" disagreed with "9:00 to 9:30".** Both are true if 9:30 names
+  the start of the last slot, but a reader doing the arithmetic gets thirty. The
+  total is gone; the slot count stays.
+
+### What he did not do
+
+Run `witness.js` or the page, read the UI half beyond counting questions, or
+test the liar-tier design, which is not built.
 
 ## If agents test it
 
