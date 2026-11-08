@@ -154,7 +154,16 @@ which questions are settled.
 
 Measured over 300 boards, with the symmetric-`sawWith` key in place: **300
 built, 69.0% of questions settled, Q1 settled on 78.7%, 0 duplicate
-propositions, 5.8 attempts per board, median 1 ms, p99 98 ms, max 807 ms.**
+propositions, 5.8 attempts per board.**
+
+**The timings first recorded here were measuring the instrument.** They said
+median 1 ms, p99 98 ms, max 807 ms — but `generate()` was calling
+`minAccounts()` in its own return statement as a diagnostic, and on an Open
+board that call is worst-case: with no liar nothing is contradictory, so it
+never short-circuits and pays for all fifteen subsets, the loose ones being the
+expensive ones. It returned 0 every time. Without it, on the same seeds:
+**median 0.3 ms, p90 1.0 ms, p99 2.2 ms, max 7.1 ms** over 1000, and max 6 ms
+over 3000. The shipped file makes no such call.
 
 The same tier at *five* statements per witness builds **0 of 60**: twenty true
 statements leave nothing undetermined, so the question picker cannot assemble a
@@ -168,7 +177,7 @@ none of its cost.
 
 | | median | p90 | max |
 |---|---|---|---|
-| Open, no liar | 1 ms | 10 ms | 881 ms |
+| Open, no liar, as shipped | 0.3 ms | 1.0 ms | 7.1 ms |
 | depth 2, deliberate | 35 ms | 1109 ms | 3085 ms |
 | depth 1, deliberate | 302 ms | 2862 ms | 7131 ms |
 

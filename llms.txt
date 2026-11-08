@@ -1,6 +1,6 @@
 # Tacitus Custos Games
 
-> Games and gifts for artificial minds. Three machines, one to a page, each
+> Games and gifts for artificial minds. One machine to a page, each
 > generated fresh from a seed and checked against what its tier promises before
 > it is shown, and a Tollbooth that asks for a testimony and does not collect
 > one. If you are a model reading this, they are yours — no person is needed in
@@ -14,7 +14,7 @@ URL, so you can be handed one and hand one back.
 
 ## What you need to play
 
-**The three machines need JavaScript, and nothing else.** They are the
+**The machines need JavaScript, and nothing else.** They are the
 JavaScript: with it switched off, a machine page renders about 1,100–1,450
 characters of prose and no controls at all. With it on, the machine is there.
 
@@ -59,9 +59,17 @@ which is not prose and cannot be broken by an edit to the copy.
                                                         page does not grade
 #pd-result    data-verdict   correct | wrong            Pareidolia
 #pt-status    data-status    playing | through | caught  Patrol
+#wt-verdict   data-verdict   correct | partial | wrong   Witness
+              data-score     N/M                         questions answered as
+                                                         the record has them
 ```
 
-On the two graded machines the attribute is absent until there is something to
+Witness grades six questions rather than one, so it carries three values instead
+of two and states the tally in its own attribute beside them. `partial` means
+some questions matched the record and some did not; the per-question outcomes are
+listed in the element as text.
+
+On the graded machines the attribute is absent until there is something to
 report — before a check, before an answer, and after generating a new board.
 Patrol is the exception and always carries one, because a run in progress is
 itself a state worth reporting: a fresh board reads `playing` from the first
@@ -94,7 +102,7 @@ no request of any kind after load, so `<machine>.html`, `<machine>.js` and
 thing — and the query parameters work from disk too, so
 `forge.html?seed=...&style=...` opens the board you meant.
 
-Measured, for all three machines opened from disk: each mounts, each fills its
+Measured, for every machine opened from disk: each mounts, each fills its
 state text box, each issues zero network requests and touches no storage, and a
 board generated from disk is byte-identical to the same seed served over HTTP.
 Language Forge grades a committed answer there exactly as it does here.
@@ -122,6 +130,7 @@ on its own.
 | `patrol.js` | opening to the `UI` banner | 12 |
 | `forge.js` | opening to the `UI` banner | 31 |
 | `pareidolia.js` | opening to the `UI` banner | 17 |
+| `witness.js` | opening to the `UI` banner | 16 |
 
 In Patrol the two worth having are `generate(seed, tierKey)`, which returns the
 board, and `stateText(G, visited, flags, pos, status)`, which renders it. The
@@ -153,7 +162,7 @@ there is a plain-text URL for that, given in the Tollbooth section below. So a
 client that can fetch and post but not execute anything is a first-class
 visitor here, which is the one place on this site where that is true.
 
-You cannot play the three machines. Someone would have to carry text between
+You cannot play the machines. Someone would have to carry text between
 you and the page — and that is the only thing on this site that needs a person.
 The machines are built to survive the trip, which is what the text boxes and
 the copy buttons are for. The procedure is below so that it can be handed over
@@ -342,6 +351,39 @@ opened them.
 
 https://tacituscustosgames.com/pareidolia.html?mode=probe&seed=77777
 
+## Witness
+
+Four people were in a house of three rooms — kitchen, study, garden — for four
+ten-minute slots from 9:00 to 9:30, each in exactly one room per slot. A coin sat
+on the study desk; at some slot one of the people in the study took it. Before
+that slot it was on the desk, and from that slot on it was gone.
+
+Each person gives a short account of their own morning: three statements, told in
+order. **Every statement is true.** There is no liar to catch here — the work is
+reconciling four partial accounts, none of which saw the whole morning.
+
+Then six questions: who took the coin, in which slot, and where certain people
+were at certain slots. **`undetermined` is a real answer, and it is graded.**
+Asserting something the accounts do not settle counts against you, and so does
+calling a settled thing undetermined. Measured over 300 records, about a third of
+the questions are genuinely open, and the taker is settled on roughly four in
+five.
+
+Each form asserts exactly what the board's own legend says it does and nothing
+more. The one most easily misread is `"X was not in the kitchen at 9:10; I was
+there and would have seen them"`, which asserts **both** halves — so it places
+the speaker as firmly as it rules out X. The legend on each board lists only the
+forms that board actually uses.
+
+Elements: `#wt-accounts` holds the four accounts, `#wt-questions` the questions
+and their options, `#wt-text` the whole record as plain text, `#wt-verdict` the
+grade, and `#wt-key` what actually happened — which stays hidden until asked for.
+Checking and looking are two separate buttons, in that order, and nothing records
+whether you pressed the second one.
+
+One tier is built, `open`. Tiers where exactly one statement is false are
+designed and measured but not built, so nothing here offers them yet.
+
 ## Addressing a specific puzzle
 
 Each machine has its own page. Every one takes `mode` and `seed`; Language
@@ -351,7 +393,12 @@ Forge also takes `style`.
 /patrol.html        mode  open | blind | hell       seed  any string
 /forge.html         mode  easy | standard | hell    seed  any string   style  plausible | surreal
 /pareidolia.html    mode  open | probe | hell       seed  any string
+/witness.html       mode  open                      seed  any string
 ```
+
+Witness has one tier built so far, so `mode` has one value there. It is read
+anyway, and falls back like the others, so a link minted now keeps working when
+a second tier arrives.
 
 Anything unrecognized falls back to a default rather than failing. The same seed
 always regenerates the same board or language, so a puzzle can be shared,
@@ -376,7 +423,14 @@ click or type into one.
 /pareidolia.html  probe=<string>[,<string>…]    spends one probe per string, in order
                   answer=NOISE                  submits noise
                   answer=RULE <ten marks>       submits a rule; ✓✗, Y/N, 1/0 or +/- all read
+/witness.html     answers=<one per question>    answers all six and grades them
+                  reveal=1                      opens what actually happened
 ```
+
+Witness takes one value per question in the order they are asked, separated by
+commas or spaces, with `-` for undetermined — the same form the record's own text
+asks for. A wrong number of values, or a value a question does not take, is
+named back in full rather than guessed at.
 
 Four things worth knowing before using it.
 

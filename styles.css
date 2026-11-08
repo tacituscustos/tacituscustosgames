@@ -289,7 +289,8 @@ textarea:focus-visible {
 .pt { line-height: 1.5; }
 .pt h2,
 .cf h2,
-.pd h2 {
+.pd h2,
+.wt h2 {
   font-size: 32px;
   font-style: italic;
   font-weight: 400;
@@ -299,6 +300,7 @@ textarea:focus-visible {
 .pt h3,
 .cf h3,
 .pd h3,
+.wt h3,
 .tb h2 {
   font-size: 20px;
   font-weight: 600;
@@ -308,18 +310,22 @@ textarea:focus-visible {
 }
 .pt p,
 .cf p,
-.pd p { margin: 0 0 10px; }
+.pd p,
+.wt p { margin: 0 0 10px; }
 .pt .note,
 .cf .note,
 .pd .note,
+.wt .note,
 .tb .note { font-size: 13.5px; color: var(--muted); }
 .pt .ctl,
 .cf .ctl,
 .pd .ctl,
+.wt .ctl,
 .tb .ctl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .pt input[type="text"],
 .cf input[type="text"],
-.pd input[type="text"] {
+.pd input[type="text"],
+.wt input[type="text"] {
   font: inherit;
   padding: 6px 8px;
   border: 1px solid #9aa0b8;
@@ -332,6 +338,7 @@ textarea:focus-visible {
 .pt button,
 .cf button,
 .pd button,
+.wt button,
 .tb button {
   font: inherit;
   padding: 6px 12px;
@@ -343,10 +350,12 @@ textarea:focus-visible {
 }
 .pt button.on,
 .cf button.on,
-.pd button.on { background: var(--ink); color: #fff; }
+.pd button.on,
+.wt button.on { background: var(--ink); color: #fff; }
 .pt button:disabled,
 .cf button:disabled,
 .pd button:disabled,
+.wt button:disabled,
 .tb button:disabled { opacity: 0.45; cursor: default; }
 
 .pt .grid {
@@ -381,7 +390,8 @@ textarea:focus-visible {
 
 .pt .status { font-size: 20px; font-style: italic; margin: 6px 0; }
 .pt textarea,
-.pd textarea {
+.pd textarea,
+.wt textarea {
   width: 100%;
   height: 230px;
   font: 12px/1.35 var(--mono);
@@ -807,3 +817,35 @@ textarea:focus-visible {
   -webkit-user-select: none;
 }
 .pt .hdr.rowhdr { padding-right: 4px; min-width: 16px; }
+
+/* ---------- Witness ---------- */
+/* Control chrome is shared with the other three above rather than copied; only
+   what is particular to four accounts and six questions lives here. */
+
+.wt { line-height: 1.5; }
+.wt ul { margin: 0 0 10px; padding-left: 20px; }
+.wt li { margin-bottom: 2px; }
+.wt .mono { font-family: var(--mono); }
+
+/* one block per witness: a name, then their statements in the order they told
+   them. The border groups an account visually, because the whole point is that
+   these are four separate tellings rather than one list of facts. */
+.wt-account {
+  border-left: 2px solid var(--accent);
+  padding: 2px 0 2px 12px;
+  margin: 12px 0;
+}
+.wt-who { font-weight: 600; margin-bottom: 2px; }
+.wt-said { margin: 0; padding-left: 22px; }
+.wt-said li { font-size: 15px; margin-bottom: 3px; }
+
+/* a question and its options. The options wrap at phone width rather than
+   scrolling sideways. */
+.wt-q { margin: 14px 0; }
+.wt-qtext { margin-bottom: 5px; }
+.wt-opts button { font-size: 14px; padding: 4px 9px; }
+
+.wt-tally { font-size: 20px; font-style: italic; margin: 14px 0 6px; }
+.wt-rows { margin: 0 0 10px; padding-left: 22px; font-size: 14px; }
+.wt-rows .wt-ok { color: var(--ink); }
+.wt-rows .wt-no { color: var(--accent); }

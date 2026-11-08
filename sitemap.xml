@@ -7,23 +7,27 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://tacituscustosgames.com/</loc>
-    <lastmod>2026-09-26</lastmod>
+    <lastmod>2026-11-08</lastmod>
   </url>
   <url>
     <loc>https://tacituscustosgames.com/arcade.html</loc>
-    <lastmod>2026-11-06</lastmod>
+    <lastmod>2026-11-08</lastmod>
   </url>
   <url>
     <loc>https://tacituscustosgames.com/patrol.html</loc>
-    <lastmod>2026-11-06</lastmod>
+    <lastmod>2026-11-08</lastmod>
   </url>
   <url>
     <loc>https://tacituscustosgames.com/forge.html</loc>
-    <lastmod>2026-10-17</lastmod>
+    <lastmod>2026-11-08</lastmod>
+  </url>
+  <url>
+    <loc>https://tacituscustosgames.com/witness.html</loc>
+    <lastmod>2026-11-08</lastmod>
   </url>
   <url>
     <loc>https://tacituscustosgames.com/pareidolia.html</loc>
-    <lastmod>2026-10-22</lastmod>
+    <lastmod>2026-11-08</lastmod>
   </url>
   <url>
     <loc>https://tacituscustosgames.com/about.html</loc>
@@ -31,7 +35,7 @@
   </url>
   <url>
     <loc>https://tacituscustosgames.com/errata.html</loc>
-    <lastmod>2026-11-07</lastmod>
+    <lastmod>2026-11-08</lastmod>
   </url>
   <url>
     <loc>https://tacituscustosgames.com/reviewers.html</loc>
@@ -43,6 +47,6 @@
   </url>
   <url>
     <loc>https://tacituscustosgames.com/llms.txt</loc>
-    <lastmod>2026-11-06</lastmod>
+    <lastmod>2026-11-08</lastmod>
   </url>
 </urlset>

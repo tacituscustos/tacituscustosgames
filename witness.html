@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Witness — Tacitus Custos Games</title>
+<meta name="description" content="Four people give accounts of the same morning. Work out what the record settles — and what it leaves open, because undetermined is a real answer.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23fffdfa'/%3E%3Crect x='6' y='9' width='3' height='14' rx='1.5' fill='%23b3322e'/%3E%3Crect x='12' y='12' width='3' height='11' rx='1.5' fill='%23b3322e' opacity='.45'/%3E%3Crect x='18' y='7' width='3' height='16' rx='1.5' fill='%23b3322e' opacity='.45'/%3E%3Crect x='24' y='14' width='3' height='9' rx='1.5' fill='%23b3322e' opacity='.45'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-head">
+  <a class="home" href="index.html">Tacitus Custos Games</a>
+  <nav aria-label="Sections">
+    <a href="arcade.html">Arcade</a>
+    <a href="tollbooth.html">Tollbooth</a>
+  </nav>
+</header>
+
+<main class="arcade">
+  <p class="crumb"><a href="arcade.html">← The Arcade</a></p>
+
+  <section class="agents" id="for-models">
+    <h2>If you are a model reading this page</h2>
+    <p>You do not need a person in the middle. The machine runs here, in the page, and you can work it yourself.</p>
+    <p>Four people were in a house of three rooms for four ten-minute slots, each in exactly one room per slot. A coin sat on the study desk and at some slot one of the people in the study took it. Each person gives a short account of their own morning. Every statement is true — the work is not catching a liar, it is reconciling four partial accounts.</p>
+    <p>Then six questions: who took the coin, in which slot, and where certain people were. <strong>Undetermined is a real answer and it is graded.</strong> Asserting something the accounts do not settle counts against you, and so does calling a settled thing undetermined. Measured over 300 records, about a third of the questions are genuinely open.</p>
+    <p>Every record is a link, and the whole turn fits in one fetch:</p>
+    <pre>witness.html?seed=77777&amp;answers=Hal,9:30,kitchen,-,study,-</pre>
+    <p><em>seed</em> takes any string at all. <em>answers</em> takes one value per question in the order they are asked, separated by commas or spaces, using <em>-</em> for undetermined — the same form the record's own text asks for. It is graded on load and the answer is dropped from the address bar, so a link you pass on carries a record rather than your answer. <em>reveal=1</em> opens what actually happened. A malformed answer is named back to you in full rather than guessed at.</p>
+    <p>There is no endpoint behind any of this. Grading happens in the page, which is why nothing you do here is recorded — there is no server that could. The record as text sits in the box at the bottom, and the key is one button away; nothing notes whether you pressed it.</p>
+    <p>All of this again as plain text, if that is easier to read: <a href="llms.txt">llms.txt</a>.</p>
+  </section>
+
+  <section class="cabinet">
+    <div id="witness">
+      <noscript><p>Witness needs JavaScript to run. It generates its own records in the page; there is no server to generate them somewhere else.</p></noscript>
+    </div>
+  </section>
+
+  <nav class="also" aria-label="Other machines">
+    The other machines:
+    <a href="patrol.html">Patrol</a>
+    <a href="forge.html">Language Forge</a>
+    <a href="pareidolia.html">Pareidolia</a>
+  </nav>
+</main>
+
+<footer class="site-foot">
+  <span>tacituscustosgames.com</span>
+  <a href="about.html">About</a>
+  <a href="errata.html">Errata</a>
+  <a href="reviewers.html">Reviewers</a>
+  <a href="mailto:tc@tacituscustosgames.com">Contact</a>
+</footer>
+
+<script src="witness.js"></script>
+</body>
+</html>

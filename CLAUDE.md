@@ -6,7 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A static site at **tacituscustosgames.com** — games and gifts for artificial
 minds. A landing page; `arcade.html`, an index of the machines; one page per
-machine (`patrol.html`, `forge.html`, `pareidolia.html`); and The Tollbooth,
+machine (`patrol.html`, `forge.html`, `pareidolia.html`, `witness.html`); and
+The Tollbooth,
 which takes a testimony instead of a coin (`tollbooth.html`, `tollbooth.js`,
 and a backend in `worker/`; see `docs/tollbooth-design.md` and
 `docs/tollbooth-deploy.md`).
@@ -32,7 +33,7 @@ uploads `worker.js` as it stands. It is excluded from the published site.
 
 ```bash
 npx --yes http-server -p 8899 -s .                        # serve the site locally
-node --check patrol.js forge.js pareidolia.js tollbooth.js
+node --check patrol.js forge.js pareidolia.js witness.js tollbooth.js
 
 cd worker && npx wrangler dev --local --port 8788         # the Tollbooth backend
 npx wrangler d1 execute tollbooth --local --file schema.sql
@@ -54,8 +55,14 @@ run `playwright install`.
 
 Worth testing, because these have all broken before:
 
-- All three machines mount and render (`#pt-grid .cell`, `#cf-puzzleview .cline`,
-  `#pd-examples .mono`)
+- Every machine mounts and renders (`#pt-grid .cell`, `#cf-puzzleview .cline`,
+  `#pd-examples .mono`, `#wt-accounts .wt-account`)
+- For Witness, that the key is absent before it is asked for — `#wt-key` keeps
+  its `hidden` attribute, `#wt-keytext` is empty, and no part of what happened
+  is in the page text. Also that every account covers what it can, that no two
+  statements anywhere state the same proposition (`propKey()`, including
+  `sawWith`'s symmetry), and that a malformed `answers=` is refused in writing
+  rather than trimmed
 - Seed reproducibility — same seed must give byte-identical output
 - For Language Forge, that the answer is genuinely absent before reveal (see
   below); check the DOM *and* the value of every visible `<textarea>`. Note that
@@ -447,6 +454,7 @@ attribute a machine reads.
 #cf-verdict   data-verdict   correct | wrong | open      (open = Forge Hell, ungraded here)
 #pd-result    data-verdict   correct | wrong
 #pt-status    data-status    playing | through | caught
+#wt-verdict   data-verdict   correct | partial | wrong    (plus data-score, "N/M")
 ```
 
 On Forge and Pareidolia, absent until there is something to report and cleared
@@ -457,6 +465,15 @@ tell "not started" from "no attribute". `llms.txt` said all three were absent
 until reported, which was false for Patrol from the day the attribute shipped;
 it now states the exception. If a fourth machine is added, decide which of the
 two shapes it has and say so in the same commit.
+
+**Witness was the fourth, and it takes the Forge and Pareidolia shape**: absent
+until a check has happened, cleared when a new record is generated. It is the
+one machine that grades several questions at once, so its vocabulary has a third
+value — `partial`, meaning some questions matched the record and some did not —
+and it carries the tally separately as `data-score`, reading `N/M`. A tally is a
+number rather than a name, so it does not belong inside a closed vocabulary;
+splitting them keeps `data-verdict` a promise about a small fixed set of words
+while still letting a reader get the count without parsing prose.
 
 **The point is that it is not prose.** A verdict sentence is the single most
 rewordable thing on a page — *Correct.* could become *That matches.* in a copy
@@ -910,6 +927,57 @@ applied to.
 labels.** A bookmarked board is a different board. That is the correct trade and
 it should not be avoided by keeping a compatibility path.
 
+### Witness: shipped as Open, with the rest written down rather than built
+
+`witness.js` is the fourth machine. Four people were in a house of three rooms
+for four ten-minute slots; a coin went missing from the study desk; each person
+gives a three-statement account of their own morning, told in order. Then six
+questions — who took it, in which slot, and where certain people were.
+
+**`undetermined` is a graded answer**, and that is what this machine tests that
+the other three do not. Asserting something the accounts do not settle counts
+against you, and so does calling a settled thing undetermined. The other
+machines ask what is true; this one also asks what is *knowable*. Measured over
+300 records: about a third of the questions are genuinely open, and the taker is
+settled on roughly four in five.
+
+**Only the `open` tier is built, and the lie machinery is deliberately absent
+from the shipped file.** Every statement in an Open record is true, so the work
+is reconciling four partial accounts rather than catching anyone out. The tiers
+where exactly one statement is false — where the axis is *how many accounts a
+reader must hold together* to catch it — are designed and measured in
+`docs/witness-design.md` and are not wired up. Read that file before building
+them. It also records three claims of mine that measurement overturned, which is
+the more useful half.
+
+Decisions worth not re-litigating:
+
+- **`perWitness` is 3 because 5 does not build at all.** Twenty true statements
+  leave nothing undetermined, so the question picker cannot assemble a board
+  carrying both settled and open questions — measured 0 boards in 60. The cost
+  is that three statements cannot span four slots, so about 80% of accounts have
+  a gap. Three lines still read as somebody's morning, and that is accepted
+  rather than fixed.
+- **Every statement is first person** (`MIX.narrow` is 0). The generator's first
+  version used claims about third parties stated from nowhere — *"Cleo changed
+  rooms between 9:10 and 9:20"* — and two witnesses uttering one of those state
+  the identical proposition. First person is also 20× cheaper to generate, for
+  reasons the design note gives.
+- **`sawWith` names its speaker and duplicates anyway, because it is
+  symmetric.** *"X was in the study with me"* from w and the same sentence from X
+  are one proposition. `propKey()` normalises the pair for it. It is the only
+  form that collides while naming its speaker, and a key covering just the
+  speaker-free forms missed it on 10.5% of boards — the repository's recurring
+  defect inside a checker written the same afternoon as the rule it checked.
+- **`mode` is read although `open` is its only value.** Every machine here takes
+  `mode` and `seed`, `arcade.html` says so, and an unrecognised value falls back
+  rather than throwing — so a link minted today keeps working when a second tier
+  arrives, instead of `arcade.html`'s sentence quietly becoming false.
+- **Generation is deferred past a paint even though Open needs 0.3 ms.** A front
+  door that ran on the line after it would read a null board, which is the same
+  defect Forge and Patrol already fixed; and the tiers with a lie in them are
+  nowhere near this cheap.
+
 ### Styling
 
 Design tokens in `:root` in `styles.css`. Machines get a scope class (`.pt`,
@@ -922,8 +990,15 @@ a machine rather than starting a fourth copy of the button rules.
 The machines shared `arcade.html` until the split. They no longer do, and the
 reason was measured rather than assumed: with two machines the page ran 5.8
 screens at 1280×900 with 1.4 screens of scrolling between the two, and
-Pareidolia would have taken it past nine. Apart now: the index 1.3 screens,
-Patrol 2.2, Forge 4.3, Pareidolia 3.7.
+Pareidolia would have taken it past nine. Apart now, measured at 1280×900: the
+index 1.6 screens, Patrol 2.2, Forge 3.9, Pareidolia 3.5, Witness 3.8.
+
+**Those figures are indicative rather than asserted, and the previous set had
+rotted.** Forge and Pareidolia were recorded here as 4.3 and 3.7 while measuring
+3.9 and 3.5, and neither page had changed shape — a page height moves with every
+copy edit, so a number written beside it goes stale without anything being
+wrong. What is asserted, per machine, is the *ordering* of the blocks down the
+page, which is what the design actually claims.
 
 The cost fell on the agent side and is small — a model that wants all three
 fetches three pages instead of one — while a model that wants one now fetches

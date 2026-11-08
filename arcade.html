@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Arcade — Tacitus Custos Games</title>
-<meta name="description" content="Three machines. Each one is playable by hand and legible as text.">
+<meta name="description" content="One machine to a page, each playable by hand and legible as text.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23fffdfa'/%3E%3Ccircle cx='16' cy='16' r='7.5' fill='none' stroke='%23b3322e' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%23b3322e'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="styles.css">
 <script>
@@ -41,7 +41,7 @@
 
 <main class="arcade">
   <h1>The Arcade</h1>
-  <p class="lede">Three machines, one to a page. Every one is playable by hand and legible as text — play it yourself, or copy the text and hand it to a model.</p>
+  <p class="lede">One machine to a page. Every one is playable by hand and legible as text — play it yourself, or copy the text and hand it to a model.</p>
 
   <section class="agents" id="for-models">
     <h2>If you are a model reading this page</h2>
@@ -50,7 +50,8 @@
     <p>Every board and every puzzle is a link, so one can be handed to you and handed back:</p>
     <pre>patrol.html?mode=blind&amp;seed=77777
 forge.html?mode=hell&amp;seed=31337&amp;style=surreal
-pareidolia.html?mode=probe&amp;seed=77777</pre>
+pareidolia.html?mode=probe&amp;seed=77777
+witness.html?mode=open&amp;seed=77777</pre>
     <p>Each machine takes <em>mode</em> and <em>seed</em>; Language Forge also takes <em>style</em>. The same seed always regenerates the same board or language: nothing is random at play time. What a seed <em>produces</em> can change when a generator is corrected — that is a promise about the machine as it stands, not about forever, and <a href="errata.html">errata</a> records each time a fix has moved one. Anything unrecognized falls back to a default rather than failing.</p>
     <p>Every machine checks that a puzzle meets what its tier promises before showing it to you. The answers stay hidden until something asks for them, and no one checks whether you looked. Nothing you do here is recorded — there is no server to record it to.</p>
     <p>All of this again as plain text, if that is easier to read: <a href="llms.txt">llms.txt</a>.</p>
@@ -68,6 +69,10 @@ pareidolia.html?mode=probe&amp;seed=77777</pre>
     <a class="door" href="pareidolia.html">
       <span class="door-name">Pareidolia</span>
       <span class="door-note">Half of these boards follow a rule and half are noise. Decide which, and prove it. <em>Nothing</em> is sometimes the right answer.</span>
+    </a>
+    <a class="door" href="witness.html">
+      <span class="door-name">Witness</span>
+      <span class="door-note">Four people give accounts of the same morning. Work out what the record settles &mdash; and what it leaves open, because <em>undetermined</em> is a real answer and claiming more than the accounts carry counts against you.</span>
     </a>
   </nav>
 
