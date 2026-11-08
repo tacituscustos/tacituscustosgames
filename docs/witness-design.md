@@ -173,6 +173,60 @@ already the tuned value.
 Shipping Open means the lie machinery does not ship at all — no depth gate, and
 none of its cost.
 
+## The control question, which found a real defect
+
+Marco's method on Pareidolia was to ask the control question first — *does the
+accept loop bias which boards ship?* — get a boring answer, and say so plainly
+before reporting anything else. The boring answer is what makes the interesting
+one trustworthy. That question had never been asked here.
+
+`generate()` redraws a world until the gate is satisfied, up to 300 times, so
+selection by retry can correlate with something a reader could learn. Measured
+over 3000 records, against what a player could do knowing only the policy:
+
+- **The taker is uniform.** 24.4 / 25.9 / 23.5 / 26.2%, χ² 5.79 on 3 df against
+  a 5% critical value of 7.81. Guessing the commonest person every time scores
+  26.2% against a 25% floor. Boring, which is the point.
+- **Room occupancy leans to the study**, 32.5 / 35.7 / 31.8%. That is by
+  construction — the generator requires at least three study visits so the coin
+  has a story — and it tells a reader nothing about a particular record.
+- **The take slot was broken.** 0.0 / 28.0 / 27.6 / 44.4%.
+
+`takeT` was drawn as `1 + rng.int(T - 1)`, so **the first slot could never be
+the answer** — while the premise said only *"at some slot it was taken"*, the
+question offered all four, and the enumerator that decides what a record settles
+went on allowing a take at the first slot. Three things disagreed: the prose, the
+generator, and the grader. A reader who noticed got a free elimination on every
+record, plus a 44.1% hit rate on Q2 from answering the last slot and reading
+nothing at all — the Patrol naive-rule defect in a new place, where a player
+learns the generator's policy instead of computing anything.
+
+Two fixes were possible: open the first slot, or state the rule and constrain the
+enumerator to match. Measured, opening it costs nothing:
+
+| | before | after |
+|---|---|---|
+| take slot | 0.0 / 26.8 / 29.1 / 44.1% | 28.8 / 19.1 / 20.9 / 31.1% |
+| best policy-only guess at Q2 | 44.1% (floor 33.3%) | 31.1% (floor 25%) |
+| Q2 settled | 96.0% | 95.7% |
+| every question settled | 68.6% | 68.7% |
+| built, attempts per record | 2000/2000, 5.7 | 2000/2000, 5.2 |
+
+So `takeT = rng.int(T)`. The prose is true as written, the generator matches the
+grader, and nothing had to be restated.
+
+**A skew remains and is deliberate**: a take at either end is likelier than one
+in the middle, because the gate finds those easier to pin. That is a prior a
+reader may use rather than an option that cannot be true, and reading still pays
+overwhelmingly — 95.7% from the record against 31.1% from the policy. Same trade
+Patrol's Hell gate records, where the obvious reading already finds the best cell
+44.5% of the time and computing still pays.
+
+**This was found before the machine was merged, by asking the control question
+rather than by testing the feature.** Every suite written for Witness passed
+throughout, because they check what the generator says against what the
+generator computes.
+
 ## Performance, and where it is not
 
 | | median | p90 | max |

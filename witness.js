@@ -220,7 +220,20 @@
       /* truth: everyone moves a little; taker is in the study at takeT */
       const loc = new Array(P * T);
       for (let p = 0; p < P; p++) { let x = rng.int(3); for (let t = 0; t < T; t++) { if (t > 0 && rng.chance(0.5)) x = (x + 1 + rng.int(2)) % 3; loc[p * T + t] = x; } }
-      const takeT = 1 + rng.int(T - 1);
+      /* Any slot, the first included. Drawing from 1..T-1 instead excluded the
+         first slot by construction while the premise said "at some slot it was
+         taken" and the question still offered it — so one of four options could
+         never be the answer, and the enumerator that decides what a record
+         settles went on allowing it. Measured over 2000 records: the take slot
+         ran 0.0 / 26.8 / 29.1 / 44.1%, so answering the last slot every time
+         and reading nothing was right 44.1% against a 33.3% floor. Opening the
+         first slot costs nothing — 2000 of 2000 still build, on slightly fewer
+         attempts, Q2 settles on 95.7% against 96.0%, and the whole-record
+         settled rate is unmoved — and it drops that strategy to 31.1% against
+         25%. A take at either end is still likelier than one in the middle,
+         because the gate finds those easier to pin; that is a prior a reader
+         may use, not an option that cannot be true. */
+      const takeT = rng.int(T);
       const inStudy = []; for (let p = 0; p < P; p++) if (loc[p * T + takeT] === STUDY) inStudy.push(p);
       if (!inStudy.length || inStudy.length > 2) continue;
       let studyVisits = 0; for (let i = 0; i < P * T; i++) if (loc[i] === STUDY) studyVisits++;

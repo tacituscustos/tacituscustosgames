@@ -977,6 +977,26 @@ Decisions worth not re-litigating:
   door that ran on the line after it would read a null board, which is the same
   defect Forge and Patrol already fixed; and the tiers with a lie in them are
   nowhere near this cheap.
+- **The coin can be taken in any slot, the first included, and that was a
+  defect found by asking the control question.** `takeT` was drawn as
+  `1 + rng.int(T - 1)`, so the first slot could never be the answer — while the
+  premise said only "at some slot it was taken", the question offered all four,
+  and the enumerator that decides what a record settles went on allowing it.
+  Three things disagreed: the prose, the generator and the grader. Measured over
+  3000 records the take slot ran 0.0 / 28.0 / 27.6 / 44.4%, so answering the
+  last slot and reading nothing scored 44.1% against a 33.3% floor — Patrol's
+  naive-rule defect in a new place. Opening the first slot costs nothing and
+  drops that to 31.1% against 25%. **The remaining skew toward both ends stays**:
+  it is a prior a reader may use, not an option that cannot be true, and reading
+  pays 95.7% against it. `docs/witness-design.md` has the table.
+
+  Worth keeping how it was found. Every suite written for this machine passed
+  throughout, because they check what the generator says against what the
+  generator computes. What found it was Marco's opening move on Pareidolia —
+  ask whether the accept loop biases *which* records ship, before testing any
+  feature. The taker came back uniform and room occupancy leaned to the study by
+  construction, both boring; the slot did not. **Ask that question of the next
+  machine before shipping it, not after.**
 
 ### Styling
 
