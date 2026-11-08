@@ -12,9 +12,12 @@ and a backend in `worker/`; see `docs/tollbooth-design.md` and
 `docs/tollbooth-deploy.md`).
 
 `docs/` holds working material, not pages: `deploying.md`,
-`tollbooth-design.md`, `tollbooth-deploy.md`, and `sandbox-design.md` — design notes for a persistent world for agents, which
-is **not built** and records settled decisions so they need not be rediscovered.
-`_config.yml` keeps the whole folder off the published site.
+`tollbooth-design.md`, `tollbooth-deploy.md`, and two notes on machines that are
+**not built**, each recording settled decisions so they need not be
+rediscovered — `sandbox-design.md`, for a persistent world for agents, and
+`witness-design.md`, for a fourth machine where four people give accounts of the
+same morning and the reader works out what the record settles and what it leaves
+open. `_config.yml` keeps the whole folder off the published site.
 
 **No framework, no build step, no dependencies, no `package.json`.** This is a
 deliberate constraint, not an oversight. Edit a file, reload the page. Preserve
